@@ -1,0 +1,11 @@
+🚀 Rock-it-ed Color Palette
+Role	Light Mode (Default)	Dark Mode	Notes
+Primary (Brand Color)	#190647 (Deep Indigo/Navy)	#8CB0D8 (Light Slate Blue)	Used for key components, buttons, and branding. The dark mode uses the brighter blue for visual pop.
+Secondary/Accent 1	#F17947 (Bright Orange/Coral)	#F17947 (Bright Orange/Coral)	Used for CTAs, hover states, and focus elements. It maintains a strong contrast in both modes.
+Accent 2/Tertiary	#D35285 (Deep Rose/Magenta)	#D35285 (Deep Rose/Magenta)	Used sparingly for highlights, icons, or secondary CTA's.
+Background (Canvas)	#E7E1D3 (Light Beige/Off-White)	#121212 (Very Dark Gray/Near-Black)	Your light neutral is a perfect canvas. Dark mode uses a standard accessible dark background.
+Surface (Card/Nav)	#FFFFFF (Pure White)	#1D1D1D (Slightly Lighter Dark Gray)	Used for containers, cards, and distinct elements to give them a subtle lift from the background.
+Text (Primary)	#190647 (Deep Indigo/Navy)	#E7E1D3 (Off-White/Beige)	Ensures maximum readability.
+Text (Secondary)	#5B5B5B (Mid-Dark Gray)	#A3A3A3 (Mid-Light Gray)	Used for less important text, subtitles, or placeholder text.
+Accent (Success)	#4CAF50 (Material Green)	#8BC34A (Light Green)	Standardized, accessible green for success messages/notifications.
+Accent (Error)	#D32F2F (Material Red)	#FF5252 (Light Red)	Standardized, accessible red for error messages/notifications.

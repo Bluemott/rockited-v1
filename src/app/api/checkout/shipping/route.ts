@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type Stripe from 'stripe';
 import { stripe, getCheckoutSession } from '@/lib/stripe';
 import { calculateShipping } from '@/lib/woocommerce';
 import { sanitizeString, sanitizeObjectKeys, validateBodySize } from '@/lib/sanitize';

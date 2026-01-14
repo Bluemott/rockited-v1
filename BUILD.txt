@@ -1,0 +1,69 @@
+2026-01-14T16:56:13.376Z [INFO]: # Build environment configured with Standard build compute type: 8GiB Memory, 4vCPUs, 128GB Disk Space
+2026-01-14T16:56:13.908Z [INFO]: # Cloning repository: git@github.com:Bluemott/rockited-v1.git
+2026-01-14T16:56:14.448Z [INFO]: 
+2026-01-14T16:56:14.449Z [INFO]: Cloning into 'rockited-v1'...
+2026-01-14T16:56:14.449Z [INFO]: # Checking for Git submodules at: /codebuild/output/src2823337704/src/rockited-v1/.gitmodules
+2026-01-14T16:56:14.458Z [INFO]: # Retrieving environment cache...
+2026-01-14T16:56:14.505Z [WARNING]: ! Unable to write cache: {"code":"ERR_BAD_REQUEST","message":"Request failed with status code 404"})}
+2026-01-14T16:56:14.506Z [INFO]: ---- Setting Up SSM Secrets ----
+2026-01-14T16:56:14.506Z [INFO]: SSM params {"Path":"/amplify/d168yqc3vojcct/rockited_dev/","WithDecryption":true}
+2026-01-14T16:56:14.573Z [WARNING]: !Failed to set up process.env.secrets
+2026-01-14T16:56:15.020Z [INFO]: # No package override configuration found.
+2026-01-14T16:56:15.023Z [INFO]: # Retrieving cache...
+2026-01-14T16:56:15.076Z [INFO]: # Retrieved cache
+2026-01-14T16:56:17.543Z [INFO]: BackendEnvironment name rockited_dev for app d168yqc3vojcct is invalid
+2026-01-14T16:56:17.681Z [INFO]: Random environment name trish generated
+2026-01-14T16:56:20.361Z [INFO]: ## Starting Backend Build
+                                 ## Checking for associated backend environment...
+                                 ## No backend environment association found, continuing...
+                                 ## Completed Backend Build
+2026-01-14T16:56:20.365Z [INFO]: ## Starting Frontend Build
+                                 # Starting phase: preBuild
+2026-01-14T16:56:20.365Z [INFO]: # Executing command: npm ci
+2026-01-14T16:56:47.376Z [WARNING]: npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+2026-01-14T16:56:57.923Z [INFO]: added 852 packages, and audited 853 packages in 32s
+2026-01-14T16:56:57.928Z [INFO]: 327 packages are looking for funding
+                                 run `npm fund` for details
+2026-01-14T16:56:57.969Z [INFO]: 3 high severity vulnerabilities
+                                 To address all issues, run:
+                                 npm audit fix
+                                 Run `npm audit` for details.
+2026-01-14T16:56:57.992Z [INFO]: # Completed phase: preBuild
+                                 # Starting phase: build
+                                 # Executing command: npm run build
+2026-01-14T16:56:58.095Z [INFO]: > rockited-v1@0.1.0 build
+                                 > next build --turbopack
+2026-01-14T16:56:59.026Z [INFO]: ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+2026-01-14T16:56:59.034Z [INFO]: Attention: Next.js now collects completely anonymous telemetry regarding usage.
+2026-01-14T16:56:59.034Z [INFO]: This information is used to shape Next.js' roadmap and prioritize features.
+                                 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+                                 https://nextjs.org/telemetry
+2026-01-14T16:56:59.044Z [INFO]: ▲ Next.js 16.0.8 (Turbopack)
+2026-01-14T16:56:59.045Z [INFO]: 
+2026-01-14T16:56:59.094Z [WARNING]: ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+2026-01-14T16:56:59.134Z [INFO]: Creating an optimized production build ...
+2026-01-14T16:57:12.240Z [WARNING]: 
+2026-01-14T16:57:12.245Z [WARNING]: > Build error occurred
+                                    Error: Turbopack build failed with 1 errors:
+                                    ./src/lib/markdown.ts:11:7
+                                    Parsing ecmascript source code failed
+                                    [0m [90m  9 |[39m   [36mreturn[39m (
+                                    [90m 10 |[39m     [33m<[39m[33mReactMarkdown[39m
+                                    [31m[1m>[22m[39m[90m 11 |[39m       remarkPlugins[33m=[39m{[remarkGfm]}
+                                    [90m    |[39m       [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+                                    [90m 12 |[39m       rehypePlugins[33m=[39m{[rehypeRaw]}
+                                    [90m 13 |[39m       components[33m=[39m{{
+                                    [90m 14 |[39m         h1[33m:[39m ({ node[33m,[39m [33m...[39mprops }) [33m=>[39m ([0m
+                                    Expected '>', got 'remarkPlugins'
+                                    Import trace:
+                                    Server Component:
+                                    ./src/lib/markdown.ts
+                                    ./src/components/blog/BlogPostContent.tsx
+                                    ./src/app/resources/blog/[slug]/page.tsx
+                                    at <unknown> (./src/lib/markdown.ts:11:7)
+2026-01-14T16:57:12.394Z [ERROR]: !!! Build failed
+2026-01-14T16:57:12.394Z [INFO]: Please read more about Amplify Hosting's support for SSR frameworks to find if your build failure is related to an unsupported feature: https://docs.aws.amazon.com/amplify/latest/userguide/amplify-ssr-framework-support.html. You may also find this troubleshooting guide useful: https://docs.aws.amazon.com/amplify/latest/userguide/troubleshooting-ssr-deployment.html
+2026-01-14T16:57:12.394Z [ERROR]: !!! Error: Command failed with exit code 1
+2026-01-14T16:57:12.394Z [INFO]: # Starting environment caching...
+2026-01-14T16:57:12.394Z [INFO]: # Environment caching completed
+

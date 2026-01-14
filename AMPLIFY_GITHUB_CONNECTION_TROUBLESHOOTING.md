@@ -74,9 +74,11 @@ This guide helps you resolve issues when AWS Amplify can't find or connect to yo
    - You can add more branches later in app settings
 
 2. **Verify Branch Exists:**
+
    ```bash
    git branch -a
    ```
+
    - Ensure branch is pushed to GitHub
    - Push if needed: `git push origin rockited_dev`
 
@@ -230,9 +232,11 @@ After connecting, verify:
 To verify your repository is accessible:
 
 1. **Check Repository URL:**
+
    ```
    https://github.com/Bluemott/rockited-v1
    ```
+
    - Should load without errors
    - Should be accessible (public or you're logged in)
 

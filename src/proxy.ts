@@ -1,35 +1,35 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { checkRateLimit, getClientIP } from './lib/rate-limit';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { checkRateLimit, getClientIP } from "./lib/rate-limit";
 
 /**
- * Security headers and rate limiting middleware
+ * Security headers and rate limiting proxy
  * Applies security headers to all routes and rate limiting to API routes
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Skip middleware for static assets and Next.js internals
+  // Skip proxy for static assets and Next.js internals
   if (
-    pathname.startsWith('/_next') ||
+    pathname.startsWith("/_next") ||
     pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|woff|woff2|ttf|eot)$/)
   ) {
     return NextResponse.next();
   }
 
   // Handle rate limiting for API routes
-  if (pathname.startsWith('/api/')) {
+  if (pathname.startsWith("/api/")) {
     // Skip rate limiting for webhook endpoints (they use signature verification)
-    if (pathname.startsWith('/api/webhooks/')) {
+    if (pathname.startsWith("/api/webhooks/")) {
       return NextResponse.next();
     }
 
     // Determine endpoint type for rate limiting
-    let endpointType: 'checkout' | 'products' | 'shipping' | 'default' = 'default';
-    if (pathname.startsWith('/api/checkout') || pathname.startsWith('/api/shipping')) {
-      endpointType = pathname.startsWith('/api/checkout') ? 'checkout' : 'shipping';
-    } else if (pathname.startsWith('/api/products') || pathname.startsWith('/api/inventory')) {
-      endpointType = 'products';
+    let endpointType: "checkout" | "products" | "shipping" | "default" = "default";
+    if (pathname.startsWith("/api/checkout") || pathname.startsWith("/api/shipping")) {
+      endpointType = pathname.startsWith("/api/checkout") ? "checkout" : "shipping";
+    } else if (pathname.startsWith("/api/products") || pathname.startsWith("/api/inventory")) {
+      endpointType = "products";
     }
 
     // Get client IP
@@ -42,24 +42,27 @@ export async function middleware(request: NextRequest) {
     if (!rateLimitResult.success) {
       // Rate limit exceeded
       const response = NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
+        { error: "Too many requests. Please try again later." },
         { status: 429 }
       );
-      
+
       // Add rate limit headers
-      response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
-      response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
-      response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.reset).toISOString());
-      response.headers.set('Retry-After', Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString());
-      
+      response.headers.set("X-RateLimit-Limit", rateLimitResult.limit.toString());
+      response.headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+      response.headers.set("X-RateLimit-Reset", new Date(rateLimitResult.reset).toISOString());
+      response.headers.set(
+        "Retry-After",
+        Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString()
+      );
+
       return response;
     }
 
     // Create response with rate limit headers
     const response = NextResponse.next();
-    response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
-    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
-    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.reset).toISOString());
+    response.headers.set("X-RateLimit-Limit", rateLimitResult.limit.toString());
+    response.headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+    response.headers.set("X-RateLimit-Reset", new Date(rateLimitResult.reset).toISOString());
 
     return response;
   }
@@ -81,22 +84,25 @@ export async function middleware(request: NextRequest) {
     "base-uri 'self'",
     "frame-ancestors 'none'",
     "upgrade-insecure-requests",
-  ].join('; ');
+  ].join("; ");
 
   // Apply security headers
-  response.headers.set('Content-Security-Policy', csp);
-  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set("Content-Security-Policy", csp);
+  response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+  );
+  response.headers.set("X-XSS-Protection", "1; mode=block");
 
   return response;
 }
 
 /**
- * Configure which routes should run the middleware
+ * Configure which routes should run the proxy
  */
 export const config = {
   matcher: [
@@ -107,6 +113,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public files (public folder)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)).*)",
   ],
 };

@@ -1,4 +1,4 @@
-import { BlogPost } from './types';
+import { BlogPost } from "./types";
 import {
   getAllWordPressPosts,
   getWordPressPostBySlug,
@@ -8,7 +8,7 @@ import {
   getWordPressPostsByTag,
   getWordPressRelatedPosts,
   searchWordPressPosts,
-} from './wordpress';
+} from "./wordpress";
 
 /**
  * Get all blog posts sorted by date (newest first)

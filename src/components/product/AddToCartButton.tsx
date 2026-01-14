@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { WooProduct } from '@/lib/types';
-import { useCartStore } from '@/lib/store';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingCart, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { trackAddToCart } from '@/lib/analytics';
+import { useState } from "react";
+import { WooProduct } from "@/lib/types";
+import { useCartStore } from "@/lib/store";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ShoppingCart, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { trackAddToCart } from "@/lib/analytics";
 
 interface AddToCartButtonProps {
   product: WooProduct;
@@ -21,7 +27,7 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
 
   const handleAddToCart = async () => {
     setIsAdding(true);
-    
+
     try {
       const price = parseFloat(product.price);
       const category = product.categories?.[0]?.name;
@@ -41,25 +47,25 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
           id: product.id,
           name: product.name,
           price,
-          image: product.images[0]?.src || '/placeholder-product.jpg',
+          image: product.images[0]?.src || "/placeholder-product.jpg",
           sku: product.sku,
         });
       }
-      
-      toast.success(`${quantity} ${quantity === 1 ? 'item' : 'items'} added to cart`);
-      
+
+      toast.success(`${quantity} ${quantity === 1 ? "item" : "items"} added to cart`);
+
       setTimeout(() => {
         setIsAdding(false);
         setQuantity(1);
       }, 1000);
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast.error('Failed to add items to cart');
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add items to cart");
       setIsAdding(false);
     }
   };
 
-  const isOutOfStock = product.stock_status === 'outofstock';
+  const isOutOfStock = product.stock_status === "outofstock";
 
   return (
     <div className="space-y-4">
@@ -97,7 +103,7 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
             Adding...
           </>
         ) : isOutOfStock ? (
-          'Out of Stock'
+          "Out of Stock"
         ) : (
           <>
             <ShoppingCart className="mr-2 h-4 w-4" />

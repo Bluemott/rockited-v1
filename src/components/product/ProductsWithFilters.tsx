@@ -1,22 +1,17 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
-import { WooProduct, WooCategory } from '@/lib/types';
+import { useState, useMemo, useEffect } from "react";
+import { WooProduct, WooCategory } from "@/lib/types";
 import {
   ProductFilters,
   defaultFilters,
   applyFilters,
   sortProducts,
   getPriceRange,
-} from '@/lib/productFilters';
-import ProductGrid from './ProductGrid';
-import ProductFiltersSidebar from './ProductFiltersSidebar';
-import {
-  SidebarProvider,
-  SidebarInset,
-  SidebarTrigger,
-  useSidebar,
-} from '@/components/ui/sidebar';
+} from "@/lib/productFilters";
+import ProductGrid from "./ProductGrid";
+import ProductFiltersSidebar from "./ProductFiltersSidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
 interface ProductsWithFiltersProps {
   products: WooProduct[];
@@ -39,21 +34,23 @@ function ProductsContent({
   filteredAndSortedProducts: WooProduct[];
 }) {
   const { open } = useSidebar();
-  
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
       {/* Sidebar */}
-      <div 
+      <div
         className={`
           hidden md:block transition-all duration-200 ease-linear flex-shrink-0
-          ${open ? 'w-64' : 'w-0'}
+          ${open ? "w-64" : "w-0"}
         `}
       >
-        <div className={`
+        <div
+          className={`
           fixed top-16 left-0 h-[calc(100vh-4rem)] overflow-y-auto
           transition-all duration-200 ease-linear bg-sidebar border-r
-          ${open ? 'w-64' : 'w-0 overflow-hidden'}
-        `}>
+          ${open ? "w-64" : "w-0 overflow-hidden"}
+        `}
+        >
           <ProductFiltersSidebar
             categories={categories}
             products={products}
@@ -63,7 +60,7 @@ function ProductsContent({
           />
         </div>
       </div>
-      
+
       {/* Main Content */}
       <main className="flex-1 min-w-0">
         <div className="container mx-auto px-4 py-8">
@@ -73,9 +70,7 @@ function ProductsContent({
               <span className="text-sm text-muted-foreground">Filter/Search</span>
             </div>
             <div className="text-center">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                All Products
-              </h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">All Products</h1>
               <p className="text-lg text-muted-foreground">
                 Discover our complete collection of premium products.
               </p>
@@ -97,10 +92,7 @@ function ProductsContent({
   );
 }
 
-export default function ProductsWithFilters({
-  products,
-  categories,
-}: ProductsWithFiltersProps) {
+export default function ProductsWithFilters({ products, categories }: ProductsWithFiltersProps) {
   const [filters, setFilters] = useState<ProductFilters>(defaultFilters);
 
   // Calculate price range from products
@@ -140,4 +132,3 @@ export default function ProductsWithFilters({
     </SidebarProvider>
   );
 }
-

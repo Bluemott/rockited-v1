@@ -1,20 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { WooProduct } from '@/lib/types';
-import { useCartStore } from '@/lib/store';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { ShoppingCart, ExternalLink } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { WooProduct } from "@/lib/types";
+import { useCartStore } from "@/lib/store";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ShoppingCart, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 
 interface QuickViewDialogProps {
   product: WooProduct;
@@ -22,31 +17,27 @@ interface QuickViewDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function QuickViewDialog({
-  product,
-  open,
-  onOpenChange,
-}: QuickViewDialogProps) {
+export default function QuickViewDialog({ product, open, onOpenChange }: QuickViewDialogProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { addItem } = useCartStore();
 
   const formatPrice = (price: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(parseFloat(price));
   };
 
   const getStockStatus = () => {
     switch (product.stock_status) {
-      case 'instock':
-        return { text: 'In Stock', variant: 'default' as const };
-      case 'outofstock':
-        return { text: 'Out of Stock', variant: 'destructive' as const };
-      case 'onbackorder':
-        return { text: 'On Backorder', variant: 'secondary' as const };
+      case "instock":
+        return { text: "In Stock", variant: "default" as const };
+      case "outofstock":
+        return { text: "Out of Stock", variant: "destructive" as const };
+      case "onbackorder":
+        return { text: "On Backorder", variant: "secondary" as const };
       default:
-        return { text: 'Unknown', variant: 'outline' as const };
+        return { text: "Unknown", variant: "outline" as const };
     }
   };
 
@@ -55,7 +46,7 @@ export default function QuickViewDialog({
       id: product.id,
       name: product.name,
       price: parseFloat(product.price),
-      image: product.images[0]?.src || '/placeholder-product.jpg',
+      image: product.images[0]?.src || "/placeholder-product.jpg",
       sku: product.sku,
     });
     toast.success(`${product.name} added to cart`);
@@ -77,15 +68,17 @@ export default function QuickViewDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent 
+      <DialogContent
         className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border-2 shadow-2xl"
         style={{
-          borderColor: 'hsl(var(--muted-foreground) / 0.3)',
-          backgroundColor: 'hsl(var(--card))',
+          borderColor: "hsl(var(--muted-foreground) / 0.3)",
+          backgroundColor: "hsl(var(--card))",
         }}
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-card-foreground">{product.name}</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-card-foreground">
+            {product.name}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -94,7 +87,7 @@ export default function QuickViewDialog({
             {/* Main Image */}
             <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
               <Image
-                src={mainImage?.src || '/placeholder-product.jpg'}
+                src={mainImage?.src || "/placeholder-product.jpg"}
                 alt={mainImage?.alt || product.name}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -102,10 +95,7 @@ export default function QuickViewDialog({
                 priority
               />
               {product.on_sale && (
-                <Badge
-                  variant="destructive"
-                  className="absolute top-2 left-2 z-10"
-                >
+                <Badge variant="destructive" className="absolute top-2 left-2 z-10">
                   Sale
                 </Badge>
               )}
@@ -120,8 +110,8 @@ export default function QuickViewDialog({
                     onClick={() => setSelectedImageIndex(index)}
                     className={`aspect-square relative rounded-md overflow-hidden border-2 transition-all ${
                       selectedImageIndex === index
-                        ? 'border-primary ring-2 ring-primary ring-offset-2'
-                        : 'border-transparent hover:border-muted-foreground/50'
+                        ? "border-primary ring-2 ring-primary ring-offset-2"
+                        : "border-transparent hover:border-muted-foreground/50"
                     }`}
                   >
                     <Image
@@ -154,15 +144,13 @@ export default function QuickViewDialog({
               <Badge variant={stockStatus.variant} className="w-fit">
                 {stockStatus.text}
               </Badge>
-              {product.sku && (
-                <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
-              )}
+              {product.sku && <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>}
             </div>
 
             {/* Short Description */}
             {product.short_description && (
               <div className="text-sm text-muted-foreground line-clamp-4">
-                {product.short_description.replace(/<[^>]*>/g, '')}
+                {product.short_description.replace(/<[^>]*>/g, "")}
               </div>
             )}
 
@@ -181,12 +169,12 @@ export default function QuickViewDialog({
               </Button>
               <Button
                 onClick={handleAddToCart}
-                disabled={product.stock_status === 'outofstock'}
+                disabled={product.stock_status === "outofstock"}
                 variant="default"
                 className="flex-1"
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
-                {product.stock_status === 'outofstock' ? 'Out of Stock' : 'Add to Cart'}
+                {product.stock_status === "outofstock" ? "Out of Stock" : "Add to Cart"}
               </Button>
             </div>
           </div>

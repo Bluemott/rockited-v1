@@ -1,5 +1,5 @@
-import { BlogPost } from './types';
-import { env } from './env';
+import { BlogPost } from "./types";
+import { env } from "./env";
 
 const WORDPRESS_URL = env.WOOCOMMERCE_URL; // Use same base URL as WooCommerce
 const WORDPRESS_API_BASE = `${WORDPRESS_URL}/wp-json/wp/v2`;
@@ -27,16 +27,18 @@ interface WordPressPost {
     author?: Array<{
       name: string;
     }>;
-    'wp:featuredmedia'?: Array<{
+    "wp:featuredmedia"?: Array<{
       source_url: string;
       alt_text: string;
     }>;
-    'wp:term'?: Array<Array<{
-      id: number;
-      name: string;
-      slug: string;
-      taxonomy: string;
-    }>>;
+    "wp:term"?: Array<
+      Array<{
+        id: number;
+        name: string;
+        slug: string;
+        taxonomy: string;
+      }>
+    >;
   };
 }
 
@@ -66,8 +68,8 @@ interface WordPressMedia {
 async function fetchWordPressPosts(params: Record<string, any> = {}): Promise<WordPressPost[]> {
   try {
     const queryParams = new URLSearchParams({
-      _embed: '1', // Include embedded resources (author, featured media, terms)
-      status: 'publish',
+      _embed: "1", // Include embedded resources (author, featured media, terms)
+      status: "publish",
       ...params,
     });
 
@@ -81,7 +83,7 @@ async function fetchWordPressPosts(params: Record<string, any> = {}): Promise<Wo
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching WordPress posts:', error);
+    console.error("Error fetching WordPress posts:", error);
     return [];
   }
 }
@@ -101,7 +103,7 @@ async function fetchWordPressCategories(): Promise<WordPressCategory[]> {
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching WordPress categories:', error);
+    console.error("Error fetching WordPress categories:", error);
     return [];
   }
 }
@@ -121,7 +123,7 @@ async function fetchWordPressTags(): Promise<WordPressTag[]> {
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching WordPress tags:', error);
+    console.error("Error fetching WordPress tags:", error);
     return [];
   }
 }
@@ -150,7 +152,7 @@ async function fetchWordPressMedia(mediaId: number): Promise<WordPressMedia | nu
  * Strip HTML tags from string
  */
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, '').trim();
+  return html.replace(/<[^>]*>/g, "").trim();
 }
 
 /**
@@ -158,13 +160,12 @@ function stripHtml(html: string): string {
  */
 async function mapWordPressPostToBlogPost(wpPost: WordPressPost): Promise<BlogPost> {
   // Extract author name
-  const authorName =
-    wpPost._embedded?.author?.[0]?.name || 'ROCK IT ED Team';
+  const authorName = wpPost._embedded?.author?.[0]?.name || "ROCK IT ED Team";
 
   // Extract featured image
-  let featuredImage = '';
-  if (wpPost.featured_media && wpPost._embedded?.['wp:featuredmedia']?.[0]) {
-    featuredImage = wpPost._embedded['wp:featuredmedia'][0].source_url;
+  let featuredImage = "";
+  if (wpPost.featured_media && wpPost._embedded?.["wp:featuredmedia"]?.[0]) {
+    featuredImage = wpPost._embedded["wp:featuredmedia"][0].source_url;
   } else if (wpPost.featured_media) {
     // Fallback: fetch media if not embedded
     const media = await fetchWordPressMedia(wpPost.featured_media);
@@ -174,15 +175,15 @@ async function mapWordPressPostToBlogPost(wpPost: WordPressPost): Promise<BlogPo
   }
 
   // Extract categories and tags from embedded terms
-  let category = 'Recovery'; // Default category
+  let category = "Recovery"; // Default category
   const tags: string[] = [];
 
-  if (wpPost._embedded?.['wp:term']) {
-    const allTerms = wpPost._embedded['wp:term'].flat();
-    const categories = allTerms.filter((term) => term.taxonomy === 'category');
-    const tagTerms = allTerms.filter((term) => term.taxonomy === 'post_tag');
+  if (wpPost._embedded?.["wp:term"]) {
+    const allTerms = wpPost._embedded["wp:term"]?.flat() || [];
+    const categories = allTerms.filter((term) => term.taxonomy === "category");
+    const tagTerms = allTerms.filter((term) => term.taxonomy === "post_tag");
 
-    if (categories.length > 0) {
+    if (categories.length > 0 && categories[0]) {
       category = categories[0].name;
     }
 
@@ -229,16 +230,14 @@ async function mapWordPressPostToBlogPost(wpPost: WordPressPost): Promise<BlogPo
 export async function getAllWordPressPosts(): Promise<BlogPost[]> {
   try {
     const wpPosts = await fetchWordPressPosts({ per_page: 100 });
-    
+
     // Map all posts
-    const posts = await Promise.all(
-      wpPosts.map((wpPost) => mapWordPressPostToBlogPost(wpPost))
-    );
+    const posts = await Promise.all(wpPosts.map((wpPost) => mapWordPressPostToBlogPost(wpPost)));
 
     // Sort by published date (newest first)
     return posts.sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
   } catch (error) {
-    console.error('Error getting all WordPress posts:', error);
+    console.error("Error getting all WordPress posts:", error);
     return [];
   }
 }
@@ -249,12 +248,17 @@ export async function getAllWordPressPosts(): Promise<BlogPost[]> {
 export async function getWordPressPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
     const wpPosts = await fetchWordPressPosts({ slug, per_page: 1 });
-    
+
     if (wpPosts.length === 0) {
       return null;
     }
 
-    return await mapWordPressPostToBlogPost(wpPosts[0]);
+    const firstPost = wpPosts[0];
+    if (!firstPost) {
+      return null;
+    }
+
+    return await mapWordPressPostToBlogPost(firstPost);
   } catch (error) {
     console.error(`Error getting WordPress post by slug ${slug}:`, error);
     return null;
@@ -272,7 +276,7 @@ export async function getAllWordPressCategories(): Promise<string[]> {
       .map((cat) => cat.name)
       .sort();
   } catch (error) {
-    console.error('Error getting WordPress categories:', error);
+    console.error("Error getting WordPress categories:", error);
     return [];
   }
 }
@@ -288,7 +292,7 @@ export async function getAllWordPressTags(): Promise<string[]> {
       .map((tag) => tag.name)
       .sort();
   } catch (error) {
-    console.error('Error getting WordPress tags:', error);
+    console.error("Error getting WordPress tags:", error);
     return [];
   }
 }
@@ -307,10 +311,8 @@ export async function getWordPressPostsByCategory(categoryName: string): Promise
     }
 
     const wpPosts = await fetchWordPressPosts({ categories: category.id, per_page: 100 });
-    
-    return await Promise.all(
-      wpPosts.map((wpPost) => mapWordPressPostToBlogPost(wpPost))
-    );
+
+    return await Promise.all(wpPosts.map((wpPost) => mapWordPressPostToBlogPost(wpPost)));
   } catch (error) {
     console.error(`Error getting WordPress posts by category ${categoryName}:`, error);
     return [];
@@ -331,10 +333,8 @@ export async function getWordPressPostsByTag(tagName: string): Promise<BlogPost[
     }
 
     const wpPosts = await fetchWordPressPosts({ tags: tag.id, per_page: 100 });
-    
-    return await Promise.all(
-      wpPosts.map((wpPost) => mapWordPressPostToBlogPost(wpPost))
-    );
+
+    return await Promise.all(wpPosts.map((wpPost) => mapWordPressPostToBlogPost(wpPost)));
   } catch (error) {
     console.error(`Error getting WordPress posts by tag ${tagName}:`, error);
     return [];
@@ -350,7 +350,7 @@ export async function getWordPressRelatedPosts(
 ): Promise<BlogPost[]> {
   try {
     const allPosts = await getAllWordPressPosts();
-    
+
     const related = allPosts
       .filter((post) => post.id !== currentPost.id)
       .map((post) => {
@@ -376,7 +376,7 @@ export async function getWordPressRelatedPosts(
 
     return related;
   } catch (error) {
-    console.error('Error getting related WordPress posts:', error);
+    console.error("Error getting related WordPress posts:", error);
     return [];
   }
 }
@@ -394,10 +394,8 @@ export async function searchWordPressPosts(query: string): Promise<BlogPost[]> {
 
     // WordPress REST API supports search parameter
     const wpPosts = await fetchWordPressPosts({ search: lowerQuery, per_page: 100 });
-    
-    const posts = await Promise.all(
-      wpPosts.map((wpPost) => mapWordPressPostToBlogPost(wpPost))
-    );
+
+    const posts = await Promise.all(wpPosts.map((wpPost) => mapWordPressPostToBlogPost(wpPost)));
 
     // Additional client-side filtering for better results
     return posts.filter((post) => {

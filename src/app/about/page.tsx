@@ -1,9 +1,9 @@
-import Image from 'next/image';
-import type { Metadata } from 'next';
-import { Card, CardContent } from '@/components/ui/card';
-import { MotionDiv } from '@/components/ui/motion';
-import { Mail, Phone, Clock, MapPin } from 'lucide-react';
-import { generateAboutMetadata } from '@/lib/seo';
+import Image from "next/image";
+import type { Metadata } from "next";
+import { Card, CardContent } from "@/components/ui/card";
+import { MotionDiv } from "@/components/ui/motion";
+import { Mail, Phone, Clock, MapPin } from "lucide-react";
+import { generateAboutMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = generateAboutMetadata();
 
@@ -11,9 +11,7 @@ export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <MotionDiv variant="fadeInUp" className="mb-8">
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-          About ROCK IT ED
-        </h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">About ROCK IT ED</h1>
         <p className="text-lg text-muted-foreground">
           Learn more about our mission, values, and commitment to excellence.
         </p>
@@ -25,22 +23,21 @@ export default function AboutPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <h2 className="text-2xl font-semibold text-foreground mb-4">
-                  Our Story
-                </h2>
+                <h2 className="text-2xl font-semibold text-foreground mb-4">Our Story</h2>
                 <p className="text-muted-foreground mb-4">
-                  Welcome to ROCK IT ED, where quality meets innovation. We are dedicated to providing 
-                  premium products that enhance your daily life. Our journey began with a simple mission: 
-                  to deliver exceptional quality and outstanding customer service.
+                  Welcome to ROCK IT ED, where quality meets innovation. We are dedicated to
+                  providing premium products that enhance your daily life. Our journey began with a
+                  simple mission: to deliver exceptional quality and outstanding customer service.
                 </p>
                 <p className="text-muted-foreground mb-4">
-                  Every product in our collection is carefully selected and tested to meet our high standards 
-                  of quality and durability. We partner only with trusted manufacturers who share our values 
-                  and commitment to excellence.
+                  Every product in our collection is carefully selected and tested to meet our high
+                  standards of quality and durability. We partner only with trusted manufacturers
+                  who share our values and commitment to excellence.
                 </p>
                 <p className="text-muted-foreground">
-                  At ROCK IT ED, we believe that great products should be accessible to everyone. That's why 
-                  we work tirelessly to bring you the best value without compromising on quality.
+                  At ROCK IT ED, we believe that great products should be accessible to everyone.
+                  That's why we work tirelessly to bring you the best value without compromising on
+                  quality.
                 </p>
               </div>
             </CardContent>
@@ -72,17 +69,17 @@ export default function AboutPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <h2 className="text-2xl font-semibold text-foreground mb-4">
-                  Our Values
-                </h2>
+                <h2 className="text-2xl font-semibold text-foreground mb-4">Our Values</h2>
                 <ul className="space-y-3 text-muted-foreground">
                   <li className="flex items-start">
                     <span className="font-semibold text-foreground mr-2">Quality First:</span>
-                    We never compromise on quality. Every product undergoes rigorous testing to ensure it meets our standards.
+                    We never compromise on quality. Every product undergoes rigorous testing to
+                    ensure it meets our standards.
                   </li>
                   <li className="flex items-start">
                     <span className="font-semibold text-foreground mr-2">Customer Focus:</span>
-                    Your satisfaction is our priority. We're here to help with any questions or concerns.
+                    Your satisfaction is our priority. We're here to help with any questions or
+                    concerns.
                   </li>
                   <li className="flex items-start">
                     <span className="font-semibold text-foreground mr-2">Innovation:</span>
@@ -90,7 +87,8 @@ export default function AboutPage() {
                   </li>
                   <li className="flex items-start">
                     <span className="font-semibold text-foreground mr-2">Integrity:</span>
-                    We conduct business with honesty, transparency, and respect for our customers and partners.
+                    We conduct business with honesty, transparency, and respect for our customers
+                    and partners.
                   </li>
                 </ul>
               </div>
@@ -122,9 +120,7 @@ export default function AboutPage() {
         <MotionDiv variant="fadeInUp" delay={0.6} id="contact">
           <Card>
             <CardContent className="pt-6">
-              <h2 className="text-2xl font-semibold text-foreground mb-4">
-                Contact Us
-              </h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">Contact Us</h2>
               <p className="text-muted-foreground mb-6">
                 Get in touch with our team. We're here to help with any questions or concerns.
               </p>
@@ -143,7 +139,10 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">Email</h3>
-                    <a href="mailto:support@rockited.com" className="text-muted-foreground mb-1 hover:text-primary transition-colors">
+                    <a
+                      href="mailto:support@rockited.com"
+                      className="text-muted-foreground mb-1 hover:text-primary transition-colors"
+                    >
                       support@rockited.com
                     </a>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -162,7 +161,10 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">Phone</h3>
-                    <a href="tel:5551234567" className="text-muted-foreground mb-1 hover:text-primary transition-colors">
+                    <a
+                      href="tel:5551234567"
+                      className="text-muted-foreground mb-1 hover:text-primary transition-colors"
+                    >
                       (555) 123-4567
                     </a>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -197,9 +199,7 @@ export default function AboutPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">Location</h3>
                     <p className="text-muted-foreground mb-1">United States</p>
-                    <p className="text-sm text-muted-foreground">
-                      Online retailer
-                    </p>
+                    <p className="text-sm text-muted-foreground">Online retailer</p>
                   </div>
                 </div>
               </CardContent>
@@ -211,9 +211,7 @@ export default function AboutPage() {
         <MotionDiv variant="fadeInUp" delay={0.8}>
           <Card>
             <CardContent className="pt-6">
-              <h2 className="text-2xl font-semibold text-foreground mb-4">
-                Send us a Message
-              </h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">Send us a Message</h2>
               <p className="text-muted-foreground mb-6">
                 Fill out the form below and we'll get back to you as soon as possible.
               </p>
@@ -243,7 +241,10 @@ export default function AboutPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="subject"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Subject
                   </label>
                   <input
@@ -255,7 +256,10 @@ export default function AboutPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-foreground mb-2"
+                  >
                     Message
                   </label>
                   <textarea
@@ -280,4 +284,3 @@ export default function AboutPage() {
     </div>
   );
 }
-

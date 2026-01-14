@@ -1,5 +1,5 @@
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 /**
  * Rate limiting configuration for different endpoint types
@@ -7,19 +7,19 @@ import { Redis } from '@upstash/redis';
 export const rateLimitConfig = {
   checkout: {
     limit: 5,
-    window: '1 m', // 1 minute
+    window: "1 m", // 1 minute
   },
   products: {
     limit: 60,
-    window: '1 m', // 1 minute
+    window: "1 m", // 1 minute
   },
   shipping: {
     limit: 20,
-    window: '1 m', // 1 minute
+    window: "1 m", // 1 minute
   },
   default: {
     limit: 30,
-    window: '1 m', // 1 minute
+    window: "1 m", // 1 minute
   },
 } as const;
 
@@ -39,11 +39,29 @@ function getRateLimiter(limit: number, window: string) {
       token: upstashRedisToken,
     });
 
+    // Parse window string to seconds for Ratelimit
+    const windowMatch = window.match(/^(\d+)\s*(s|m|h|d)$/);
+    if (!windowMatch) {
+      throw new Error(`Invalid window format: ${window}`);
+    }
+    const windowValue = parseInt(windowMatch[1] || "1", 10);
+    const windowUnit = windowMatch[2];
+    if (!windowUnit) {
+      throw new Error(`Invalid window format: ${window}`);
+    }
+    const windowMultipliers: Record<string, number> = {
+      s: 1,
+      m: 60,
+      h: 3600,
+      d: 86400,
+    };
+    const windowSeconds = windowValue * (windowMultipliers[windowUnit] || 1);
+
     return new Ratelimit({
       redis,
-      limiter: Ratelimit.slidingWindow(limit, window),
+      limiter: Ratelimit.slidingWindow(limit, `${windowSeconds} s`),
       analytics: true,
-      prefix: '@rockited/ratelimit',
+      prefix: "@rockited/ratelimit",
     });
   }
 
@@ -70,7 +88,12 @@ function getRateLimiter(limit: number, window: string) {
 
       record.count++;
       memory.set(key, record);
-      return { success: true, limit: limit, remaining: limit - record.count, reset: record.resetTime };
+      return {
+        success: true,
+        limit: limit,
+        remaining: limit - record.count,
+        reset: record.resetTime,
+      };
     },
   };
 }
@@ -80,11 +103,11 @@ function getRateLimiter(limit: number, window: string) {
  */
 function parseWindow(window: string): number {
   const match = window.match(/^(\d+)\s*(s|m|h|d)$/);
-  if (!match) {
+  if (!match || !match[2]) {
     throw new Error(`Invalid window format: ${window}`);
   }
 
-  const value = parseInt(match[1], 10);
+  const value = parseInt(match[1] || "1", 10);
   const unit = match[2];
 
   const multipliers: Record<string, number> = {
@@ -94,7 +117,7 @@ function parseWindow(window: string): number {
     d: 24 * 60 * 60 * 1000,
   };
 
-  return value * multipliers[unit];
+  return value * (multipliers[unit] || 1000);
 }
 
 /**
@@ -113,10 +136,19 @@ export function getRateLimiterForEndpoint(endpointType: keyof typeof rateLimitCo
  */
 export async function checkRateLimit(
   identifier: string,
-  endpointType: keyof typeof rateLimitConfig = 'default'
+  endpointType: keyof typeof rateLimitConfig = "default"
 ) {
   const limiter = getRateLimiterForEndpoint(endpointType);
   const result = await limiter.limit(identifier);
+
+  if (!result) {
+    return {
+      success: false,
+      remaining: 0,
+      limit: 0,
+      reset: Date.now(),
+    };
+  }
 
   return {
     success: result.success,
@@ -131,16 +163,19 @@ export async function checkRateLimit(
  */
 export function getClientIP(request: Request): string {
   // Try to get IP from various headers (for proxies/load balancers)
-  const forwarded = request.headers.get('x-forwarded-for');
+  const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
-    return forwarded.split(',')[0].trim();
+    const firstIP = forwarded.split(",")[0];
+    if (firstIP) {
+      return firstIP.trim();
+    }
   }
 
-  const realIP = request.headers.get('x-real-ip');
+  const realIP = request.headers.get("x-real-ip");
   if (realIP) {
     return realIP;
   }
 
   // Fallback to a default identifier if IP cannot be determined
-  return 'unknown';
+  return "unknown";
 }

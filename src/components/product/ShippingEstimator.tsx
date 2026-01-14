@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { WooProduct, WooShippingRate } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Package, Truck } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { WooProduct, WooShippingRate } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Package, Truck } from "lucide-react";
+import { toast } from "sonner";
 
 interface ShippingEstimatorProps {
   product: WooProduct;
@@ -22,10 +22,10 @@ interface ShippingCalculationResult {
 }
 
 export default function ShippingEstimator({ product, quantity = 1 }: ShippingEstimatorProps) {
-  const [country, setCountry] = useState('US');
-  const [state, setState] = useState('');
-  const [postcode, setPostcode] = useState('');
-  const [city, setCity] = useState('');
+  const [country, setCountry] = useState("US");
+  const [state, setState] = useState("");
+  const [postcode, setPostcode] = useState("");
+  const [city, setCity] = useState("");
   const [isCalculating, setIsCalculating] = useState(false);
   const [shippingRates, setShippingRates] = useState<ShippingCalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
 
   const handleCalculate = async () => {
     if (!country) {
-      toast.error('Please select a country');
+      toast.error("Please select a country");
       return;
     }
 
@@ -46,10 +46,10 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
     setShippingRates(null);
 
     try {
-      const response = await fetch('/api/shipping/calculate', {
-        method: 'POST',
+      const response = await fetch("/api/shipping/calculate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           country,
@@ -67,13 +67,14 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to calculate shipping');
+        throw new Error(errorData.error || "Failed to calculate shipping");
       }
 
       const data: ShippingCalculationResult = await response.json();
       setShippingRates(data);
-    } catch (err: any) {
-      const errorMessage = err.message || 'Failed to calculate shipping rates';
+    } catch (err: unknown) {
+      const errorObj = err as { message?: string };
+      const errorMessage = errorObj?.message || "Failed to calculate shipping rates";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -82,10 +83,10 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
   };
 
   const formatPrice = (price: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(parseFloat(price || '0'));
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(parseFloat(price || "0"));
   };
 
   return (
@@ -95,9 +96,7 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
           <Truck className="h-5 w-5" />
           Shipping Estimator
         </CardTitle>
-        <CardDescription>
-          Calculate shipping costs for this product
-        </CardDescription>
+        <CardDescription>Calculate shipping costs for this product</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -140,11 +139,7 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
           </div>
         </div>
 
-        <Button
-          onClick={handleCalculate}
-          disabled={isCalculating || !country}
-          className="w-full"
-        >
+        <Button onClick={handleCalculate} disabled={isCalculating || !country} className="w-full">
           {isCalculating ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -159,9 +154,7 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
         </Button>
 
         {error && (
-          <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
-            {error}
-          </div>
+          <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">{error}</div>
         )}
 
         {shippingRates && (
@@ -169,9 +162,7 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
             <div className="text-sm text-muted-foreground">
               Shipping to: {shippingRates.zone_name}
               {shippingRates.total_weight && (
-                <span className="ml-2">
-                  (Total weight: {shippingRates.total_weight} lbs)
-                </span>
+                <span className="ml-2">(Total weight: {shippingRates.total_weight} lbs)</span>
               )}
             </div>
             <div className="space-y-2">
@@ -189,9 +180,7 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
                         </div>
                       )}
                     </div>
-                    <div className="font-bold text-lg">
-                      {formatPrice(rate.cost)}
-                    </div>
+                    <div className="font-bold text-lg">{formatPrice(rate.cost)}</div>
                   </div>
                 ))
               ) : (
@@ -206,4 +195,3 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
     </Card>
   );
 }
-

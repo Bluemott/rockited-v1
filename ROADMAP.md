@@ -19,15 +19,15 @@ This roadmap is organized by priority and focus area. Work through sections syst
 - **Add canonical URLs**: Verify canonical URLs are set correctly on all pages - completed
 - **Improve sitemap**: Add `lastModified` dates from actual product data, add category pages - completed
 - **Add XML sitemap index**: If you have many products, consider splitting sitemap into multiple files - completed
-- **Verify robots.txt**: Ensure it's properly blocking admin/cart/checkout while allowing product pages  - completed
+- **Verify robots.txt**: Ensure it's properly blocking admin/cart/checkout while allowing product pages - completed
 - **Add hreflang tags**: If planning international expansion, add language/region tags
 
 ### 1.3 Content SEO
 
-- **Create blog/content section**: Add blog or resources section for content marketing (referenced in sitemap but may need enhancement) - Done still need to change blog from markdown to wordpress. Add in features for internal linking strategy. 
+- **Create blog/content section**: Add blog or resources section for content marketing (referenced in sitemap but may need enhancement) - Done still need to change blog from markdown to wordpress. Add in features for internal linking strategy.
 - **Product descriptions**: Ensure all products have rich, keyword-optimized descriptions
 - **Image alt text optimization**: Audit all product images for descriptive, keyword-rich alt text
-- **Internal linking strategy**: Add related product links, category cross-links - Come back to later. I want to make this more robust and work well for hitting all products and post. 
+- **Internal linking strategy**: Add related product links, category cross-links - Come back to later. I want to make this more robust and work well for hitting all products and post.
 
 ## Phase 2: Security & Code Quality (High Priority)
 

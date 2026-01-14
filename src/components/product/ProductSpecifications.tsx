@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { WooProduct } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Ruler, Weight, Truck } from 'lucide-react';
+import { WooProduct } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Package, Ruler, Weight, Truck } from "lucide-react";
 
 interface ProductSpecificationsProps {
   product: WooProduct;
@@ -10,11 +10,11 @@ interface ProductSpecificationsProps {
 
 export default function ProductSpecifications({ product }: ProductSpecificationsProps) {
   const hasWeight = product.weight && parseFloat(product.weight) > 0;
-  const hasDimensions = 
+  const hasDimensions =
     product.dimensions &&
     (parseFloat(product.dimensions.length) > 0 ||
-     parseFloat(product.dimensions.width) > 0 ||
-     parseFloat(product.dimensions.height) > 0);
+      parseFloat(product.dimensions.width) > 0 ||
+      parseFloat(product.dimensions.height) > 0);
   const hasShippingInfo = product.shipping_required || product.shipping_class;
 
   // Don't render if there's no relevant information
@@ -22,15 +22,15 @@ export default function ProductSpecifications({ product }: ProductSpecifications
     return null;
   }
 
-  const formatDimension = (value: string, unit: string = 'in') => {
+  const formatDimension = (value: string, unit: string = "in") => {
     const num = parseFloat(value);
-    if (isNaN(num) || num === 0) return 'N/A';
+    if (isNaN(num) || num === 0) return "N/A";
     return `${num} ${unit}`;
   };
 
-  const formatWeight = (value: string, unit: string = 'lbs') => {
+  const formatWeight = (value: string, unit: string = "lbs") => {
     const num = parseFloat(value);
-    if (isNaN(num) || num === 0) return 'N/A';
+    if (isNaN(num) || num === 0) return "N/A";
     return `${num} ${unit}`;
   };
 
@@ -46,9 +46,7 @@ export default function ProductSpecifications({ product }: ProductSpecifications
               <Weight className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <div className="text-sm font-medium text-muted-foreground">Weight</div>
-                <div className="text-base font-semibold">
-                  {formatWeight(product.weight)}
-                </div>
+                <div className="text-base font-semibold">{formatWeight(product.weight)}</div>
               </div>
             </div>
           )}
@@ -59,13 +57,11 @@ export default function ProductSpecifications({ product }: ProductSpecifications
               <div>
                 <div className="text-sm font-medium text-muted-foreground">Dimensions</div>
                 <div className="text-base font-semibold">
-                  {formatDimension(product.dimensions.length)} ×{' '}
-                  {formatDimension(product.dimensions.width)} ×{' '}
+                  {formatDimension(product.dimensions.length)} ×{" "}
+                  {formatDimension(product.dimensions.width)} ×{" "}
                   {formatDimension(product.dimensions.height)}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  (L × W × H)
-                </div>
+                <div className="text-xs text-muted-foreground mt-1">(L × W × H)</div>
               </div>
             </div>
           )}
@@ -75,11 +71,9 @@ export default function ProductSpecifications({ product }: ProductSpecifications
               <div className="flex items-start gap-3">
                 <Truck className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Shipping Required
-                  </div>
+                  <div className="text-sm font-medium text-muted-foreground">Shipping Required</div>
                   <div className="text-base font-semibold">
-                    {product.shipping_required ? 'Yes' : 'No'}
+                    {product.shipping_required ? "Yes" : "No"}
                   </div>
                 </div>
               </div>
@@ -88,12 +82,8 @@ export default function ProductSpecifications({ product }: ProductSpecifications
                 <div className="flex items-start gap-3">
                   <Package className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                      Shipping Class
-                    </div>
-                    <div className="text-base font-semibold">
-                      {product.shipping_class}
-                    </div>
+                    <div className="text-sm font-medium text-muted-foreground">Shipping Class</div>
+                    <div className="text-base font-semibold">{product.shipping_class}</div>
                   </div>
                 </div>
               )}
@@ -106,7 +96,7 @@ export default function ProductSpecifications({ product }: ProductSpecifications
                       Shipping Taxable
                     </div>
                     <div className="text-base font-semibold">
-                      {product.shipping_taxable ? 'Yes' : 'No'}
+                      {product.shipping_taxable ? "Yes" : "No"}
                     </div>
                   </div>
                 </div>
@@ -118,4 +108,3 @@ export default function ProductSpecifications({ product }: ProductSpecifications
     </Card>
   );
 }
-

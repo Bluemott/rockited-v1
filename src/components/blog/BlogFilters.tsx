@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState, useEffect, useCallback } from "react";
+import { Search, Filter } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { BlogPost } from '@/lib/types';
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { BlogPost } from "@/lib/types";
 
 interface BlogFiltersProps {
   posts: BlogPost[];
@@ -25,12 +25,11 @@ interface BlogFiltersProps {
 }
 
 export function BlogFilters({ posts, onFilterChange, categories, tags }: BlogFiltersProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
+  const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
   const [showFilters, setShowFilters] = useState(false);
-
 
   const handleTagToggle = useCallback((tag: string) => {
     setSelectedTags((prev) =>
@@ -54,20 +53,18 @@ export function BlogFilters({ posts, onFilterChange, categories, tags }: BlogFil
     }
 
     // Category filter
-    if (selectedCategory !== 'all') {
+    if (selectedCategory !== "all") {
       filtered = filtered.filter((post) => post.category === selectedCategory);
     }
 
     // Tag filter
     if (selectedTags.length > 0) {
-      filtered = filtered.filter((post) =>
-        post.tags?.some((tag) => selectedTags.includes(tag))
-      );
+      filtered = filtered.filter((post) => post.tags?.some((tag) => selectedTags.includes(tag)));
     }
 
     // Sort
     filtered.sort((a, b) => {
-      if (sortBy === 'newest') {
+      if (sortBy === "newest") {
         return b.publishedAt.getTime() - a.publishedAt.getTime();
       } else {
         return a.publishedAt.getTime() - b.publishedAt.getTime();
@@ -83,16 +80,14 @@ export function BlogFilters({ posts, onFilterChange, categories, tags }: BlogFil
   }, [applyFilters]);
 
   const clearFilters = () => {
-    setSearchQuery('');
-    setSelectedCategory('all');
+    setSearchQuery("");
+    setSelectedCategory("all");
     setSelectedTags([]);
-    setSortBy('newest');
+    setSortBy("newest");
   };
 
   const activeFilterCount =
-    (searchQuery.trim() ? 1 : 0) +
-    (selectedCategory !== 'all' ? 1 : 0) +
-    selectedTags.length;
+    (searchQuery.trim() ? 1 : 0) + (selectedCategory !== "all" ? 1 : 0) + selectedTags.length;
 
   return (
     <Card>
@@ -133,7 +128,7 @@ export function BlogFilters({ posts, onFilterChange, categories, tags }: BlogFil
               )}
             </div>
 
-            <Select value={sortBy} onValueChange={(value: 'newest' | 'oldest') => setSortBy(value)}>
+            <Select value={sortBy} onValueChange={(value: "newest" | "oldest") => setSortBy(value)}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>
@@ -150,10 +145,7 @@ export function BlogFilters({ posts, onFilterChange, categories, tags }: BlogFil
               {/* Category Filter */}
               <div>
                 <Label className="text-sm font-medium mb-2 block">Category</Label>
-                <Select
-                  value={selectedCategory}
-                  onValueChange={setSelectedCategory}
-                >
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -180,10 +172,7 @@ export function BlogFilters({ posts, onFilterChange, categories, tags }: BlogFil
                           checked={selectedTags.includes(tag)}
                           onCheckedChange={() => handleTagToggle(tag)}
                         />
-                        <Label
-                          htmlFor={tag}
-                          className="text-sm font-normal cursor-pointer"
-                        >
+                        <Label htmlFor={tag} className="text-sm font-normal cursor-pointer">
                           {tag}
                         </Label>
                       </div>

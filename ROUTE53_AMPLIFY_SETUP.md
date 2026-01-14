@@ -42,11 +42,13 @@ Amplify will show you domain configuration options:
 After configuring, Amplify will provide DNS records. You'll see something like:
 
 **For apex domain (rockited4d.com):**
+
 - Type: `A` or `ALIAS`
 - Name: `@` or blank
 - Value: Amplify distribution endpoint
 
 **For www subdomain:**
+
 - Type: `CNAME`
 - Name: `www`
 - Value: Amplify domain
@@ -63,10 +65,10 @@ After configuring, Amplify will provide DNS records. You'll see something like:
 #### For Apex Domain (rockited4d.com):
 
 1. **Record name**: Leave blank (or enter `@`)
-2. **Record type**: 
+2. **Record type**:
    - If Amplify provided an A record → Select `A`
    - If Amplify provided an ALIAS → Select `A` and enable **Alias**
-3. **Alias**: 
+3. **Alias**:
    - If using alias → Enable toggle
    - **Alias target**: Select **Alias to CloudFront distribution** or **Alias to another record**
    - Select the Amplify distribution from the dropdown
@@ -90,18 +92,21 @@ After configuring, Amplify will provide DNS records. You'll see something like:
 Wait 5-30 minutes for DNS propagation, then verify:
 
 **Windows (PowerShell):**
+
 ```powershell
 nslookup rockited4d.com
 nslookup www.rockited4d.com
 ```
 
 **Mac/Linux:**
+
 ```bash
 dig rockited4d.com
 dig www.rockited4d.com
 ```
 
 **Expected results:**
+
 - Should resolve to Amplify IP addresses
 - Should not resolve to old IPs (if any)
 
@@ -128,6 +133,7 @@ If you configured both `rockited4d.com` and `www.rockited4d.com`:
 **Problem**: Domain not resolving after 30+ minutes
 
 **Solutions**:
+
 - Verify Route53 records are correct
 - Check TTL values (lower = faster propagation)
 - Clear DNS cache: `ipconfig /flushdns` (Windows) or `sudo dscacheutil -flushcache` (Mac)
@@ -138,6 +144,7 @@ If you configured both `rockited4d.com` and `www.rockited4d.com`:
 **Problem**: SSL certificate not working
 
 **Solutions**:
+
 - Amplify automatically provisions SSL certificates via AWS Certificate Manager
 - Wait 15-30 minutes after domain configuration
 - Verify domain is properly configured in Amplify
@@ -148,6 +155,7 @@ If you configured both `rockited4d.com` and `www.rockited4d.com`:
 **Problem**: "Domain already in use" error
 
 **Solutions**:
+
 - Check if domain is used in another AWS account
 - Verify no other Amplify apps are using this domain
 - Remove domain from other services first

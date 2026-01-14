@@ -1,43 +1,51 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { MotionDiv } from '@/components/ui/motion';
-import { ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { MotionDiv } from "@/components/ui/motion";
+import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const faqItems = [
   {
-    question: 'What is your return policy?',
-    answer: 'We offer a 30-day return policy on all products. Items must be in their original condition with tags attached. Please visit our Returns page for more detailed information.',
+    question: "What is your return policy?",
+    answer:
+      "We offer a 30-day return policy on all products. Items must be in their original condition with tags attached. Please visit our Returns page for more detailed information.",
   },
   {
-    question: 'How long does shipping take?',
-    answer: 'Standard shipping typically takes 5-7 business days. We also offer express shipping (2-3 business days) and overnight delivery where available. Free shipping is available on orders over $50.',
+    question: "How long does shipping take?",
+    answer:
+      "Standard shipping typically takes 5-7 business days. We also offer express shipping (2-3 business days) and overnight delivery where available. Free shipping is available on orders over $50.",
   },
   {
-    question: 'Do you ship internationally?',
-    answer: 'Currently, we ship within the United States. We are working on expanding our shipping options to include international destinations. Please check back soon for updates.',
+    question: "Do you ship internationally?",
+    answer:
+      "Currently, we ship within the United States. We are working on expanding our shipping options to include international destinations. Please check back soon for updates.",
   },
   {
-    question: 'What payment methods do you accept?',
-    answer: 'We accept all major credit cards, debit cards, PayPal, and other secure payment methods. All transactions are processed securely through our payment partners.',
+    question: "What payment methods do you accept?",
+    answer:
+      "We accept all major credit cards, debit cards, PayPal, and other secure payment methods. All transactions are processed securely through our payment partners.",
   },
   {
-    question: 'How can I track my order?',
-    answer: 'Once your order ships, you will receive a tracking number via email. You can use this number to track your package in real-time through our shipping partners.',
+    question: "How can I track my order?",
+    answer:
+      "Once your order ships, you will receive a tracking number via email. You can use this number to track your package in real-time through our shipping partners.",
   },
   {
-    question: 'What if I receive a damaged item?',
-    answer: 'If you receive a damaged item, please contact our customer service team immediately. We will arrange for a replacement or full refund at no cost to you.',
+    question: "What if I receive a damaged item?",
+    answer:
+      "If you receive a damaged item, please contact our customer service team immediately. We will arrange for a replacement or full refund at no cost to you.",
   },
   {
-    question: 'Can I cancel my order?',
-    answer: 'You can cancel your order within 24 hours of placing it, provided it has not yet shipped. Once an order has shipped, you can return it using our standard return process.',
+    question: "Can I cancel my order?",
+    answer:
+      "You can cancel your order within 24 hours of placing it, provided it has not yet shipped. Once an order has shipped, you can return it using our standard return process.",
   },
   {
-    question: 'Do you offer gift wrapping?',
-    answer: 'Yes, we offer gift wrapping services for an additional fee. You can select this option during checkout. Gift messages can also be included.',
+    question: "Do you offer gift wrapping?",
+    answer:
+      "Yes, we offer gift wrapping services for an additional fee. You can select this option during checkout. Gift messages can also be included.",
   },
 ];
 
@@ -46,9 +54,7 @@ export default function FAQPage() {
 
   const toggleItem = (index: number) => {
     setOpenItems((prev) =>
-      prev.includes(index)
-        ? prev.filter((i) => i !== index)
-        : [...prev, index]
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
 
@@ -73,22 +79,18 @@ export default function FAQPage() {
                   className="w-full p-6 text-left flex items-center justify-between hover:bg-accent/50 transition-colors"
                   aria-expanded={openItems.includes(index)}
                 >
-                  <h3 className="text-lg font-semibold text-foreground pr-4">
-                    {item.question}
-                  </h3>
+                  <h3 className="text-lg font-semibold text-foreground pr-4">{item.question}</h3>
                   <ChevronDown
                     className={cn(
-                      'h-5 w-5 text-muted-foreground shrink-0 transition-transform',
-                      openItems.includes(index) && 'rotate-180'
+                      "h-5 w-5 text-muted-foreground shrink-0 transition-transform",
+                      openItems.includes(index) && "rotate-180"
                     )}
                   />
                 </button>
                 <div
                   className={cn(
-                    'overflow-hidden transition-all duration-300',
-                    openItems.includes(index)
-                      ? 'max-h-96 opacity-100'
-                      : 'max-h-0 opacity-0'
+                    "overflow-hidden transition-all duration-300",
+                    openItems.includes(index) ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                   )}
                 >
                   <div className="px-6 pb-6 pt-0">
@@ -105,9 +107,7 @@ export default function FAQPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-foreground mb-2">
-                Still have questions?
-              </h2>
+              <h2 className="text-xl font-semibold text-foreground mb-2">Still have questions?</h2>
               <p className="text-muted-foreground mb-4">
                 Can't find what you're looking for? Our customer service team is here to help.
               </p>
@@ -124,4 +124,3 @@ export default function FAQPage() {
     </div>
   );
 }
-

@@ -1,33 +1,25 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { useState, useMemo } from 'react';
-import { Search, Phone, Mail, ExternalLink, Filter, BookOpen } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { MotionDiv } from '@/components/ui/motion';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import * as React from "react";
+import { useState, useMemo } from "react";
+import { Search, Phone, Mail, ExternalLink, Filter, BookOpen } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { MotionDiv } from "@/components/ui/motion";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   recoveryResources,
   resourceCategories,
   type RecoveryResource,
   type ResourceCategory,
-} from '@/lib/recoveryResources';
-import { BlogCard } from '@/components/blog/BlogCard';
-import { BlogFilters } from '@/components/blog/BlogFilters';
-import { BlogPost } from '@/lib/types';
+} from "@/lib/recoveryResources";
+import { BlogCard } from "@/components/blog/BlogCard";
+import { BlogFilters } from "@/components/blog/BlogFilters";
+import { BlogPost } from "@/lib/types";
 
 interface ResourcesClientProps {
   initialPosts: BlogPost[];
@@ -35,13 +27,9 @@ interface ResourcesClientProps {
   tags: string[];
 }
 
-export default function ResourcesClient({ 
-  initialPosts, 
-  categories, 
-  tags 
-}: ResourcesClientProps) {
-  const [activeTab, setActiveTab] = useState('resources');
-  const [searchQuery, setSearchQuery] = useState('');
+export default function ResourcesClient({ initialPosts, categories, tags }: ResourcesClientProps) {
+  const [activeTab, setActiveTab] = useState("resources");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<ResourceCategory[]>([]);
   const [showFilters, setShowFilters] = React.useState(false);
   const [filteredBlogPosts, setFilteredBlogPosts] = useState<BlogPost[]>(initialPosts);
@@ -63,9 +51,7 @@ export default function ResourcesClient({
 
     // Filter by categories
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter((resource) =>
-        selectedCategories.includes(resource.category)
-      );
+      filtered = filtered.filter((resource) => selectedCategories.includes(resource.category));
     }
 
     return filtered;
@@ -73,14 +59,12 @@ export default function ResourcesClient({
 
   const handleCategoryToggle = (category: ResourceCategory) => {
     setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
+      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
     );
   };
 
   const clearFilters = () => {
-    setSearchQuery('');
+    setSearchQuery("");
     setSelectedCategories([]);
   };
 
@@ -89,9 +73,7 @@ export default function ResourcesClient({
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <MotionDiv variant="fadeInUp" className="mb-8">
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-          Resources & Blog
-        </h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Resources & Blog</h1>
         <p className="text-lg text-muted-foreground">
           Find support groups, treatment centers, helplines, and read recovery-related articles.
         </p>
@@ -151,7 +133,8 @@ export default function ResourcesClient({
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {filteredResources.length} resource{filteredResources.length !== 1 ? 's' : ''} found
+                      {filteredResources.length} resource{filteredResources.length !== 1 ? "s" : ""}{" "}
+                      found
                     </p>
                   </div>
 
@@ -203,11 +186,7 @@ export default function ResourcesClient({
           {filteredResources.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredResources.map((resource, index) => (
-                <MotionDiv
-                  key={resource.id}
-                  variant="fadeInUp"
-                  delay={0.1 + index * 0.05}
-                >
+                <MotionDiv key={resource.id} variant="fadeInUp" delay={0.1 + index * 0.05}>
                   <ResourceCard resource={resource} />
                 </MotionDiv>
               ))}
@@ -242,11 +221,7 @@ export default function ResourcesClient({
           {filteredBlogPosts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredBlogPosts.map((post, index) => (
-                <MotionDiv
-                  key={post.id}
-                  variant="fadeInUp"
-                  delay={0.1 + index * 0.05}
-                >
+                <MotionDiv key={post.id} variant="fadeInUp" delay={0.1 + index * 0.05}>
                   <BlogCard post={post} />
                 </MotionDiv>
               ))}
@@ -275,22 +250,18 @@ function ResourceCard({ resource }: { resource: RecoveryResource }) {
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
       <CardContent className="pt-6 flex-1 flex flex-col">
         <div className="flex items-start justify-between mb-3">
-          <h3 className="text-xl font-semibold text-foreground pr-2">
-            {resource.name}
-          </h3>
+          <h3 className="text-xl font-semibold text-foreground pr-2">{resource.name}</h3>
           <Badge variant="outline" className="shrink-0">
             {resource.category}
           </Badge>
         </div>
 
-        <p className="text-muted-foreground text-sm mb-4 flex-1">
-          {resource.description}
-        </p>
+        <p className="text-muted-foreground text-sm mb-4 flex-1">{resource.description}</p>
 
         <div className="space-y-2 pt-4 border-t">
           {resource.phone && (
             <a
-              href={`tel:${resource.phone.replace(/\D/g, '')}`}
+              href={`tel:${resource.phone.replace(/\D/g, "")}`}
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               <Phone className="h-4 w-4" />

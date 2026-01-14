@@ -1,8 +1,9 @@
-import { WooProduct } from '@/lib/types';
-import ProductCard from './ProductCard';
-import { ProductGridSkeleton } from '@/components/ui/loading';
-import { EmptyState } from '@/components/ui/error';
-import { StaggerContainer, StaggerItem } from '@/components/ui/motion';
+import { WooProduct } from "@/lib/types";
+import ProductCard from "./ProductCard";
+import { ProductGridSkeleton } from "@/components/ui/loading";
+import { EmptyState } from "@/components/ui/error";
+import { StaggerContainer, StaggerItem } from "@/components/ui/motion";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
 interface ProductGridProps {
   products: WooProduct[];
@@ -24,12 +25,14 @@ export default function ProductGrid({ products, loading = false }: ProductGridPr
   }
 
   return (
-    <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch [grid-auto-rows:1fr]">
-      {products.map((product) => (
-        <StaggerItem key={product.id} className="h-full">
-          <ProductCard product={product} />
-        </StaggerItem>
-      ))}
-    </StaggerContainer>
+    <ErrorBoundary>
+      <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch [grid-auto-rows:1fr]">
+        {products.map((product) => (
+          <StaggerItem key={product.id} className="h-full">
+            <ProductCard product={product} />
+          </StaggerItem>
+        ))}
+      </StaggerContainer>
+    </ErrorBoundary>
   );
 }

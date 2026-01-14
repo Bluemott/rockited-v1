@@ -27,9 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${notoSerif.variable} ${montserrat.variable} antialiased`}
-      >
+      <body className={`${notoSerif.variable} ${montserrat.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -39,9 +37,7 @@ export default function RootLayout({
           <StructuredData type="organization" />
           <StructuredData type="website" />
           <GoogleAnalytics />
-          <Layout>
-            {children}
-          </Layout>
+          <Layout>{children}</Layout>
           <CookieConsent />
         </ThemeProvider>
       </body>

@@ -80,7 +80,7 @@ Configure security headers in WordPress `.htaccess` or Apache config:
     Header set X-XSS-Protection "1; mode=block"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
     Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-    
+
     # CORS Headers (for API access from main domain)
     Header set Access-Control-Allow-Origin "https://rockited4d.com"
     Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
@@ -117,11 +117,13 @@ Configure security headers in WordPress `.htaccess` or Apache config:
 ### Lightsail Firewall Rules
 
 **Required Ports:**
+
 - ✅ Port 80 (HTTP) - Open to all (for Let's Encrypt validation)
 - ✅ Port 443 (HTTPS) - Open to all (for API access)
 - ⚠️ Port 22 (SSH) - Restrict to your IP address (recommended)
 
 **Configure in Lightsail:**
+
 1. Go to Lightsail console
 2. Select your instance
 3. Click **Networking** tab
@@ -134,6 +136,7 @@ Configure security headers in WordPress `.htaccess` or Apache config:
 ### Amplify Security
 
 Amplify automatically provides:
+
 - ✅ DDoS protection via AWS Shield
 - ✅ SSL/TLS certificates via ACM
 - ✅ Global CDN with security features
@@ -143,11 +146,13 @@ Amplify automatically provides:
 ### WordPress/Lightsail Rate Limiting
 
 **Option 1: WordPress Plugin**
+
 - Install "Wordfence Security" or "Limit Login Attempts"
 - Configure API rate limits
 - Set limits for WooCommerce REST API
 
 **Option 2: Apache mod_evasive**
+
 ```bash
 # Install mod_evasive
 sudo apt-get install libapache2-mod-evasive
@@ -157,6 +162,7 @@ sudo apt-get install libapache2-mod-evasive
 ```
 
 **Option 3: CloudFront (Future Enhancement)**
+
 - Add CloudFront in front of Lightsail
 - Configure rate limiting at CloudFront level
 - Use AWS WAF for advanced protection
@@ -172,6 +178,7 @@ sudo apt-get install libapache2-mod-evasive
 ### TLS Version
 
 Verify TLS 1.2+ is enabled:
+
 ```bash
 openssl s_client -connect api.rockited4d.com:443 -tls1_2
 ```

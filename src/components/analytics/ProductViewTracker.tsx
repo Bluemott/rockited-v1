@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { WooProduct } from '@/lib/types';
-import { trackProductView } from '@/lib/analytics';
+import { useEffect } from "react";
+import { WooProduct } from "@/lib/types";
+import { trackProductView } from "@/lib/analytics";
 
 interface ProductViewTrackerProps {
   product: WooProduct;
@@ -23,4 +23,3 @@ export default function ProductViewTracker({ product }: ProductViewTrackerProps)
 
   return null;
 }
-

@@ -5,9 +5,11 @@ This guide shows how to configure a redirect from `www.rockited4d.com` to `rocki
 ## The Problem
 
 Amplify's console UI only shows a checkbox for:
+
 - ✅ "Redirect non-www to www" (www.rockited4d.com → rockited4d.com)
 
 But you need:
+
 - ✅ "Redirect www to non-www" (www.rockited4d.com → rockited4d.com)
 
 ## Solution: Manual JSON Configuration
@@ -98,6 +100,7 @@ For a complete setup, you'll want these redirects:
 If Amplify uses a different format in the console, try these variations:
 
 ### Format 1: Simple Redirect
+
 ```
 Source: https://www.rockited4d.com/*
 Target: https://rockited4d.com/*
@@ -105,6 +108,7 @@ Type: 301 Permanent Redirect
 ```
 
 ### Format 2: With Wildcard
+
 ```
 Source: https://www.rockited4d.com/<*>
 Target: https://rockited4d.com/<*>
@@ -112,6 +116,7 @@ Type: 301
 ```
 
 ### Format 3: Path-Specific
+
 ```
 Source: /<*>
 Target: https://rockited4d.com/<*>
@@ -143,16 +148,20 @@ Condition: Host equals www.rockited4d.com
 After configuration, test:
 
 1. **Visit www version:**
+
    ```
    https://www.rockited4d.com
    ```
+
    - Should redirect to `https://rockited4d.com`
    - Check browser address bar shows non-www version
 
 2. **Test with path:**
+
    ```
    https://www.rockited4d.com/products
    ```
+
    - Should redirect to `https://rockited4d.com/products`
    - Path should be preserved
 
@@ -168,6 +177,7 @@ After configuration, test:
 **Problem**: www version doesn't redirect
 
 **Solutions**:
+
 - Wait 5-15 minutes for changes to propagate
 - Clear browser cache
 - Test in incognito/private mode
@@ -179,6 +189,7 @@ After configuration, test:
 **Problem**: Site keeps redirecting
 
 **Solutions**:
+
 - Check for conflicting redirect rules
 - Ensure only one redirect rule for www → non-www
 - Remove duplicate rules
@@ -189,6 +200,7 @@ After configuration, test:
 **Problem**: `/products` redirects to homepage
 
 **Solutions**:
+
 - Ensure wildcard `<*>` is in both source and target
 - Check redirect rule includes path parameter
 - Verify rule format matches Amplify's requirements
@@ -201,12 +213,12 @@ If Amplify redirects don't work, you can also handle this in your Next.js app:
 // src/middleware.ts (add to existing middleware)
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
-  const hostname = request.headers.get('host') || '';
+  const hostname = request.headers.get("host") || "";
 
   // Redirect www to non-www
-  if (hostname.startsWith('www.')) {
+  if (hostname.startsWith("www.")) {
     const newUrl = url.clone();
-    newUrl.hostname = hostname.replace('www.', '');
+    newUrl.hostname = hostname.replace("www.", "");
     return NextResponse.redirect(newUrl, 301);
   }
 

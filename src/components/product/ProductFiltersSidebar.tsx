@@ -1,32 +1,27 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import { Search, X, Filter } from 'lucide-react';
-import { WooCategory } from '@/lib/types';
-import {
-  ProductFilters,
-  defaultFilters,
-  getPriceRange,
-  countActiveFilters,
-} from '@/lib/productFilters';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Slider } from '@/components/ui/slider';
+import { useState, useEffect, useMemo } from "react";
+import { Search, X, Filter } from "lucide-react";
+import type { WooCategory, WooProduct } from "@/lib/types";
+import { ProductFilters, defaultFilters, countActiveFilters } from "@/lib/productFilters";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 interface ProductFiltersSidebarProps {
   categories: WooCategory[];
-  products: any[];
+  products: WooProduct[];
   filters: ProductFilters;
   onFiltersChange: (filters: ProductFilters) => void;
   priceRange: [number, number];
@@ -34,7 +29,7 @@ interface ProductFiltersSidebarProps {
 
 export default function ProductFiltersSidebar({
   categories,
-  products,
+  products: _products,
   filters,
   onFiltersChange,
   priceRange: initialPriceRange,
@@ -87,7 +82,7 @@ export default function ProductFiltersSidebar({
     onFiltersChange(newFilters);
   };
 
-  const handleStockStatusToggle = (status: 'instock' | 'outofstock' | 'onbackorder') => {
+  const handleStockStatusToggle = (status: "instock" | "outofstock" | "onbackorder") => {
     const newStatuses = localFilters.stockStatus.includes(status)
       ? localFilters.stockStatus.filter((s) => s !== status)
       : [...localFilters.stockStatus, status];
@@ -100,7 +95,7 @@ export default function ProductFiltersSidebar({
   const handleSortChange = (value: string) => {
     const newFilters = {
       ...localFilters,
-      sort: value as ProductFilters['sort'],
+      sort: value as ProductFilters["sort"],
     };
     setLocalFilters(newFilters);
     onFiltersChange(newFilters);
@@ -132,12 +127,7 @@ export default function ProductFiltersSidebar({
             )}
           </div>
           {activeFilterCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearFilters}
-              className="h-8 text-xs"
-            >
+            <Button variant="ghost" size="sm" onClick={handleClearFilters} className="h-8 text-xs">
               <X className="h-3 w-3 mr-1" />
               Clear
             </Button>
@@ -149,7 +139,9 @@ export default function ProductFiltersSidebar({
       <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-6">
         {/* Search */}
         <div className="pt-4">
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Search</Label>
+          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Search
+          </Label>
           <div className="relative mt-2">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -165,7 +157,9 @@ export default function ProductFiltersSidebar({
 
         {/* Sort */}
         <div>
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Sort By</Label>
+          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Sort By
+          </Label>
           <div className="mt-2">
             <Select value={localFilters.sort} onValueChange={handleSortChange}>
               <SelectTrigger>
@@ -189,7 +183,9 @@ export default function ProductFiltersSidebar({
         {categories.length > 0 && (
           <>
             <div>
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Categories</Label>
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Categories
+              </Label>
               <div className="space-y-3 mt-2">
                 {categories.map((category) => (
                   <div key={category.id} className="flex items-center space-x-2">
@@ -216,7 +212,9 @@ export default function ProductFiltersSidebar({
         {/* Price Range */}
         <div>
           <div className="flex items-center gap-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Price Range</Label>
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Price Range
+            </Label>
             <span className="text-xs text-muted-foreground">
               ${localFilters.priceRange[0]} - ${localFilters.priceRange[1]}
             </span>
@@ -240,7 +238,10 @@ export default function ProductFiltersSidebar({
                   type="number"
                   value={localFilters.priceRange[0]}
                   onChange={(e) => {
-                    const value = Math.max(minPrice, Math.min(parseInt(e.target.value) || minPrice, localFilters.priceRange[1]));
+                    const value = Math.max(
+                      minPrice,
+                      Math.min(parseInt(e.target.value) || minPrice, localFilters.priceRange[1])
+                    );
                     handlePriceRangeChange([value, localFilters.priceRange[1]]);
                   }}
                   min={minPrice}
@@ -257,7 +258,10 @@ export default function ProductFiltersSidebar({
                   type="number"
                   value={localFilters.priceRange[1]}
                   onChange={(e) => {
-                    const value = Math.min(maxPrice, Math.max(parseInt(e.target.value) || maxPrice, localFilters.priceRange[0]));
+                    const value = Math.min(
+                      maxPrice,
+                      Math.max(parseInt(e.target.value) || maxPrice, localFilters.priceRange[0])
+                    );
                     handlePriceRangeChange([localFilters.priceRange[0], value]);
                   }}
                   min={minPrice}
@@ -273,26 +277,25 @@ export default function ProductFiltersSidebar({
 
         {/* Stock Status */}
         <div>
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Stock Status</Label>
+          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Stock Status
+          </Label>
           <div className="space-y-3 mt-2">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="stock-instock"
-                checked={localFilters.stockStatus.includes('instock')}
-                onCheckedChange={() => handleStockStatusToggle('instock')}
+                checked={localFilters.stockStatus.includes("instock")}
+                onCheckedChange={() => handleStockStatusToggle("instock")}
               />
-              <Label
-                htmlFor="stock-instock"
-                className="text-sm font-normal cursor-pointer flex-1"
-              >
+              <Label htmlFor="stock-instock" className="text-sm font-normal cursor-pointer flex-1">
                 In Stock
               </Label>
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="stock-outofstock"
-                checked={localFilters.stockStatus.includes('outofstock')}
-                onCheckedChange={() => handleStockStatusToggle('outofstock')}
+                checked={localFilters.stockStatus.includes("outofstock")}
+                onCheckedChange={() => handleStockStatusToggle("outofstock")}
               />
               <Label
                 htmlFor="stock-outofstock"
@@ -304,8 +307,8 @@ export default function ProductFiltersSidebar({
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="stock-onbackorder"
-                checked={localFilters.stockStatus.includes('onbackorder')}
-                onCheckedChange={() => handleStockStatusToggle('onbackorder')}
+                checked={localFilters.stockStatus.includes("onbackorder")}
+                onCheckedChange={() => handleStockStatusToggle("onbackorder")}
               />
               <Label
                 htmlFor="stock-onbackorder"
@@ -320,4 +323,3 @@ export default function ProductFiltersSidebar({
     </div>
   );
 }
-

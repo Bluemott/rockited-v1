@@ -1,8 +1,5 @@
-import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { BlogPost } from '@/lib/types';
-import { BlogCard } from './BlogCard';
-import { Card, CardContent } from '@/components/ui/card';
+import { BlogPost } from "@/lib/types";
+import { BlogCard } from "./BlogCard";
 
 interface RelatedPostsProps {
   posts: BlogPost[];

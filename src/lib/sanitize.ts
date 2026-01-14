@@ -7,15 +7,15 @@
  * Removes potentially dangerous HTML/JavaScript while preserving safe content
  */
 export function sanitizeString(input: string): string {
-  if (typeof input !== 'string') {
-    return '';
+  if (typeof input !== "string") {
+    return "";
   }
 
   return input
-    .replace(/[<>]/g, '') // Remove < and > characters
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers (onclick=, onerror=, etc.)
-    .replace(/&#/g, '') // Remove HTML entities that could be used for XSS
+    .replace(/[<>]/g, "") // Remove < and > characters
+    .replace(/javascript:/gi, "") // Remove javascript: protocol
+    .replace(/on\w+=/gi, "") // Remove event handlers (onclick=, onerror=, etc.)
+    .replace(/&#/g, "") // Remove HTML entities that could be used for XSS
     .trim();
 }
 
@@ -24,16 +24,16 @@ export function sanitizeString(input: string): string {
  * Allows basic HTML but removes dangerous elements and attributes
  */
 export function sanitizeHTML(input: string): string {
-  if (typeof input !== 'string') {
-    return '';
+  if (typeof input !== "string") {
+    return "";
   }
 
   return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframe tags
-    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '') // Remove event handlers
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/data:text\/html/gi, '') // Remove data URIs that could contain HTML
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "") // Remove script tags
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "") // Remove iframe tags
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, "") // Remove event handlers
+    .replace(/javascript:/gi, "") // Remove javascript: protocol
+    .replace(/data:text\/html/gi, "") // Remove data URIs that could contain HTML
     .trim();
 }
 
@@ -42,8 +42,8 @@ export function sanitizeHTML(input: string): string {
  * Validates and sanitizes email format
  */
 export function sanitizeEmail(input: string): string {
-  if (typeof input !== 'string') {
-    return '';
+  if (typeof input !== "string") {
+    return "";
   }
 
   // Basic email validation and sanitization
@@ -51,12 +51,12 @@ export function sanitizeEmail(input: string): string {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!emailRegex.test(email)) {
-    throw new Error('Invalid email format');
+    throw new Error("Invalid email format");
   }
 
   // Additional checks for dangerous patterns
-  if (email.includes('<') || email.includes('>') || email.includes('javascript:')) {
-    throw new Error('Email contains invalid characters');
+  if (email.includes("<") || email.includes(">") || email.includes("javascript:")) {
+    throw new Error("Email contains invalid characters");
   }
 
   return email;
@@ -67,22 +67,22 @@ export function sanitizeEmail(input: string): string {
  * Validates and sanitizes URL format
  */
 export function sanitizeURL(input: string): string {
-  if (typeof input !== 'string') {
-    return '';
+  if (typeof input !== "string") {
+    return "";
   }
 
   const url = input.trim();
 
   // Only allow http and https protocols
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    throw new Error('URL must use http:// or https:// protocol');
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    throw new Error("URL must use http:// or https:// protocol");
   }
 
   // Remove dangerous protocols
-  const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:'];
+  const dangerousProtocols = ["javascript:", "data:", "vbscript:", "file:"];
   for (const protocol of dangerousProtocols) {
     if (url.toLowerCase().includes(protocol)) {
-      throw new Error('URL contains dangerous protocol');
+      throw new Error("URL contains dangerous protocol");
     }
   }
 
@@ -90,7 +90,7 @@ export function sanitizeURL(input: string): string {
     const urlObj = new URL(url);
     return urlObj.toString();
   } catch {
-    throw new Error('Invalid URL format');
+    throw new Error("Invalid URL format");
   }
 }
 
@@ -99,10 +99,10 @@ export function sanitizeURL(input: string): string {
  * Validates and sanitizes numeric values
  */
 export function sanitizeNumber(input: unknown, min?: number, max?: number): number {
-  const num = typeof input === 'number' ? input : Number(input);
+  const num = typeof input === "number" ? input : Number(input);
 
   if (isNaN(num)) {
-    throw new Error('Invalid number');
+    throw new Error("Invalid number");
   }
 
   if (min !== undefined && num < min) {
@@ -121,9 +121,9 @@ export function sanitizeNumber(input: unknown, min?: number, max?: number): numb
  */
 export function sanitizeInteger(input: unknown, min?: number, max?: number): number {
   const num = sanitizeNumber(input, min, max);
-  
+
   if (!Number.isInteger(num)) {
-    throw new Error('Value must be an integer');
+    throw new Error("Value must be an integer");
   }
 
   return num;
@@ -137,13 +137,16 @@ export function sanitizeObjectKeys<T extends Record<string, unknown>>(obj: T): T
 
   for (const key in obj) {
     // Prevent prototype pollution
-    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+    if (key === "__proto__" || key === "constructor" || key === "prototype") {
       continue;
     }
 
     // Recursively sanitize nested objects
-    if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
-      sanitized[key] = sanitizeObjectKeys(obj[key] as Record<string, unknown>) as T[Extract<keyof T, string>];
+    if (obj[key] && typeof obj[key] === "object" && !Array.isArray(obj[key])) {
+      sanitized[key] = sanitizeObjectKeys(obj[key] as Record<string, unknown>) as T[Extract<
+        keyof T,
+        string
+      >];
     } else {
       sanitized[key] = obj[key];
     }
@@ -157,11 +160,11 @@ export function sanitizeObjectKeys<T extends Record<string, unknown>>(obj: T): T
  */
 export function sanitizeStringArray(input: unknown[]): string[] {
   if (!Array.isArray(input)) {
-    throw new Error('Input must be an array');
+    throw new Error("Input must be an array");
   }
 
   return input
-    .filter((item) => typeof item === 'string')
+    .filter((item) => typeof item === "string")
     .map((item) => sanitizeString(item as string))
     .filter((item) => item.length > 0);
 }
@@ -182,27 +185,27 @@ export function validateBodySize(body: string, maxSize: number = 1024 * 1024): v
  * Note: This is NOT a replacement for parameterized queries
  */
 export function sanitizeSQLPattern(input: string): string {
-  if (typeof input !== 'string') {
-    return '';
+  if (typeof input !== "string") {
+    return "";
   }
 
   // Remove common SQL injection patterns
-  return input
-    .replace(/('|(\\')|(;)|(\\)|(\/\*)|(\*\/)|(\-\-)|(\+)|(\|)|(\&)|(\%)|(\$)|(\@)|(\!)|(\^)|(\~)|(\`)|(\[)|(\])|(\{)|(\})|(\()|(\))|(\=)|(\>)|(\<)|(\?)|(\:)|(\;)|(\,)|(\/)|(\\)|(\*)|(\")/g, '')
-    .trim();
+  // Escape special regex characters and create pattern
+  const sqlInjectionPattern = /[';\\+\|&%$@!^~`\[\]{}()=><?:;,\/\*"\-]/g;
+  return input.replace(sqlInjectionPattern, "").trim();
 }
 
 /**
  * Sanitize file name to prevent path traversal
  */
 export function sanitizeFileName(input: string): string {
-  if (typeof input !== 'string') {
-    return '';
+  if (typeof input !== "string") {
+    return "";
   }
 
   return input
-    .replace(/[\/\\]/g, '') // Remove path separators
-    .replace(/\.\./g, '') // Remove parent directory references
-    .replace(/[<>:"|?*]/g, '') // Remove invalid filename characters
+    .replace(/[\/\\]/g, "") // Remove path separators
+    .replace(/\.\./g, "") // Remove parent directory references
+    .replace(/[<>:"|?*]/g, "") // Remove invalid filename characters
     .trim();
 }

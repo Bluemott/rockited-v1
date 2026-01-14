@@ -1,11 +1,11 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { MotionDiv } from '@/components/ui/motion';
-import { Home, ShoppingBag } from 'lucide-react';
-import { generateNotFoundMetadata } from '@/lib/seo';
-import GoBackButton from '@/components/ui/GoBackButton';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { MotionDiv } from "@/components/ui/motion";
+import { Home, ShoppingBag } from "lucide-react";
+import { generateNotFoundMetadata } from "@/lib/seo";
+import GoBackButton from "@/components/ui/GoBackButton";
 
 export const metadata: Metadata = generateNotFoundMetadata();
 
@@ -31,8 +31,8 @@ export default function NotFound() {
                   Page Not Found
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto">
-                  The page you're looking for doesn't exist or has been moved. 
-                  Let's get you back on track.
+                  The page you're looking for doesn't exist or has been moved. Let's get you back on
+                  track.
                 </p>
               </MotionDiv>
 
@@ -58,32 +58,18 @@ export default function NotFound() {
               {/* Helpful Links */}
               <MotionDiv variant="fadeInUp" delay={0.4}>
                 <div className="mt-12 pt-8 border-t border-border">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    You might be looking for:
-                  </p>
+                  <p className="text-sm text-muted-foreground mb-4">You might be looking for:</p>
                   <div className="flex flex-wrap gap-4 justify-center">
-                    <Link 
-                      href="/products" 
-                      className="text-sm text-primary hover:underline"
-                    >
+                    <Link href="/products" className="text-sm text-primary hover:underline">
                       All Products
                     </Link>
-                    <Link 
-                      href="/about" 
-                      className="text-sm text-primary hover:underline"
-                    >
+                    <Link href="/about" className="text-sm text-primary hover:underline">
                       About Us
                     </Link>
-                    <Link 
-                      href="/about/contact" 
-                      className="text-sm text-primary hover:underline"
-                    >
+                    <Link href="/about/contact" className="text-sm text-primary hover:underline">
                       Contact
                     </Link>
-                    <Link 
-                      href="/about/faq" 
-                      className="text-sm text-primary hover:underline"
-                    >
+                    <Link href="/about/faq" className="text-sm text-primary hover:underline">
                       FAQ
                     </Link>
                   </div>

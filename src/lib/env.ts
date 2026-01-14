@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Environment variable validation schema
@@ -8,58 +8,58 @@ const envSchema = z.object({
   // WooCommerce Configuration (Required)
   WOOCOMMERCE_URL: z
     .string()
-    .min(1, 'WOOCOMMERCE_URL is required')
+    .min(1, "WOOCOMMERCE_URL is required")
     .refine(
       (url) => {
         // In production, must be HTTPS
-        if (process.env.NODE_ENV === 'production') {
-          return url.startsWith('https://');
+        if (process.env.NODE_ENV === "production") {
+          return url.startsWith("https://");
         }
         // In development, allow HTTP for localhost
-        return url.startsWith('http://') || url.startsWith('https://');
+        return url.startsWith("http://") || url.startsWith("https://");
       },
       {
-        message: 'WOOCOMMERCE_URL must use HTTPS in production',
+        message: "WOOCOMMERCE_URL must use HTTPS in production",
       }
     ),
   WOOCOMMERCE_CONSUMER_KEY: z
     .string()
-    .min(1, 'WOOCOMMERCE_CONSUMER_KEY is required')
-    .startsWith('ck_', 'WOOCOMMERCE_CONSUMER_KEY must start with ck_'),
+    .min(1, "WOOCOMMERCE_CONSUMER_KEY is required")
+    .startsWith("ck_", "WOOCOMMERCE_CONSUMER_KEY must start with ck_"),
   WOOCOMMERCE_CONSUMER_SECRET: z
     .string()
-    .min(1, 'WOOCOMMERCE_CONSUMER_SECRET is required')
-    .startsWith('cs_', 'WOOCOMMERCE_CONSUMER_SECRET must start with cs_'),
+    .min(1, "WOOCOMMERCE_CONSUMER_SECRET is required")
+    .startsWith("cs_", "WOOCOMMERCE_CONSUMER_SECRET must start with cs_"),
 
   // Stripe Configuration (Required)
   STRIPE_SECRET_KEY: z
     .string()
-    .min(1, 'STRIPE_SECRET_KEY is required')
-    .startsWith('sk_', 'STRIPE_SECRET_KEY must start with sk_'),
+    .min(1, "STRIPE_SECRET_KEY is required")
+    .startsWith("sk_", "STRIPE_SECRET_KEY must start with sk_"),
   STRIPE_WEBHOOK_SECRET: z
     .string()
-    .min(1, 'STRIPE_WEBHOOK_SECRET is required')
-    .startsWith('whsec_', 'STRIPE_WEBHOOK_SECRET must start with whsec_'),
+    .min(1, "STRIPE_WEBHOOK_SECRET is required")
+    .startsWith("whsec_", "STRIPE_WEBHOOK_SECRET must start with whsec_"),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z
     .string()
-    .min(1, 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is required')
-    .startsWith('pk_', 'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must start with pk_'),
+    .min(1, "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is required")
+    .startsWith("pk_", "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must start with pk_"),
 
   // Site Configuration (Required)
   NEXT_PUBLIC_SITE_URL: z
     .string()
-    .min(1, 'NEXT_PUBLIC_SITE_URL is required')
+    .min(1, "NEXT_PUBLIC_SITE_URL is required")
     .refine(
       (url) => {
         // In production, must be HTTPS
-        if (process.env.NODE_ENV === 'production') {
-          return url.startsWith('https://');
+        if (process.env.NODE_ENV === "production") {
+          return url.startsWith("https://");
         }
         // In development, allow HTTP for localhost
-        return url.startsWith('http://') || url.startsWith('https://');
+        return url.startsWith("http://") || url.startsWith("https://");
       },
       {
-        message: 'NEXT_PUBLIC_SITE_URL must use HTTPS in production',
+        message: "NEXT_PUBLIC_SITE_URL must use HTTPS in production",
       }
     ),
 
@@ -68,7 +68,7 @@ const envSchema = z.object({
   STRIPE_TAX_ENABLED: z
     .string()
     .optional()
-    .transform((val) => val !== 'false'),
+    .transform((val) => val !== "false"),
   NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
 });
 
@@ -84,8 +84,7 @@ export const env = (() => {
       WOOCOMMERCE_CONSUMER_SECRET: process.env.WOOCOMMERCE_CONSUMER_SECRET,
       STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
       STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
-      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
-        process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
       NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
       STRIPE_LOGO_URL: process.env.STRIPE_LOGO_URL,
       STRIPE_TAX_ENABLED: process.env.STRIPE_TAX_ENABLED,
@@ -93,9 +92,9 @@ export const env = (() => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const missingVars = error.errors
-        .map((err) => `${err.path.join('.')}: ${err.message}`)
-        .join('\n');
+      const missingVars = error.issues
+        .map((err: z.ZodIssue) => `${err.path.join(".")}: ${err.message}`)
+        .join("\n");
       throw new Error(
         `❌ Environment variable validation failed:\n${missingVars}\n\nPlease check your .env.local file.`
       );

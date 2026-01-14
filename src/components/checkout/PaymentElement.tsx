@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useMemo, useState, useEffect } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import { useMemo, useState, useEffect } from "react";
+import { loadStripe } from "@stripe/stripe-js";
 import {
   CheckoutProvider,
   useCheckout,
   PaymentElement,
   ShippingAddressElement,
-} from '@stripe/react-stripe-js/checkout';
-import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { getStripeAppearance } from '@/lib/stripe-appearance';
-import { AlertCircle } from 'lucide-react';
+} from "@stripe/react-stripe-js/checkout";
+import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { getStripeAppearance } from "@/lib/stripe-appearance";
+import { AlertCircle } from "lucide-react";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -22,11 +22,16 @@ interface PaymentElementProps {
   sessionId?: string;
 }
 
-function CheckoutForm({ sessionId, clientSecret }: { sessionId?: string; clientSecret: string }) {
+function CheckoutForm({
+  sessionId,
+  clientSecret: _clientSecret,
+}: {
+  sessionId?: string;
+  clientSecret: string;
+}) {
   const checkoutResult = useCheckout();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [shippingAddress, setShippingAddress] = useState<any>(null);
   const [sessionData, setSessionData] = useState<any>(null);
 
   // Fetch session data to display totals
@@ -40,75 +45,20 @@ function CheckoutForm({ sessionId, clientSecret }: { sessionId?: string; clientS
             setSessionData(data);
           }
         } catch (error) {
-          console.error('Error fetching session data:', error);
+          console.error("Error fetching session data:", error);
         }
       };
       fetchSession();
     }
   }, [sessionId]);
 
-  // Handle shipping address changes
-  const handleShippingAddressChange = async (event: any) => {
-    const address = event.value;
-    setShippingAddress(address);
-
-    if (checkoutResult.type !== 'success' || !sessionId || !address?.complete) {
-      return;
-    }
-
-    const checkout = checkoutResult.checkout;
-
-    try {
-      const addressData = {
-        line1: address.address.line1,
-        line2: address.address.line2 || undefined,
-        city: address.address.city,
-        state: address.address.state,
-        postal_code: address.address.postal_code,
-        country: address.address.country,
-      };
-
-      // Update shipping address on the checkout session
-      await checkout.updateShippingAddress({
-        address: addressData,
-      });
-
-      // Calculate shipping costs via our WooCommerce API
-      const response = await fetch('/api/checkout/shipping', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          checkoutSessionId: sessionId,
-          shippingDetails: {
-            address: addressData,
-          },
-        }),
-      });
-
-      if (response.ok) {
-        // Fetch updates to refresh the checkout session with new shipping costs and tax
-        // The checkout instance will automatically update when shipping address changes
-        // Refresh session data to show updated totals
-        const sessionResponse = await fetch(`/api/checkout/session?session_id=${sessionId}`);
-        if (sessionResponse.ok) {
-          const data = await sessionResponse.json();
-          setSessionData(data);
-        }
-      } else {
-        console.error('Failed to calculate shipping:', await response.text());
-      }
-    } catch (error) {
-      console.error('Error updating shipping address:', error);
-    }
-  };
+  // Note: Shipping address is handled automatically by Stripe's ShippingAddressElement
 
   // Handle payment submission
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (checkoutResult.type !== 'success') {
+    if (checkoutResult.type !== "success") {
       return;
     }
 
@@ -119,48 +69,40 @@ function CheckoutForm({ sessionId, clientSecret }: { sessionId?: string; clientS
 
     try {
       // Confirm the checkout session
-      const returnUrl = sessionId 
+      const returnUrl = sessionId
         ? `${window.location.origin}/checkout?session_id={CHECKOUT_SESSION_ID}`
         : `${window.location.origin}/checkout/success`;
 
-      const { error: confirmError } = await checkout.confirm({
-        return_url: returnUrl,
+      const confirmResult = await checkout.confirm({
+        returnUrl: returnUrl,
       });
 
-      if (confirmError) {
-        setErrorMessage(confirmError.message || 'Payment failed. Please try again.');
+      if (confirmResult && "error" in confirmResult) {
+        setErrorMessage(
+          (confirmResult.error as { message?: string })?.message ||
+            "Payment failed. Please try again."
+        );
         setIsProcessing(false);
       }
       // If successful, checkout.confirm redirects automatically
-    } catch (err: any) {
-      setErrorMessage(err.message || 'An error occurred. Please try again.');
+    } catch (err: unknown) {
+      const errorObj = err as { message?: string };
+      setErrorMessage(errorObj?.message || "An error occurred. Please try again.");
       setIsProcessing(false);
     }
   };
 
   // Display session totals if available
-  const totalAmount = sessionData?.amount_total 
+  const totalAmount = sessionData?.amount_total
     ? (sessionData.amount_total / 100).toFixed(2)
     : null;
-  const currency = sessionData?.currency?.toUpperCase() || 'USD';
+  const currency = sessionData?.currency?.toUpperCase() || "USD";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Shipping Address Element */}
       <div>
-        <ShippingAddressElement
-          options={{
-            fields: {
-              phone: 'always',
-            },
-            validation: {
-              phone: {
-                required: 'never',
-              },
-            },
-          }}
-          onChange={handleShippingAddressChange}
-        />
+        <ShippingAddressElement />
       </div>
 
       {/* Payment Element */}
@@ -174,7 +116,8 @@ function CheckoutForm({ sessionId, clientSecret }: { sessionId?: string; clientS
           <div className="flex justify-between">
             <span className="text-muted-foreground">Subtotal</span>
             <span className="font-medium">
-              {currency} ${((sessionData.amount_subtotal || sessionData.amount_total || 0) / 100).toFixed(2)}
+              {currency} $
+              {((sessionData.amount_subtotal || sessionData.amount_total || 0) / 100).toFixed(2)}
             </span>
           </div>
           {sessionData.total_details?.amount_shipping ? (
@@ -201,7 +144,7 @@ function CheckoutForm({ sessionId, clientSecret }: { sessionId?: string; clientS
           <div className="border-t border-border pt-2 flex justify-between font-semibold">
             <span>Total</span>
             <span>
-              {currency} {totalAmount || 'Calculating...'}
+              {currency} {totalAmount || "Calculating..."}
             </span>
           </div>
         </div>
@@ -218,7 +161,7 @@ function CheckoutForm({ sessionId, clientSecret }: { sessionId?: string; clientS
       {/* Submit Button */}
       <Button
         type="submit"
-        disabled={checkoutResult.type !== 'success' || isProcessing}
+        disabled={checkoutResult.type !== "success" || isProcessing}
         className="w-full"
         size="lg"
       >
@@ -228,7 +171,7 @@ function CheckoutForm({ sessionId, clientSecret }: { sessionId?: string; clientS
             Processing...
           </>
         ) : (
-          `Pay ${totalAmount ? `${currency} ${totalAmount}` : ''}`
+          `Pay ${totalAmount ? `${currency} ${totalAmount}` : ""}`
         )}
       </Button>
     </form>
@@ -245,9 +188,9 @@ export default function PaymentElementComponent({ clientSecret, sessionId }: Pay
   }, []);
 
   // Determine current theme mode
-  const currentTheme = mounted 
-    ? ((resolvedTheme || theme || 'light') as 'light' | 'dark')
-    : 'light';
+  const currentTheme = mounted
+    ? ((resolvedTheme || theme || "light") as "light" | "dark")
+    : "light";
 
   // Get appearance configuration based on current theme
   const appearance = useMemo(() => {

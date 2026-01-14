@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { WooProduct } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Star, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState } from "react";
+import { WooProduct } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Star, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ReviewFormProps {
   product: WooProduct;
@@ -15,14 +15,14 @@ interface ReviewFormProps {
 }
 
 export default function ReviewForm({ product, onReviewSubmitted }: ReviewFormProps) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [rating, setRating] = useState<number>(0);
   const [hoveredRating, setHoveredRating] = useState<number>(0);
-  const [reviewText, setReviewText] = useState('');
+  const [reviewText, setReviewText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -33,32 +33,32 @@ export default function ReviewForm({ product, onReviewSubmitted }: ReviewFormPro
 
     // Validation
     if (!name.trim()) {
-      setErrorMessage('Please enter your name');
-      setSubmitStatus('error');
+      setErrorMessage("Please enter your name");
+      setSubmitStatus("error");
       return;
     }
 
     if (!email.trim() || !validateEmail(email)) {
-      setErrorMessage('Please enter a valid email address');
-      setSubmitStatus('error');
+      setErrorMessage("Please enter a valid email address");
+      setSubmitStatus("error");
       return;
     }
 
     if (rating === 0) {
-      setErrorMessage('Please select a star rating');
-      setSubmitStatus('error');
+      setErrorMessage("Please select a star rating");
+      setSubmitStatus("error");
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitStatus('idle');
-    setErrorMessage('');
+    setSubmitStatus("idle");
+    setErrorMessage("");
 
     try {
       const response = await fetch(`/api/products/${product.id}/reviews`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           reviewer: name.trim(),
@@ -70,15 +70,15 @@ export default function ReviewForm({ product, onReviewSubmitted }: ReviewFormPro
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to submit review');
+        throw new Error(errorData.error || "Failed to submit review");
       }
 
       // Success
-      setSubmitStatus('success');
-      setName('');
-      setEmail('');
+      setSubmitStatus("success");
+      setName("");
+      setEmail("");
       setRating(0);
-      setReviewText('');
+      setReviewText("");
       setHoveredRating(0);
 
       // Callback to refresh reviews
@@ -87,10 +87,11 @@ export default function ReviewForm({ product, onReviewSubmitted }: ReviewFormPro
           onReviewSubmitted();
         }, 1000);
       }
-    } catch (err: any) {
-      console.error('Error submitting review:', err);
-      setErrorMessage(err.message || 'Failed to submit review. Please try again.');
-      setSubmitStatus('error');
+    } catch (err: unknown) {
+      const errorObj = err as { message?: string };
+      console.error("Error submitting review:", err);
+      setErrorMessage(errorObj?.message || "Failed to submit review. Please try again.");
+      setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
     }
@@ -109,13 +110,13 @@ export default function ReviewForm({ product, onReviewSubmitted }: ReviewFormPro
           onMouseEnter={() => setHoveredRating(starValue)}
           onMouseLeave={() => setHoveredRating(0)}
           className="focus:outline-none transition-transform hover:scale-110"
-          aria-label={`Rate ${starValue} star${starValue !== 1 ? 's' : ''}`}
+          aria-label={`Rate ${starValue} star${starValue !== 1 ? "s" : ""}`}
         >
           <Star
             className={`h-6 w-6 ${
               isFilled
-                ? 'fill-yellow-400 text-yellow-400'
-                : 'fill-gray-300 text-gray-300 dark:fill-gray-600 dark:text-gray-600'
+                ? "fill-yellow-400 text-yellow-400"
+                : "fill-gray-300 text-gray-300 dark:fill-gray-600 dark:text-gray-600"
             } transition-colors`}
           />
         </button>
@@ -123,15 +124,15 @@ export default function ReviewForm({ product, onReviewSubmitted }: ReviewFormPro
     });
   };
 
-  if (submitStatus === 'success') {
+  if (submitStatus === "success") {
     return (
       <Card className="mt-6">
         <CardContent className="pt-6">
           <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
             <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
             <AlertDescription className="text-green-800 dark:text-green-200">
-              Thank you for your review! It has been submitted and is pending moderation. 
-              Your review will appear once it has been approved.
+              Thank you for your review! It has been submitted and is pending moderation. Your
+              review will appear once it has been approved.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -187,7 +188,7 @@ export default function ReviewForm({ product, onReviewSubmitted }: ReviewFormPro
               {renderStars()}
               {rating > 0 && (
                 <span className="text-sm text-muted-foreground ml-2">
-                  {rating} star{rating !== 1 ? 's' : ''}
+                  {rating} star{rating !== 1 ? "s" : ""}
                 </span>
               )}
             </div>
@@ -208,7 +209,7 @@ export default function ReviewForm({ product, onReviewSubmitted }: ReviewFormPro
           </div>
 
           {/* Error Message */}
-          {submitStatus === 'error' && errorMessage && (
+          {submitStatus === "error" && errorMessage && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{errorMessage}</AlertDescription>
@@ -216,18 +217,14 @@ export default function ReviewForm({ product, onReviewSubmitted }: ReviewFormPro
           )}
 
           {/* Submit Button */}
-          <Button
-            type="submit"
-            disabled={isSubmitting || rating === 0}
-            className="w-full"
-          >
+          <Button type="submit" disabled={isSubmitting || rating === 0} className="w-full">
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Submitting...
               </>
             ) : (
-              'Submit Review'
+              "Submit Review"
             )}
           </Button>
 

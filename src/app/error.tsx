@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { MotionDiv } from '@/components/ui/motion';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Home, ShoppingBag, RefreshCw, AlertCircle } from 'lucide-react';
+import { useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { MotionDiv } from "@/components/ui/motion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Home, ShoppingBag, RefreshCw, AlertCircle } from "lucide-react";
 
 // Note: Error boundaries in Next.js must be client components and cannot export metadata.
 // The generateErrorMetadata() function is available in @/lib/seo.ts and can be used
@@ -20,7 +20,7 @@ interface ErrorProps {
 export default function Error({ error, reset }: ErrorProps) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error('Application error:', error);
+    console.error("Application error:", error);
   }, [error]);
 
   return (
@@ -44,13 +44,13 @@ export default function Error({ error, reset }: ErrorProps) {
                   Something Went Wrong
                 </h1>
                 <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto">
-                  We encountered an unexpected error. Don't worry, our team has been notified 
-                  and we're working to fix it.
+                  We encountered an unexpected error. Don't worry, our team has been notified and
+                  we're working to fix it.
                 </p>
               </MotionDiv>
 
               {/* Error Details (only in development) */}
-              {process.env.NODE_ENV === 'development' && error.message && (
+              {process.env.NODE_ENV === "development" && error.message && (
                 <MotionDiv variant="fadeInUp" delay={0.25}>
                   <Alert variant="destructive" className="mb-8 text-left">
                     <AlertCircle className="h-4 w-4" />
@@ -97,20 +97,14 @@ export default function Error({ error, reset }: ErrorProps) {
                     Need help? Check out these resources:
                   </p>
                   <div className="flex flex-wrap gap-4 justify-center">
-                    <Link 
-                      href="/about/faq" 
-                      className="text-sm text-primary hover:underline"
-                    >
+                    <Link href="/about/faq" className="text-sm text-primary hover:underline">
                       FAQ
                     </Link>
-                    <Link 
-                      href="/about/contact" 
-                      className="text-sm text-primary hover:underline"
-                    >
+                    <Link href="/about/contact" className="text-sm text-primary hover:underline">
                       Contact Support
                     </Link>
-                    <Link 
-                      href="/about/customer-service" 
+                    <Link
+                      href="/about/customer-service"
                       className="text-sm text-primary hover:underline"
                     >
                       Customer Service

@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { ShoppingCart, Menu, X } from 'lucide-react';
-import { useCartStore } from '@/lib/store';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Separator } from '@/components/ui/separator';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { useTheme } from 'next-themes';
+import * as React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { ShoppingCart, Menu } from "lucide-react";
+import { useCartStore } from "@/lib/store";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useTheme } from "next-themes";
 
 export default function Header() {
   const { itemCount } = useCartStore();
@@ -24,22 +24,18 @@ export default function Header() {
   }, []);
 
   // Determine which logo to use based on theme
-  const isDarkMode = mounted && (theme === 'dark' || resolvedTheme === 'dark');
-  const logoSource = isDarkMode 
-    ? '/Rockited_Logo_For_Dark_BKGRND.png'
-    : '/Rock_it_ed_Comp.png';
+  const isDarkMode = mounted && (theme === "dark" || resolvedTheme === "dark");
+  const logoSource = isDarkMode ? "/Rockited_Logo_For_Dark_BKGRND.png" : "/Rock_it_ed_Comp.png";
 
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Products', href: '/products' },
-    { name: 'About', href: '/about' },
-    { name: 'Resources', href: '/resources' },
+    { name: "Home", href: "/" },
+    { name: "Products", href: "/products" },
+    { name: "About", href: "/about" },
+    { name: "Resources", href: "/resources" },
   ];
 
   return (
-    <header 
-      className="sticky top-0 z-50 w-full border-b bg-card"
-    >
+    <header className="sticky top-0 z-50 w-full border-b bg-card">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -72,14 +68,14 @@ export default function Header() {
           <div className="flex items-center space-x-2">
             {/* Theme Toggle */}
             <ThemeToggle />
-            
+
             {/* Cart */}
             <Button variant="ghost" size="sm" asChild className="relative">
               <Link href="/cart">
                 <ShoppingCart className="h-5 w-5" />
                 {itemCount > 0 && (
-                  <Badge 
-                    variant="destructive" 
+                  <Badge
+                    variant="destructive"
                     className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
                   >
                     {itemCount}
@@ -108,9 +104,7 @@ export default function Header() {
                       asChild
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Link href={item.href}>
-                        {item.name}
-                      </Link>
+                      <Link href={item.href}>{item.name}</Link>
                     </Button>
                   ))}
                   <Separator />

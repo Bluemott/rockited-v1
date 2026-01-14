@@ -7,6 +7,7 @@
 **See `SSL_SETUP_GUIDE_SUBDOMAIN.md` for subdomain setup instructions.**
 
 Common subdomain options:
+
 - `api.rockited4d.com` - Recommended for API endpoints
 - `shop.rockited4d.com` - Good for e-commerce backend
 - `store.rockited4d.com` - Alternative option
@@ -16,6 +17,7 @@ Common subdomain options:
 ## Prerequisites (For Main Domain Setup)
 
 Before starting, ensure you have:
+
 - ✅ Static IP attached to your Lightsail instance
 - ✅ DNS records pointing `rockited4d.com` and `www.rockited4d.com` to the static IP
 - ✅ Snapshot of your WordPress instance (backup)
@@ -33,15 +35,18 @@ Before starting, ensure you have:
 ### Step 2: Check if bncert Tool is Installed
 
 Run the following command:
+
 ```bash
 sudo /opt/bitnami/bncert-tool
 ```
 
 **If the tool is installed:**
+
 - You'll see the bncert configuration menu
 - Skip to Step 3
 
 **If you see "command not found":**
+
 - The tool needs to be installed
 - Run: `sudo /opt/bitnami/installer`
 - Then run: `sudo /opt/bitnami/bncert-tool` again
@@ -61,6 +66,7 @@ sudo /opt/bitnami/bncert-tool
 ### Step 4: Configure Redirects
 
 When prompted:
+
 - **HTTP to HTTPS redirect**: Select "Yes" to automatically redirect all HTTP traffic to HTTPS
 - **WWW redirect**: Choose your preference:
   - Redirect www to non-www (`www.rockited4d.com` → `rockited4d.com`)
@@ -80,22 +86,25 @@ The bncert tool automatically renews certificates every 80 days. No manual actio
 ## Troubleshooting
 
 **Certificate validation fails:**
+
 - Ensure DNS records are correctly pointing to your static IP
 - Wait a few minutes for DNS propagation
 - Verify the domain is accessible via HTTP before requesting HTTPS
 
 **Tool not found:**
+
 - Some older WordPress instances may not have bncert pre-installed
 - Install it using: `sudo /opt/bitnami/installer`
 
 **Need to update domains later:**
+
 - Run `sudo /opt/bitnami/bncert-tool` again
 - Select the option to update domain configuration
 
 ## After SSL Setup
 
 Once SSL is configured:
+
 1. Update `WOOCOMMERCE_URL` in `.env.local` to `https://rockited4d.com`
 2. Update `NEXT_PUBLIC_SITE_URL` to use HTTPS
 3. Update `next.config.ts` to allow HTTPS images from the domain
-

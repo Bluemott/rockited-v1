@@ -1,8 +1,8 @@
-import type { Metadata } from 'next';
-import { Card, CardContent } from '@/components/ui/card';
-import { MotionDiv } from '@/components/ui/motion';
-import { Truck, Clock, Package, MapPin } from 'lucide-react';
-import { generateShippingMetadata } from '@/lib/seo';
+import type { Metadata } from "next";
+import { Card, CardContent } from "@/components/ui/card";
+import { MotionDiv } from "@/components/ui/motion";
+import { Truck, Clock, Package, MapPin } from "lucide-react";
+import { generateShippingMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = generateShippingMetadata();
 
@@ -12,9 +12,7 @@ export default function ShippingPage() {
       <MotionDiv variant="fadeInUp" className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
           <Truck className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-            Shipping Information
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground">Shipping Information</h1>
         </div>
         <p className="text-lg text-muted-foreground">
           Learn about our shipping options, delivery times, and tracking information.
@@ -26,9 +24,7 @@ export default function ShippingPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <h2 className="text-2xl font-semibold text-foreground mb-4">
-                  Shipping Options
-                </h2>
+                <h2 className="text-2xl font-semibold text-foreground mb-4">Shipping Options</h2>
                 <p className="text-muted-foreground mb-4">
                   We offer multiple shipping options to meet your needs:
                 </p>
@@ -36,33 +32,40 @@ export default function ShippingPage() {
                   <div className="flex items-start space-x-4">
                     <Package className="h-6 w-6 text-primary mt-1 shrink-0" />
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground mb-1">Standard Shipping</h3>
+                      <h3 className="text-lg font-semibold text-foreground mb-1">
+                        Standard Shipping
+                      </h3>
                       <p className="text-muted-foreground mb-2">5-7 business days</p>
                       <p className="text-sm text-muted-foreground">
-                        Our standard shipping option provides reliable delivery within 5-7 business days. 
-                        Perfect for non-urgent orders.
+                        Our standard shipping option provides reliable delivery within 5-7 business
+                        days. Perfect for non-urgent orders.
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-4">
                     <Clock className="h-6 w-6 text-primary mt-1 shrink-0" />
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground mb-1">Express Shipping</h3>
+                      <h3 className="text-lg font-semibold text-foreground mb-1">
+                        Express Shipping
+                      </h3>
                       <p className="text-muted-foreground mb-2">2-3 business days</p>
                       <p className="text-sm text-muted-foreground">
-                        Need your order faster? Express shipping delivers your package within 2-3 business 
-                        days. Additional fees apply.
+                        Need your order faster? Express shipping delivers your package within 2-3
+                        business days. Additional fees apply.
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-4">
                     <Truck className="h-6 w-6 text-primary mt-1 shrink-0" />
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground mb-1">Overnight Delivery</h3>
+                      <h3 className="text-lg font-semibold text-foreground mb-1">
+                        Overnight Delivery
+                      </h3>
                       <p className="text-muted-foreground mb-2">Next business day</p>
                       <p className="text-sm text-muted-foreground">
-                        For urgent orders, we offer overnight delivery (where available). Orders placed 
-                        before 2 PM EST will arrive the next business day. Additional fees apply.
+                        For urgent orders, we offer overnight delivery (where available). Orders
+                        placed before 2 PM EST will arrive the next business day. Additional fees
+                        apply.
                       </p>
                     </div>
                   </div>
@@ -80,11 +83,9 @@ export default function ShippingPage() {
                   <Package className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-semibold text-foreground mb-2">
-                    Free Shipping
-                  </h2>
+                  <h2 className="text-2xl font-semibold text-foreground mb-2">Free Shipping</h2>
                   <p className="text-muted-foreground">
-                    Enjoy free standard shipping on all orders over $50. No coupon code needed - 
+                    Enjoy free standard shipping on all orders over $50. No coupon code needed -
                     free shipping is automatically applied at checkout for qualifying orders.
                   </p>
                 </div>
@@ -97,17 +98,27 @@ export default function ShippingPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <h2 className="text-2xl font-semibold text-foreground mb-4">
-                  Order Processing
-                </h2>
+                <h2 className="text-2xl font-semibold text-foreground mb-4">Order Processing</h2>
                 <p className="text-muted-foreground mb-4">
                   Once you place an order, here's what happens:
                 </p>
                 <ol className="text-muted-foreground space-y-3 list-decimal list-inside">
-                  <li><strong className="text-foreground">Order Confirmation:</strong> You'll receive an email confirmation immediately after placing your order.</li>
-                  <li><strong className="text-foreground">Processing:</strong> We typically process orders within 1-2 business days.</li>
-                  <li><strong className="text-foreground">Shipping Notification:</strong> Once your order ships, you'll receive an email with tracking information.</li>
-                  <li><strong className="text-foreground">Delivery:</strong> Your package will arrive according to the shipping method you selected.</li>
+                  <li>
+                    <strong className="text-foreground">Order Confirmation:</strong> You'll receive
+                    an email confirmation immediately after placing your order.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Processing:</strong> We typically process
+                    orders within 1-2 business days.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Shipping Notification:</strong> Once your
+                    order ships, you'll receive an email with tracking information.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Delivery:</strong> Your package will arrive
+                    according to the shipping method you selected.
+                  </li>
                 </ol>
               </div>
             </CardContent>
@@ -118,11 +129,9 @@ export default function ShippingPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <h2 className="text-2xl font-semibold text-foreground mb-4">
-                  Tracking Your Order
-                </h2>
+                <h2 className="text-2xl font-semibold text-foreground mb-4">Tracking Your Order</h2>
                 <p className="text-muted-foreground mb-4">
-                  All orders include real-time tracking so you can monitor your package every step 
+                  All orders include real-time tracking so you can monitor your package every step
                   of the way. Once your order ships, you'll receive:
                 </p>
                 <ul className="text-muted-foreground space-y-2 list-disc list-inside">
@@ -132,7 +141,7 @@ export default function ShippingPage() {
                   <li>Delivery confirmation</li>
                 </ul>
                 <p className="text-muted-foreground mt-4">
-                  You can track your order using the tracking number provided in your shipping 
+                  You can track your order using the tracking number provided in your shipping
                   confirmation email, or by logging into your account.
                 </p>
               </div>
@@ -150,12 +159,12 @@ export default function ShippingPage() {
                     Shipping Locations
                   </h2>
                   <p className="text-muted-foreground mb-2">
-                    We currently ship to addresses within the United States. We work with trusted 
+                    We currently ship to addresses within the United States. We work with trusted
                     carriers to ensure safe and timely delivery to all locations.
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Note: Shipping times may vary based on your location. Remote or rural areas 
-                    may experience slightly longer delivery times.
+                    Note: Shipping times may vary based on your location. Remote or rural areas may
+                    experience slightly longer delivery times.
                   </p>
                 </div>
               </div>
@@ -167,9 +176,7 @@ export default function ShippingPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <h2 className="text-2xl font-semibold text-foreground mb-4">
-                  Delivery Issues
-                </h2>
+                <h2 className="text-2xl font-semibold text-foreground mb-4">Delivery Issues</h2>
                 <p className="text-muted-foreground mb-4">
                   If you experience any issues with delivery, such as:
                 </p>
@@ -180,8 +187,8 @@ export default function ShippingPage() {
                   <li>Missing items from your order</li>
                 </ul>
                 <p className="text-muted-foreground">
-                  Please contact our customer service team immediately. We'll work with you and 
-                  the shipping carrier to resolve the issue as quickly as possible.
+                  Please contact our customer service team immediately. We'll work with you and the
+                  shipping carrier to resolve the issue as quickly as possible.
                 </p>
               </div>
             </CardContent>
@@ -212,4 +219,3 @@ export default function ShippingPage() {
     </div>
   );
 }
-

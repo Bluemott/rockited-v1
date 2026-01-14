@@ -1,12 +1,13 @@
-import { MetadataRoute } from 'next';
-import { getProducts, getCategories } from '@/lib/woocommerce';
-import { getAllPosts } from '@/lib/blog';
+import { MetadataRoute } from "next";
+import { getProducts, getCategories } from "@/lib/woocommerce";
+import { getAllPosts } from "@/lib/blog";
+import type { WooProduct, WooCategory } from "@/lib/types";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rockited4d.com';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rockited4d.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Fetch all products with pagination (needed for lastModified dates)
-  let allProducts: any[] = [];
+  let allProducts: WooProduct[] = [];
   let page = 1;
   let hasMore = true;
   let mostRecentProductDate: Date | null = null;
@@ -16,7 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const products = await getProducts({
         per_page: 100,
         page,
-        status: 'publish',
+        status: "publish",
       });
 
       if (products.length === 0) {
@@ -24,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       } else {
         allProducts = [...allProducts, ...products];
         // Track most recent product modification date
-        products.forEach((product: any) => {
+        products.forEach((product: WooProduct) => {
           if (product.date_modified) {
             const modDate = new Date(product.date_modified);
             if (!mostRecentProductDate || modDate > mostRecentProductDate) {
@@ -39,7 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     // Fetch all categories
-    let allCategories: any[] = [];
+    let allCategories: WooCategory[] = [];
     try {
       let categoryPage = 1;
       let categoryHasMore = true;
@@ -57,39 +58,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
       }
     } catch (error) {
-      console.error('Error fetching categories for sitemap:', error);
+      console.error("Error fetching categories for sitemap:", error);
       // Continue without categories if fetch fails
     }
 
     // Generate product pages
     const productPages: MetadataRoute.Sitemap = allProducts.map((product) => ({
       url: `${siteUrl}/products/${product.slug}`,
-      lastModified: product.date_modified 
-        ? new Date(product.date_modified)
-        : new Date(),
-      changeFrequency: 'weekly' as const,
+      lastModified: product.date_modified ? new Date(product.date_modified) : new Date(),
+      changeFrequency: "weekly" as const,
       priority: 0.8,
     }));
 
     // Generate category pages
     // For category lastModified, use the most recent product modification date in that category
     const categoryPages: MetadataRoute.Sitemap = allCategories
-      .filter((cat: any) => cat.count > 0) // Only include categories with products
-      .map((category: any) => {
+      .filter((cat: WooCategory & { count?: number }) => (cat.count ?? 0) > 0) // Only include categories with products
+      .map((category: WooCategory) => {
         // Find most recent product modification date in this category
-        const categoryProducts = allProducts.filter((product: any) =>
-          product.categories?.some((cat: any) => cat.id === category.id)
+        const categoryProducts = allProducts.filter((product: WooProduct) =>
+          product.categories?.some((cat) => cat.id === category.id)
         );
         let categoryLastModified = new Date();
         if (categoryProducts.length > 0) {
-          const mostRecentProduct = categoryProducts.reduce((latest: any, product: any) => {
-            if (!product.date_modified) return latest;
-            const productDate = new Date(product.date_modified);
-            if (!latest || productDate > new Date(latest.date_modified || 0)) {
-              return product;
-            }
-            return latest;
-          }, null);
+          const mostRecentProduct = categoryProducts.reduce(
+            (latest: WooProduct | null, product: WooProduct) => {
+              if (!product.date_modified) return latest;
+              const productDate = new Date(product.date_modified);
+              if (!latest || productDate > new Date(latest.date_modified || 0)) {
+                return product;
+              }
+              return latest;
+            },
+            null
+          );
           if (mostRecentProduct?.date_modified) {
             categoryLastModified = new Date(mostRecentProduct.date_modified);
           }
@@ -97,7 +99,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         return {
           url: `${siteUrl}/products/category/${category.slug}`,
           lastModified: categoryLastModified,
-          changeFrequency: 'weekly' as const,
+          changeFrequency: "weekly" as const,
           priority: 0.7,
         };
       });
@@ -107,25 +109,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       {
         url: siteUrl,
         lastModified: new Date(), // Homepage changes frequently, current date is appropriate
-        changeFrequency: 'daily',
+        changeFrequency: "daily",
         priority: 1,
       },
       {
         url: `${siteUrl}/products`,
         lastModified: mostRecentProductDate || new Date(), // Use most recent product modification date
-        changeFrequency: 'daily',
+        changeFrequency: "daily",
         priority: 0.9,
       },
       {
         url: `${siteUrl}/resources`,
         lastModified: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago (weekly frequency)
-        changeFrequency: 'weekly',
+        changeFrequency: "weekly",
         priority: 0.8,
       },
       {
         url: `${siteUrl}/about`,
         lastModified: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // 3 months ago (monthly frequency)
-        changeFrequency: 'monthly',
+        changeFrequency: "monthly",
         priority: 0.7,
       },
     ];
@@ -137,41 +139,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       blogPages = blogPosts.map((post) => ({
         url: `${siteUrl}/resources/blog/${post.slug}`,
         lastModified: post.updatedAt || post.publishedAt,
-        changeFrequency: 'monthly' as const,
+        changeFrequency: "monthly" as const,
         priority: 0.7,
       }));
     } catch (error) {
-      console.error('Error fetching blog posts for sitemap:', error);
+      console.error("Error fetching blog posts for sitemap:", error);
       // Continue without blog posts if fetch fails
     }
 
     return [...staticPages, ...categoryPages, ...productPages, ...blogPages];
   } catch (error) {
-    console.error('Error generating sitemap:', error);
+    console.error("Error generating sitemap:", error);
     // Return at least static pages if product fetch fails
     const fallbackStaticPages: MetadataRoute.Sitemap = [
       {
         url: siteUrl,
         lastModified: new Date(),
-        changeFrequency: 'daily',
+        changeFrequency: "daily",
         priority: 1,
       },
       {
         url: `${siteUrl}/products`,
         lastModified: new Date(),
-        changeFrequency: 'daily',
+        changeFrequency: "daily",
         priority: 0.9,
       },
       {
         url: `${siteUrl}/resources`,
         lastModified: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        changeFrequency: 'weekly',
+        changeFrequency: "weekly",
         priority: 0.8,
       },
       {
         url: `${siteUrl}/about`,
         lastModified: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-        changeFrequency: 'monthly',
+        changeFrequency: "monthly",
         priority: 0.7,
       },
     ];
@@ -182,7 +184,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       blogPages = blogPosts.map((post) => ({
         url: `${siteUrl}/resources/blog/${post.slug}`,
         lastModified: post.updatedAt || post.publishedAt,
-        changeFrequency: 'monthly' as const,
+        changeFrequency: "monthly" as const,
         priority: 0.7,
       }));
     } catch (error) {
@@ -192,4 +194,3 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [...fallbackStaticPages, ...blogPages];
   }
 }
-

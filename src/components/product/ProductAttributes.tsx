@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { WooProduct, WooAttribute } from '@/lib/types';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from "react";
+import { WooProduct, WooAttribute } from "@/lib/types";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface ProductAttributesProps {
   product: WooProduct;
@@ -19,7 +25,7 @@ export default function ProductAttributes({ product, onAttributeChange }: Produc
   useEffect(() => {
     if (product.default_attributes && product.default_attributes.length > 0) {
       const defaults: Record<string, string> = {};
-      product.default_attributes.forEach((attr: any) => {
+      product.default_attributes.forEach((attr: { id?: number; option?: string }) => {
         if (attr.id && attr.option) {
           defaults[attr.id.toString()] = attr.option;
         }
@@ -59,7 +65,7 @@ export default function ProductAttributes({ product, onAttributeChange }: Produc
       <CardContent className="space-y-4">
         {displayAttributes.map((attribute: WooAttribute) => {
           const attributeId = attribute.id.toString();
-          const selectedValue = selectedAttributes[attributeId] || '';
+          const selectedValue = selectedAttributes[attributeId] || "";
 
           return (
             <div key={attribute.id} className="space-y-2">
@@ -93,4 +99,3 @@ export default function ProductAttributes({ product, onAttributeChange }: Produc
     </Card>
   );
 }
-

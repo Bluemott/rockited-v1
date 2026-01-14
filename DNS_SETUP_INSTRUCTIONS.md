@@ -13,6 +13,7 @@ Since `rockited4d.com` is already configured with Route 53 for your main website
 Recommended: **`api.rockited4d.com`**
 
 Other options:
+
 - `shop.rockited4d.com`
 - `store.rockited4d.com`
 - `wp.rockited4d.com`
@@ -25,6 +26,7 @@ Other options:
 4. Click **Create record**
 
 5. Configure the record:
+
    ```
    Record name: api
    Record type: A
@@ -40,11 +42,13 @@ Other options:
 Wait 5-10 minutes, then verify:
 
 **Windows (PowerShell):**
+
 ```powershell
 nslookup api.rockited4d.com
 ```
 
 **Mac/Linux:**
+
 ```bash
 dig api.rockited4d.com
 # or
@@ -52,6 +56,7 @@ nslookup api.rockited4d.com
 ```
 
 **Expected output:**
+
 ```
 Name:    api.rockited4d.com
 Address: 52.23.226.128
@@ -60,6 +65,7 @@ Address: 52.23.226.128
 ### Step 4: Test HTTP Access
 
 Once DNS propagates, test in your browser:
+
 - `http://api.rockited4d.com` should load your WordPress site
 
 ### Step 5: Request SSL Certificate
@@ -73,11 +79,13 @@ After DNS is working, follow `SSL_SETUP_GUIDE_SUBDOMAIN.md` to request SSL certi
 **Wait longer**: DNS propagation can take 5-30 minutes (up to 48 hours in rare cases)
 
 **Check Route 53**:
+
 - Verify the record was created
 - Check the IP address is correct
 - Ensure you're in the correct hosted zone
 
 **Clear DNS Cache**:
+
 - Windows: `ipconfig /flushdns`
 - Mac: `sudo dscacheutil -flushcache`
 - Linux: `sudo systemd-resolve --flush-caches`
@@ -97,4 +105,3 @@ After DNS is working, follow `SSL_SETUP_GUIDE_SUBDOMAIN.md` to request SSL certi
    WOOCOMMERCE_URL=https://api.rockited4d.com
    ```
 3. Update `next.config.ts` (already done in code)
-

@@ -5,16 +5,19 @@ This document summarizes what has been implemented and what manual steps remain.
 ## ✅ Completed (Automated/Code Changes)
 
 ### 1. Environment Variables Updated
+
 - ✅ `.env.local` updated with HTTPS URLs:
   - `WOOCOMMERCE_URL=https://api.rockited4d.com`
   - `NEXT_PUBLIC_SITE_URL=https://rockited4d.com`
 
 ### 2. Configuration Files Verified
+
 - ✅ `next.config.ts` - Already configured for `api.rockited4d.com` image patterns
 - ✅ `src/lib/env.ts` - HTTPS validation in place
 - ✅ `src/middleware.ts` - Security headers already implemented
 
 ### 3. Documentation Created
+
 - ✅ `AWS_INFRASTRUCTURE_SETUP_GUIDE.md` - Complete setup guide
 - ✅ `ROUTE53_AMPLIFY_SETUP.md` - Route53 to Amplify configuration
 - ✅ `AMPLIFY_ENV_VARS.md` - Environment variable setup for Amplify
@@ -28,6 +31,7 @@ This document summarizes what has been implemented and what manual steps remain.
 ### Phase 1: SSL Certificate Setup (15-20 minutes)
 
 **Action Required:**
+
 1. SSH into Lightsail instance
 2. Run: `sudo /opt/bitnami/bncert-tool`
 3. Enter: `api.rockited4d.com`
@@ -39,6 +43,7 @@ This document summarizes what has been implemented and what manual steps remain.
 ### Phase 2: Route53 DNS Configuration (10-15 minutes)
 
 **Action Required:**
+
 1. In AWS Amplify Console:
    - App settings → Domain management
    - Add domain: `rockited4d.com`
@@ -54,6 +59,7 @@ This document summarizes what has been implemented and what manual steps remain.
 ### Phase 3: Amplify Environment Variables (5 minutes)
 
 **Action Required:**
+
 1. In AWS Amplify Console:
    - App settings → Environment variables
    - Add/Update:
@@ -66,7 +72,9 @@ This document summarizes what has been implemented and what manual steps remain.
 ### Phase 4: Testing & Validation (15-30 minutes)
 
 **Action Required:**
+
 1. Test DNS propagation:
+
    ```powershell
    nslookup api.rockited4d.com
    nslookup rockited4d.com
@@ -86,6 +94,7 @@ This document summarizes what has been implemented and what manual steps remain.
 ### Phase 5: Security Configuration (Optional, 10-15 minutes)
 
 **Action Required:**
+
 1. Configure CORS in WordPress:
    - Install "CORS Headers" plugin OR
    - Add CORS headers to `.htaccess`

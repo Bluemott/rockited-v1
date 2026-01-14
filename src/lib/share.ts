@@ -2,7 +2,14 @@
  * Share utility functions for social media platforms
  */
 
-export type SharePlatform = 'pinterest' | 'facebook' | 'twitter' | 'linkedin' | 'whatsapp' | 'email' | 'copy';
+export type SharePlatform =
+  | "pinterest"
+  | "facebook"
+  | "twitter"
+  | "linkedin"
+  | "whatsapp"
+  | "email"
+  | "copy";
 
 export interface ShareData {
   url: string;
@@ -19,11 +26,11 @@ export function getPinterestShareUrl(data: ShareData): string {
     url: data.url,
     description: data.description || data.title,
   });
-  
+
   if (data.image) {
-    params.append('media', data.image);
+    params.append("media", data.image);
   }
-  
+
   return `https://pinterest.com/pin/create/button/?${params.toString()}`;
 }
 
@@ -64,7 +71,7 @@ export function getLinkedInShareUrl(data: ShareData): string {
  * Generate WhatsApp share URL
  */
 export function getWhatsAppShareUrl(data: ShareData): string {
-  const text = data.description 
+  const text = data.description
     ? `${data.title}\n\n${data.description}\n\n${data.url}`
     : `${data.title}\n\n${data.url}`;
   const params = new URLSearchParams({
@@ -94,18 +101,18 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       return true;
     } else {
       // Fallback for older browsers
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = text;
-      textArea.style.position = 'fixed';
-      textArea.style.opacity = '0';
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
       document.body.appendChild(textArea);
       textArea.select();
-      const success = document.execCommand('copy');
+      const success = document.execCommand("copy");
       document.body.removeChild(textArea);
       return success;
     }
   } catch (error) {
-    console.error('Failed to copy to clipboard:', error);
+    console.error("Failed to copy to clipboard:", error);
     return false;
   }
 }
@@ -115,19 +122,19 @@ export async function copyToClipboard(text: string): Promise<boolean> {
  */
 export function getShareUrl(platform: SharePlatform, data: ShareData): string | null {
   switch (platform) {
-    case 'pinterest':
+    case "pinterest":
       return getPinterestShareUrl(data);
-    case 'facebook':
+    case "facebook":
       return getFacebookShareUrl(data);
-    case 'twitter':
+    case "twitter":
       return getTwitterShareUrl(data);
-    case 'linkedin':
+    case "linkedin":
       return getLinkedInShareUrl(data);
-    case 'whatsapp':
+    case "whatsapp":
       return getWhatsAppShareUrl(data);
-    case 'email':
+    case "email":
       return getEmailShareUrl(data);
-    case 'copy':
+    case "copy":
       return null; // Copy is handled separately
     default:
       return null;
@@ -138,14 +145,13 @@ export function getShareUrl(platform: SharePlatform, data: ShareData): string | 
  * Open share dialog for a platform
  */
 export async function shareOnPlatform(platform: SharePlatform, data: ShareData): Promise<void> {
-  if (platform === 'copy') {
+  if (platform === "copy") {
     await copyToClipboard(data.url);
     return;
   }
-  
+
   const shareUrl = getShareUrl(platform, data);
   if (shareUrl) {
-    window.open(shareUrl, '_blank', 'width=600,height=400,scrollbars=yes,resizable=yes');
+    window.open(shareUrl, "_blank", "width=600,height=400,scrollbars=yes,resizable=yes");
   }
 }
-

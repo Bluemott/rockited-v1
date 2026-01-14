@@ -5,6 +5,7 @@
 Since your main website (`rockited4d.com`) is already configured with Route 53 and has SSL, you need to use a **subdomain** for your WordPress/WooCommerce API server on Lightsail.
 
 **Recommended subdomain options:**
+
 - `api.rockited4d.com` - Common for API endpoints
 - `shop.rockited4d.com` - Good for e-commerce backend
 - `store.rockited4d.com` - Alternative for store backend
@@ -50,6 +51,7 @@ You can also test in a browser: `http://api.rockited4d.com` should load your Wor
 ### Step 4: Request SSL Certificate for Subdomain
 
 1. Run the bncert tool:
+
    ```bash
    sudo /opt/bitnami/bncert-tool
    ```
@@ -67,6 +69,7 @@ You can also test in a browser: `http://api.rockited4d.com` should load your Wor
 ### Step 5: Configure Redirects
 
 When prompted:
+
 - **HTTP to HTTPS redirect**: Select "Yes"
 - **WWW redirect**: Not needed for subdomain, select "No" or skip
 
@@ -99,6 +102,7 @@ Also update `next.config.ts` to allow images from the subdomain.
 **Problem**: `nslookup api.rockited4d.com` doesn't return your IP
 
 **Solutions**:
+
 - Wait longer for DNS propagation (can take up to 48 hours, usually 5-30 minutes)
 - Verify Route 53 record was created correctly
 - Check if you're using the correct hosted zone
@@ -109,6 +113,7 @@ Also update `next.config.ts` to allow images from the subdomain.
 **Problem**: Let's Encrypt can't validate the domain
 
 **Solutions**:
+
 - Ensure DNS record points to Lightsail static IP
 - Verify the subdomain is accessible via HTTP: `http://api.rockited4d.com`
 - Wait for DNS propagation (check with `nslookup`)
@@ -119,6 +124,7 @@ Also update `next.config.ts` to allow images from the subdomain.
 **Problem**: `command not found` when running bncert
 
 **Solution**:
+
 ```bash
 sudo /opt/bitnami/installer
 ```
@@ -128,6 +134,7 @@ Then run bncert again.
 ## Alternative: Using IP Address with Self-Signed Certificate
 
 If you can't use a subdomain, you can use the IP address directly, but this requires:
+
 - Self-signed certificate (browsers will show warnings)
 - Or using a service like Cloudflare in front of Lightsail
 
@@ -136,8 +143,8 @@ If you can't use a subdomain, you can use the IP address directly, but this requ
 ## Next Steps
 
 After SSL is configured:
+
 1. Update `WOOCOMMERCE_URL` in `.env.local` to use HTTPS subdomain
 2. Update `next.config.ts` to allow images from subdomain
 3. Test WooCommerce API calls over HTTPS
 4. Verify Stripe webhooks can reach your server (requires HTTPS)
-

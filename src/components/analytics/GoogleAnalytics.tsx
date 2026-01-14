@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Script from 'next/script';
-import { usePathname } from 'next/navigation';
-import { trackPageView } from '@/lib/analytics';
-import { hasAnalyticsConsent } from '@/lib/cookies';
+import { useEffect, useState } from "react";
+import Script from "next/script";
+import { usePathname } from "next/navigation";
+import { trackPageView } from "@/lib/analytics";
+import { hasAnalyticsConsent } from "@/lib/cookies";
 
 export default function GoogleAnalytics() {
   const pathname = usePathname();
@@ -16,12 +16,12 @@ export default function GoogleAnalytics() {
     const checkConsent = () => {
       setConsentGiven(hasAnalyticsConsent());
     };
-    
+
     checkConsent();
-    
+
     // Listen for consent changes (e.g., when user accepts/declines)
     const interval = setInterval(checkConsent, 1000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -60,4 +60,3 @@ export default function GoogleAnalytics() {
     </>
   );
 }
-

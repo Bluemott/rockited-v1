@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
-import { createWooCommerceOrder, findOrderByStripeSessionId } from '@/lib/orders';
-import type Stripe from 'stripe';
+import { NextRequest, NextResponse } from "next/server";
+import { stripe } from "@/lib/stripe";
+import { createWooCommerceOrder, findOrderByStripeSessionId } from "@/lib/orders";
+import type Stripe from "stripe";
+import type { WebhookApiResponse, ErrorApiResponse } from "@/lib/types";
 
 // Disable body parsing, we need the raw body for signature verification
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 
 // Get raw body for signature verification
 async function getRawBody(request: NextRequest): Promise<Buffer> {
@@ -13,7 +14,7 @@ async function getRawBody(request: NextRequest): Promise<Buffer> {
     const text = await request.text();
     return Buffer.from(text);
   } catch (error) {
-    throw new Error('Failed to read request body');
+    throw new Error("Failed to read request body");
   }
 }
 
@@ -26,45 +27,44 @@ function verifyWebhookSignature(
   secret: string
 ): Stripe.Event {
   if (!signature) {
-    throw new Error('Missing Stripe-Signature header');
+    throw new Error("Missing Stripe-Signature header");
   }
 
   try {
-    const event = stripe.webhooks.constructEvent(
-      payload,
-      signature,
-      secret
-    );
+    const event = stripe.webhooks.constructEvent(payload, signature, secret);
     return event;
-  } catch (error: any) {
-    console.error('Webhook signature verification failed:', error.message);
-    throw new Error(`Webhook signature verification failed: ${error.message}`);
+  } catch (error: unknown) {
+    const errorObj = error as { message?: string };
+    console.error("Webhook signature verification failed:", errorObj.message);
+    throw new Error(
+      `Webhook signature verification failed: ${errorObj.message || "Unknown error"}`
+    );
   }
 }
 
 /**
  * Handle checkout.session.completed event
  */
-async function handleCheckoutSessionCompleted(
-  session: Stripe.Checkout.Session
-): Promise<void> {
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session): Promise<void> {
   try {
     // Check if order already exists (idempotency)
     const existingOrder = await findOrderByStripeSessionId(session.id);
-    
+
     if (existingOrder) {
       console.log(`Order already exists for session ${session.id}: ${existingOrder.id}`);
       return;
     }
 
     // Only create order if payment is successful
-    if (session.payment_status === 'paid') {
+    if (session.payment_status === "paid") {
       const order = await createWooCommerceOrder(session);
       console.log(`✅ Order created successfully: ${order.id} for session ${session.id}`);
     } else {
-      console.log(`⚠️ Payment not completed for session ${session.id}. Status: ${session.payment_status}`);
+      console.log(
+        `⚠️ Payment not completed for session ${session.id}. Status: ${session.payment_status}`
+      );
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error handling checkout.session.completed for session ${session.id}:`, error);
     // Don't throw - we've already returned 200, log for manual review
     throw error; // Re-throw to trigger retry mechanism
@@ -74,13 +74,11 @@ async function handleCheckoutSessionCompleted(
 /**
  * Handle async payment succeeded event
  */
-async function handleAsyncPaymentSucceeded(
-  session: Stripe.Checkout.Session
-): Promise<void> {
+async function handleAsyncPaymentSucceeded(session: Stripe.Checkout.Session): Promise<void> {
   try {
     // Check if order exists
     const existingOrder = await findOrderByStripeSessionId(session.id);
-    
+
     if (!existingOrder) {
       // Create order if it doesn't exist
       await handleCheckoutSessionCompleted(session);
@@ -89,7 +87,7 @@ async function handleAsyncPaymentSucceeded(
       console.log(`Async payment succeeded for session ${session.id}, order ${existingOrder.id}`);
       // You could update the order status here if needed
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error handling async payment succeeded for session ${session.id}:`, error);
     throw error;
   }
@@ -98,14 +96,12 @@ async function handleAsyncPaymentSucceeded(
 /**
  * Handle async payment failed event
  */
-async function handleAsyncPaymentFailed(
-  session: Stripe.Checkout.Session
-): Promise<void> {
+async function handleAsyncPaymentFailed(session: Stripe.Checkout.Session): Promise<void> {
   try {
     console.log(`⚠️ Async payment failed for session ${session.id}`);
     // You could update order status to failed or pending here
     // For now, just log the event
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error handling async payment failed for session ${session.id}:`, error);
   }
 }
@@ -113,22 +109,19 @@ async function handleAsyncPaymentFailed(
 /**
  * Main webhook handler
  */
-import { env } from '@/lib/env';
+import { env } from "@/lib/env";
 
 export async function POST(request: NextRequest) {
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    console.error('STRIPE_WEBHOOK_SECRET is not set');
-    return NextResponse.json(
-      { error: 'Webhook secret not configured' },
-      { status: 500 }
-    );
+    console.error("STRIPE_WEBHOOK_SECRET is not set");
+    return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
   }
 
   try {
     // Get the signature from headers
-    const signature = request.headers.get('stripe-signature');
+    const signature = request.headers.get("stripe-signature");
 
     // Get raw body for signature verification
     const rawBody = await getRawBody(request);
@@ -137,24 +130,21 @@ export async function POST(request: NextRequest) {
     let event: Stripe.Event;
     try {
       event = verifyWebhookSignature(rawBody, signature, webhookSecret);
-    } catch (error: any) {
-      console.error('Webhook signature verification failed:', error);
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 400 }
-      );
+    } catch (error: unknown) {
+      console.error("Webhook signature verification failed:", error);
+      const errorResponse: ErrorApiResponse = {
+        error: "Invalid signature",
+      };
+      return NextResponse.json(errorResponse, { status: 400 });
     }
 
     // Check for replay attacks (timestamp validation)
     const eventAge = Date.now() / 1000 - event.created;
     const fiveMinutes = 5 * 60;
-    
+
     if (eventAge > fiveMinutes) {
       console.warn(`⚠️ Event ${event.id} is too old (${eventAge}s), possible replay attack`);
-      return NextResponse.json(
-        { error: 'Event too old' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Event too old" }, { status: 400 });
     }
 
     // Log the event for debugging
@@ -162,7 +152,8 @@ export async function POST(request: NextRequest) {
 
     // Handle the event based on type
     // Return 200 quickly, then process asynchronously
-    const response = NextResponse.json({ received: true });
+    const webhookResponse: WebhookApiResponse = { received: true };
+    const response = NextResponse.json(webhookResponse);
 
     // Process event asynchronously (don't await)
     processEventAsync(event).catch((error) => {
@@ -170,12 +161,12 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (error: any) {
-    console.error('Webhook error:', error);
-    return NextResponse.json(
-      { error: 'Webhook processing failed' },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    console.error("Webhook error:", error);
+    const errorResponse: ErrorApiResponse = {
+      error: "Webhook processing failed",
+    };
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 }
 
@@ -185,19 +176,19 @@ export async function POST(request: NextRequest) {
 async function processEventAsync(event: Stripe.Event): Promise<void> {
   try {
     switch (event.type) {
-      case 'checkout.session.completed': {
+      case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         await handleCheckoutSessionCompleted(session);
         break;
       }
 
-      case 'checkout.session.async_payment_succeeded': {
+      case "checkout.session.async_payment_succeeded": {
         const session = event.data.object as Stripe.Checkout.Session;
         await handleAsyncPaymentSucceeded(session);
         break;
       }
 
-      case 'checkout.session.async_payment_failed': {
+      case "checkout.session.async_payment_failed": {
         const session = event.data.object as Stripe.Checkout.Session;
         await handleAsyncPaymentFailed(session);
         break;
@@ -206,10 +197,9 @@ async function processEventAsync(event: Stripe.Event): Promise<void> {
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error processing event ${event.type}:`, error);
     // Re-throw to allow Stripe to retry
     throw error;
   }
 }
-

@@ -1,14 +1,14 @@
-import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
-import { getCategoryBySlug, getProducts } from '@/lib/woocommerce';
-import { WooCategory } from '@/lib/types';
-import ProductGrid from '@/components/product/ProductGrid';
-import StructuredData from '@/components/seo/StructuredData';
-import { generateCategoryMetadata, getSiteConfig } from '@/lib/seo';
-import { generateCategoryBreadcrumbs } from '@/lib/seoUtils';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getCategoryBySlug, getProducts } from "@/lib/woocommerce";
+import type { WooProduct } from "@/lib/types";
+import ProductGrid from "@/components/product/ProductGrid";
+import StructuredData from "@/components/seo/StructuredData";
+import { generateCategoryMetadata, getSiteConfig } from "@/lib/seo";
+import { generateCategoryBreadcrumbs } from "@/lib/seoUtils";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export const revalidate = 3600; // Revalidate every hour
 
@@ -21,13 +21,13 @@ interface CategoryPageProps {
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const category = await getCategoryBySlug(resolvedParams.slug);
-  
+
   if (!category) {
     return {
-      title: 'Category Not Found',
+      title: "Category Not Found",
     };
   }
-  
+
   return generateCategoryMetadata(category);
 }
 
@@ -40,7 +40,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   }
 
   // Fetch all products in this category
-  let allProducts: any[] = [];
+  let allProducts: WooProduct[] = [];
   let page = 1;
   let hasMore = true;
 
@@ -49,7 +49,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       const products = await getProducts({
         per_page: 100,
         page,
-        status: 'publish',
+        status: "publish",
         category: category.id,
       });
 
@@ -62,7 +62,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       }
     }
   } catch (error) {
-    console.error('Error fetching category products:', error);
+    console.error("Error fetching category products:", error);
     allProducts = [];
   }
 
@@ -81,9 +81,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             </Button>
           </Link>
           <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {category.name}
-            </h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{category.name}</h1>
             <p className="text-lg text-muted-foreground">
               Browse our collection of {category.name.toLowerCase()} products.
             </p>
@@ -93,8 +91,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         <div className="mb-4">
           <p className="text-sm text-muted-foreground">
             {allProducts.length === 0
-              ? 'No products found in this category.'
-              : `Showing ${allProducts.length} product${allProducts.length !== 1 ? 's' : ''}`}
+              ? "No products found in this category."
+              : `Showing ${allProducts.length} product${allProducts.length !== 1 ? "s" : ""}`}
           </p>
         </div>
 

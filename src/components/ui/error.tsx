@@ -9,11 +9,11 @@ interface ErrorStateProps {
   retryLabel?: string;
 }
 
-export function ErrorState({ 
-  title = "Something went wrong", 
+export function ErrorState({
+  title = "Something went wrong",
   description = "An unexpected error occurred. Please try again.",
   onRetry,
-  retryLabel = "Try again"
+  retryLabel = "Try again",
 }: ErrorStateProps) {
   return (
     <Alert variant="destructive" className="max-w-md mx-auto">
@@ -22,12 +22,7 @@ export function ErrorState({
       <AlertDescription className="mt-2">
         {description}
         {onRetry && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRetry}
-            className="mt-3 w-full"
-          >
+          <Button variant="outline" size="sm" onClick={onRetry} className="mt-3 w-full">
             <RefreshCw className="mr-2 h-4 w-4" />
             {retryLabel}
           </Button>
@@ -70,11 +65,7 @@ export function EmptyState({ title, description, action }: EmptyStateProps) {
         </div>
         <h3 className="text-lg font-medium text-foreground mb-2">{title}</h3>
         <p className="text-muted-foreground mb-6">{description}</p>
-        {action && (
-          <Button onClick={action.onClick}>
-            {action.label}
-          </Button>
-        )}
+        {action && <Button onClick={action.onClick}>{action.label}</Button>}
       </div>
     </div>
   );
@@ -106,9 +97,7 @@ export function NotFound() {
         <p className="text-muted-foreground mb-6">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <Button onClick={() => window.history.back()}>
-          Go back
-        </Button>
+        <Button onClick={() => window.history.back()}>Go back</Button>
       </div>
     </div>
   );

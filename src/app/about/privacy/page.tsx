@@ -1,8 +1,8 @@
-import type { Metadata } from 'next';
-import { Card, CardContent } from '@/components/ui/card';
-import { MotionDiv } from '@/components/ui/motion';
-import { Shield } from 'lucide-react';
-import { generatePrivacyMetadata } from '@/lib/seo';
+import type { Metadata } from "next";
+import { Card, CardContent } from "@/components/ui/card";
+import { MotionDiv } from "@/components/ui/motion";
+import { Shield } from "lucide-react";
+import { generatePrivacyMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = generatePrivacyMetadata();
 
@@ -12,12 +12,15 @@ export default function PrivacyPage() {
       <MotionDiv variant="fadeInUp" className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
           <Shield className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-            Privacy Policy
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground">Privacy Policy</h1>
         </div>
         <p className="text-lg text-muted-foreground">
-          Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+          Last updated:{" "}
+          {new Date().toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
         </p>
       </MotionDiv>
 
@@ -26,17 +29,15 @@ export default function PrivacyPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <h2 className="text-2xl font-semibold text-foreground mb-4">
-                  Introduction
-                </h2>
+                <h2 className="text-2xl font-semibold text-foreground mb-4">Introduction</h2>
                 <p className="text-muted-foreground mb-4">
-                  At ROCK IT ED, we are committed to protecting your privacy. This Privacy Policy 
-                  explains how we collect, use, disclose, and safeguard your information when you 
+                  At ROCK IT ED, we are committed to protecting your privacy. This Privacy Policy
+                  explains how we collect, use, disclose, and safeguard your information when you
                   visit our website and use our services.
                 </p>
                 <p className="text-muted-foreground">
-                  Please read this privacy policy carefully. If you do not agree with the terms 
-                  of this privacy policy, please do not access or use our services.
+                  Please read this privacy policy carefully. If you do not agree with the terms of
+                  this privacy policy, please do not access or use our services.
                 </p>
               </div>
             </CardContent>
@@ -50,9 +51,7 @@ export default function PrivacyPage() {
                 <h2 className="text-2xl font-semibold text-foreground mb-4">
                   Information We Collect
                 </h2>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  Personal Information
-                </h3>
+                <h3 className="text-xl font-semibold text-foreground mb-2">Personal Information</h3>
                 <p className="text-muted-foreground mb-4">
                   We may collect personal information that you voluntarily provide to us when you:
                 </p>
@@ -64,8 +63,9 @@ export default function PrivacyPage() {
                   <li>Participate in surveys or promotions</li>
                 </ul>
                 <p className="text-muted-foreground">
-                  This information may include your name, email address, phone number, shipping 
-                  address, billing address, payment information, and other details you choose to provide.
+                  This information may include your name, email address, phone number, shipping
+                  address, billing address, payment information, and other details you choose to
+                  provide.
                 </p>
               </div>
             </CardContent>
@@ -79,9 +79,7 @@ export default function PrivacyPage() {
                 <h2 className="text-2xl font-semibold text-foreground mb-4">
                   How We Use Your Information
                 </h2>
-                <p className="text-muted-foreground mb-4">
-                  We use the information we collect to:
-                </p>
+                <p className="text-muted-foreground mb-4">We use the information we collect to:</p>
                 <ul className="text-muted-foreground space-y-2 list-disc list-inside">
                   <li>Process and fulfill your orders</li>
                   <li>Send you order confirmations and updates</li>
@@ -100,14 +98,15 @@ export default function PrivacyPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <h2 className="text-2xl font-semibold text-foreground mb-4">
-                  Information Sharing
-                </h2>
+                <h2 className="text-2xl font-semibold text-foreground mb-4">Information Sharing</h2>
                 <p className="text-muted-foreground mb-4">
                   We do not sell your personal information. We may share your information with:
                 </p>
                 <ul className="text-muted-foreground space-y-2 list-disc list-inside">
-                  <li>Service providers who assist us in operating our website and conducting our business</li>
+                  <li>
+                    Service providers who assist us in operating our website and conducting our
+                    business
+                  </li>
                   <li>Payment processors to handle transactions</li>
                   <li>Shipping companies to deliver your orders</li>
                   <li>Legal authorities when required by law</li>
@@ -121,13 +120,11 @@ export default function PrivacyPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <h2 className="text-2xl font-semibold text-foreground mb-4">
-                  Data Security
-                </h2>
+                <h2 className="text-2xl font-semibold text-foreground mb-4">Data Security</h2>
                 <p className="text-muted-foreground">
-                  We implement appropriate technical and organizational security measures to protect 
-                  your personal information. However, no method of transmission over the internet 
-                  or electronic storage is 100% secure, and we cannot guarantee absolute security.
+                  We implement appropriate technical and organizational security measures to protect
+                  your personal information. However, no method of transmission over the internet or
+                  electronic storage is 100% secure, and we cannot guarantee absolute security.
                 </p>
               </div>
             </CardContent>
@@ -138,12 +135,8 @@ export default function PrivacyPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <h2 className="text-2xl font-semibold text-foreground mb-4">
-                  Your Rights
-                </h2>
-                <p className="text-muted-foreground mb-4">
-                  You have the right to:
-                </p>
+                <h2 className="text-2xl font-semibold text-foreground mb-4">Your Rights</h2>
+                <p className="text-muted-foreground mb-4">You have the right to:</p>
                 <ul className="text-muted-foreground space-y-2 list-disc list-inside">
                   <li>Access your personal information</li>
                   <li>Correct inaccurate information</li>
@@ -167,9 +160,9 @@ export default function PrivacyPage() {
                   Cookies and Tracking
                 </h2>
                 <p className="text-muted-foreground">
-                  We use cookies and similar tracking technologies to track activity on our website 
-                  and store certain information. You can instruct your browser to refuse all cookies 
-                  or to indicate when a cookie is being sent. However, if you do not accept cookies, 
+                  We use cookies and similar tracking technologies to track activity on our website
+                  and store certain information. You can instruct your browser to refuse all cookies
+                  or to indicate when a cookie is being sent. However, if you do not accept cookies,
                   you may not be able to use some portions of our website.
                 </p>
               </div>
@@ -185,9 +178,10 @@ export default function PrivacyPage() {
                   Changes to This Policy
                 </h2>
                 <p className="text-muted-foreground">
-                  We may update this Privacy Policy from time to time. We will notify you of any 
-                  changes by posting the new Privacy Policy on this page and updating the "Last updated" 
-                  date. You are advised to review this Privacy Policy periodically for any changes.
+                  We may update this Privacy Policy from time to time. We will notify you of any
+                  changes by posting the new Privacy Policy on this page and updating the "Last
+                  updated" date. You are advised to review this Privacy Policy periodically for any
+                  changes.
                 </p>
               </div>
             </CardContent>
@@ -218,4 +212,3 @@ export default function PrivacyPage() {
     </div>
   );
 }
-

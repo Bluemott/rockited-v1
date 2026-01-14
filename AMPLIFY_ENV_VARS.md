@@ -53,19 +53,23 @@ For each variable:
 Add these variables one by one:
 
 **WooCommerce:**
+
 - `WOOCOMMERCE_URL` = `https://api.rockited4d.com`
 - `WOOCOMMERCE_CONSUMER_KEY` = (your key from `.env.local`)
 - `WOOCOMMERCE_CONSUMER_SECRET` = (your secret from `.env.local`)
 
 **Stripe:**
+
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` = (your publishable key)
 - `STRIPE_SECRET_KEY` = (your secret key)
 - `STRIPE_WEBHOOK_SECRET` = (your webhook secret)
 
 **Site:**
+
 - `NEXT_PUBLIC_SITE_URL` = `https://rockited4d.com`
 
 **Optional:**
+
 - `STRIPE_LOGO_URL` = `/Rockited_Logo_For_Dark_BKGRND.png`
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` = (if using Google Analytics)
 
@@ -79,6 +83,7 @@ If you have multiple branches (dev, staging, production):
    - Or set it for specific branches
 
 **Example:**
+
 - Production branch: `WOOCOMMERCE_URL=https://api.rockited4d.com`
 - Development branch: `WOOCOMMERCE_URL=http://localhost:3000` (if needed)
 
@@ -124,6 +129,7 @@ After deployment:
 **Problem**: Environment variables not accessible in app
 
 **Solutions**:
+
 - Ensure variable names match exactly (case-sensitive)
 - Restart/redeploy Amplify app
 - Check build logs for errors
@@ -134,6 +140,7 @@ After deployment:
 **Problem**: Build fails with environment variable errors
 
 **Solutions**:
+
 - Check `src/lib/env.ts` validation
 - Ensure all required variables are set
 - Verify variable formats (URLs, keys, etc.)
@@ -144,6 +151,7 @@ After deployment:
 **Problem**: API calls failing in production
 
 **Solutions**:
+
 - Verify `WOOCOMMERCE_URL` is HTTPS
 - Check CORS configuration on WordPress
 - Verify WooCommerce credentials are correct
@@ -169,6 +177,7 @@ After deployment:
 ## Quick Reference
 
 **Minimum Required Variables:**
+
 ```env
 WOOCOMMERCE_URL=https://api.rockited4d.com
 WOOCOMMERCE_CONSUMER_KEY=ck_xxx
@@ -180,6 +189,7 @@ NEXT_PUBLIC_SITE_URL=https://rockited4d.com
 ```
 
 **Copy from `.env.local`:**
+
 - Copy all values from your local `.env.local` file
 - Update URLs to use HTTPS
 - Ensure production Stripe keys (if using live mode)

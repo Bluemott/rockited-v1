@@ -23,7 +23,11 @@ export interface WooProduct {
   total_sales: number;
   virtual: boolean;
   downloadable: boolean;
-  downloads: any[];
+  downloads: Array<{
+    id: string;
+    name: string;
+    file: string;
+  }>;
   download_limit: number;
   download_expiry: number;
   external_url: string;
@@ -32,7 +36,7 @@ export interface WooProduct {
   tax_class: string;
   manage_stock: boolean;
   stock_quantity: number | null;
-  stock_status: 'instock' | 'outofstock' | 'onbackorder';
+  stock_status: "instock" | "outofstock" | "onbackorder";
   backorders: string;
   backorders_allowed: boolean;
   backordered: boolean;
@@ -59,7 +63,11 @@ export interface WooProduct {
   tags: WooTag[];
   images: WooImage[];
   attributes: WooAttribute[];
-  default_attributes: any[];
+  default_attributes: Array<{
+    id: number;
+    name: string;
+    option: string;
+  }>;
   variations: number[];
   grouped_products: number[];
   menu_order: number;
@@ -110,16 +118,16 @@ export interface WooReview {
   product_id: number;
   product_name: string;
   product_permalink: string;
-  status: 'approved' | 'hold' | 'spam' | 'unspam' | 'trash' | 'untrash';
+  status: "approved" | "hold" | "spam" | "unspam" | "trash" | "untrash";
   reviewer: string;
   reviewer_email: string;
   review: string;
   rating: number;
   verified: boolean;
   reviewer_avatar_urls: {
-    '24': string;
-    '48': string;
-    '96': string;
+    "24": string;
+    "48": string;
+    "96": string;
   };
 }
 
@@ -130,7 +138,7 @@ export interface ReviewSubmission {
   reviewer_email: string;
   review: string;
   rating: number; // 1-5
-  status: 'hold'; // Always start as pending moderation
+  status: "hold"; // Always start as pending moderation
 }
 
 // Product Variation Types
@@ -151,14 +159,18 @@ export interface WooVariation {
   purchasable: boolean;
   virtual: boolean;
   downloadable: boolean;
-  downloads: any[];
+  downloads: Array<{
+    id: string;
+    name: string;
+    file: string;
+  }>;
   download_limit: number;
   download_expiry: number;
   tax_status: string;
   tax_class: string;
   manage_stock: boolean;
   stock_quantity: number | null;
-  stock_status: 'instock' | 'outofstock' | 'onbackorder';
+  stock_status: "instock" | "outofstock" | "onbackorder";
   backorders: string;
   backorders_allowed: boolean;
   backordered: boolean;
@@ -187,7 +199,7 @@ export interface WooShippingZone {
   order: number;
   locations: Array<{
     code: string;
-    type: 'country' | 'state' | 'postcode' | 'continent';
+    type: "country" | "state" | "postcode" | "continent";
   }>;
 }
 
@@ -215,7 +227,12 @@ export interface WooShippingMethod {
       value: string;
       default: string;
     };
-    [key: string]: any;
+    [key: string]:
+      | {
+          value?: string;
+          default?: string;
+        }
+      | undefined;
   };
   zone_id: number;
   zone_name?: string;
@@ -286,4 +303,108 @@ export interface BlogPost {
   category: string;
   featuredImage: string;
   seoKeywords: string[];
+}
+
+// API Response Types - Standard Error Response
+export interface ErrorApiResponse {
+  error: string;
+  details?: string;
+}
+
+// API Response Types - Checkout
+export interface CheckoutApiResponse {
+  clientSecret: string;
+  sessionId: string;
+  taxEnabled: boolean;
+  taxStatus?: string | null;
+}
+
+// API Response Types - Checkout Session
+export interface CheckoutSessionApiResponse {
+  id: string;
+  payment_status: string;
+  status: string | null;
+  amount_total: number | null;
+  amount_subtotal: number | null;
+  currency: string | null;
+  customer_email: string | null;
+  customer_details: {
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    address?: {
+      line1?: string | null;
+      line2?: string | null;
+      city?: string | null;
+      state?: string | null;
+      postal_code?: string | null;
+      country?: string | null;
+    } | null;
+  } | null;
+  line_items:
+    | {
+        data?: Array<{
+          id?: string;
+          description?: string | null;
+          amount_total?: number;
+          quantity?: number;
+          price?: {
+            id?: string;
+            unit_amount?: number;
+            currency?: string;
+          };
+        }>;
+      }
+    | null
+    | undefined;
+  metadata: Record<string, string> | null;
+  total_details: {
+    amount_discount: number;
+    amount_shipping: number | null;
+    amount_tax: number;
+  } | null;
+  payment_intent: string | null;
+}
+
+// API Response Types - Inventory
+export interface InventoryApiResponse {
+  stock_status: "instock" | "outofstock" | "onbackorder";
+  stock_quantity: number | null;
+  on_sale: boolean;
+  price: string;
+  regular_price: string;
+  sale_price: string;
+}
+
+// API Response Types - Products
+export interface ProductsApiResponse {
+  data: WooProduct[];
+  total?: number;
+  page?: number;
+  per_page?: number;
+  total_pages?: number;
+}
+
+export interface FeaturedProductsApiResponse extends Array<WooProduct> {}
+
+// API Response Types - Product Reviews
+export interface ProductReviewsApiResponse extends Array<WooReview> {}
+
+export interface ReviewSubmissionApiResponse {
+  success: boolean;
+  message: string;
+  review: WooReview;
+}
+
+// API Response Types - Shipping Calculation
+export interface ShippingCalculationApiResponse {
+  zone_id: number;
+  zone_name: string;
+  rates: WooShippingRate[];
+  total_weight: string;
+}
+
+// API Response Types - Webhook
+export interface WebhookApiResponse {
+  received: boolean;
 }

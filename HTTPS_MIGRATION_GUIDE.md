@@ -83,14 +83,15 @@ WordPress stores full URLs in the database. You need to replace all HTTP URLs wi
    - Select your WordPress database
 
 3. **Run SQL Query**
+
    ```sql
-   UPDATE wp_posts 
+   UPDATE wp_posts
    SET post_content = REPLACE(post_content, 'http://52.23.226.128', 'https://rockited4d.com');
-   
-   UPDATE wp_postmeta 
+
+   UPDATE wp_postmeta
    SET meta_value = REPLACE(meta_value, 'http://52.23.226.128', 'https://rockited4d.com');
-   
-   UPDATE wp_options 
+
+   UPDATE wp_options
    SET option_value = REPLACE(option_value, 'http://52.23.226.128', 'https://rockited4d.com');
    ```
 
@@ -157,12 +158,14 @@ If you're using a caching plugin:
 After updating WordPress, you need to revalidate your Next.js static pages:
 
 ### Option A: Wait for Automatic Revalidation
+
 - Your products page has `revalidate = 3600` (1 hour)
 - Pages will automatically update within 1 hour
 
 ### Option B: Force Revalidation (Immediate)
 
 1. **Rebuild the Next.js app:**
+
    ```bash
    npm run build
    ```
@@ -260,6 +263,7 @@ if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false)
 ## Need Help?
 
 If you encounter issues:
+
 1. Check browser console for specific error messages
 2. Check WordPress debug log (if WP_DEBUG is enabled)
 3. Verify SSL certificate is valid

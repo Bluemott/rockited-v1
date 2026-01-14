@@ -16,11 +16,13 @@ Use this checklist to verify your AWS infrastructure setup is working correctly.
 ### Test api.rockited4d.com
 
 **Windows (PowerShell):**
+
 ```powershell
 nslookup api.rockited4d.com
 ```
 
 **Mac/Linux:**
+
 ```bash
 dig api.rockited4d.com
 # or
@@ -28,38 +30,45 @@ nslookup api.rockited4d.com
 ```
 
 **Expected Result:**
+
 - ✅ Resolves to `52.23.226.128` (Lightsail IP)
 - ✅ No errors or timeouts
 
 ### Test rockited4d.com
 
 **Windows (PowerShell):**
+
 ```powershell
 nslookup rockited4d.com
 ```
 
 **Mac/Linux:**
+
 ```bash
 dig rockited4d.com
 ```
 
 **Expected Result:**
+
 - ✅ Resolves to Amplify IP addresses
 - ✅ No errors or timeouts
 
 ### Test www.rockited4d.com (if configured)
 
 **Windows (PowerShell):**
+
 ```powershell
 nslookup www.rockited4d.com
 ```
 
 **Mac/Linux:**
+
 ```bash
 dig www.rockited4d.com
 ```
 
 **Expected Result:**
+
 - ✅ Resolves correctly
 - ✅ Redirects to main domain (if configured)
 
@@ -78,9 +87,11 @@ dig www.rockited4d.com
    - [ ] No security warnings displayed
 
 2. **Command Line Test**:
+
    ```bash
    openssl s_client -connect api.rockited4d.com:443 -servername api.rockited4d.com
    ```
+
    - [ ] Connection successful
    - [ ] Certificate chain valid
    - [ ] No certificate errors
@@ -109,23 +120,28 @@ dig www.rockited4d.com
 ### Test WooCommerce REST API
 
 1. **Basic API Test**:
+
    ```bash
    curl https://api.rockited4d.com/wp-json/wc/v3/products?per_page=1
    ```
+
    - [ ] Returns JSON response
    - [ ] No SSL errors
    - [ ] Response contains product data
 
 2. **Authentication Test** (if needed):
+
    ```bash
    curl -u "ck_xxx:cs_xxx" https://api.rockited4d.com/wp-json/wc/v3/products
    ```
+
    - [ ] Authentication works
    - [ ] Returns authorized data
 
 ### Test from Next.js Application
 
 1. **Start Development Server**:
+
    ```bash
    npm run dev
    ```
@@ -254,6 +270,7 @@ dig www.rockited4d.com
 **Problem**: Domain not resolving
 
 **Check**:
+
 - [ ] Route53 records are correct
 - [ ] TTL values are reasonable
 - [ ] DNS cache cleared
@@ -264,6 +281,7 @@ dig www.rockited4d.com
 **Problem**: Certificate errors
 
 **Check**:
+
 - [ ] Certificate installed correctly
 - [ ] DNS pointing to correct IP
 - [ ] Ports 80/443 open
@@ -274,6 +292,7 @@ dig www.rockited4d.com
 **Problem**: API calls failing
 
 **Check**:
+
 - [ ] HTTPS URL correct
 - [ ] CORS configured
 - [ ] WooCommerce REST API enabled
@@ -299,9 +318,9 @@ Before going live:
 
 ## Test Results Log
 
-Date: _______________
+Date: **\*\***\_\_\_**\*\***
 
-Tester: _______________
+Tester: **\*\***\_\_\_**\*\***
 
 **DNS Tests**: ✅ / ❌
 **SSL Tests**: ✅ / ❌
@@ -309,13 +328,11 @@ Tester: _______________
 **E2E Tests**: ✅ / ❌
 **Security Tests**: ✅ / ❌
 
-**Issues Found**: 
-- 
+**Issues Found**:
 
-**Resolution**: 
-- 
+- **Resolution**:
 
----
+- ***
 
 ## Next Steps After Testing
 

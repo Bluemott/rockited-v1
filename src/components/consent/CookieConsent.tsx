@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { X, Cookie } from 'lucide-react';
-import { getConsentStatus, setConsentStatus, hasAnalyticsConsent } from '@/lib/cookies';
-import { initGA } from '@/lib/analytics';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Cookie } from "lucide-react";
+import { getConsentStatus, setConsentStatus } from "@/lib/cookies";
+import { initGA } from "@/lib/analytics";
 
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
@@ -14,7 +14,7 @@ export default function CookieConsent() {
   useEffect(() => {
     setMounted(true);
     const consent = getConsentStatus();
-    
+
     // Only show banner if consent hasn't been given yet
     if (consent === null) {
       setShowBanner(true);
@@ -22,9 +22,9 @@ export default function CookieConsent() {
   }, []);
 
   const handleAccept = () => {
-    setConsentStatus('accepted');
+    setConsentStatus("accepted");
     setShowBanner(false);
-    
+
     // Initialize GA if measurement ID is available
     const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
     if (measurementId) {
@@ -33,7 +33,7 @@ export default function CookieConsent() {
   };
 
   const handleDecline = () => {
-    setConsentStatus('declined');
+    setConsentStatus("declined");
     setShowBanner(false);
   };
 
@@ -54,17 +54,14 @@ export default function CookieConsent() {
               <div className="flex-1">
                 <h3 className="text-lg font-semibold mb-2">Cookie Consent</h3>
                 <p className="text-sm text-muted-foreground">
-                  We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. 
-                  By clicking &quot;Accept&quot;, you consent to our use of cookies. You can decline, but some features may not work properly.
+                  We use cookies to enhance your browsing experience, analyze site traffic, and
+                  personalize content. By clicking &quot;Accept&quot;, you consent to our use of
+                  cookies. You can decline, but some features may not work properly.
                 </p>
               </div>
             </div>
             <div className="flex gap-3 w-full md:w-auto">
-              <Button
-                onClick={handleAccept}
-                size="sm"
-                className="flex-1 md:flex-none"
-              >
+              <Button onClick={handleAccept} size="sm" className="flex-1 md:flex-none">
                 Accept
               </Button>
               <Button
@@ -82,4 +79,3 @@ export default function CookieConsent() {
     </div>
   );
 }
-

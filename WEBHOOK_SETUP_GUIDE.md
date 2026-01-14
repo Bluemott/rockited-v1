@@ -17,16 +17,19 @@ This guide explains how to set up and test Stripe webhooks for your application.
 ### Step 2: Forward Webhooks to Local Server
 
 1. Start your Next.js development server:
+
    ```bash
    npm run dev
    ```
 
 2. In a separate terminal, run the Stripe CLI to forward webhooks:
+
    ```bash
    stripe listen --forward-to localhost:3000/api/webhooks/stripe
    ```
 
 3. The CLI will output a webhook signing secret. Copy it:
+
    ```
    Ready! Your webhook signing secret is whsec_xxxxxxxxxxxxx
    ```
@@ -39,6 +42,7 @@ This guide explains how to set up and test Stripe webhooks for your application.
 ### Step 3: Test Webhook Events
 
 1. Trigger a test event using the Stripe CLI:
+
    ```bash
    stripe trigger checkout.session.completed
    ```
@@ -55,6 +59,7 @@ This guide explains how to set up and test Stripe webhooks for your application.
 ### Step 1: Deploy Your Application
 
 Ensure your application is deployed and accessible via HTTPS. The webhook endpoint must be:
+
 - Publicly accessible
 - Using HTTPS (required by Stripe)
 - URL: `https://your-domain.com/api/webhooks/stripe`
@@ -99,16 +104,19 @@ Ensure your application is deployed and accessible via HTTPS. The webhook endpoi
 The application currently handles the following Stripe webhook events:
 
 ### `checkout.session.completed`
+
 - **When**: Customer successfully completes checkout
 - **Action**: Creates WooCommerce order
 - **Status**: Payment must be `paid`
 
 ### `checkout.session.async_payment_succeeded`
+
 - **When**: Delayed payment (e.g., bank transfer) succeeds
 - **Action**: Creates WooCommerce order if it doesn't exist
 - **Status**: Payment must be `paid`
 
 ### `checkout.session.async_payment_failed`
+
 - **When**: Delayed payment fails
 - **Action**: Logs the failure (you can extend this to update order status)
 
@@ -158,4 +166,3 @@ After webhooks are working:
 2. Consider adding more event types (refunds, disputes, etc.)
 3. Implement order status updates based on payment status
 4. Add email notifications for order creation
-

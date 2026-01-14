@@ -101,7 +101,7 @@
   --border: 0 0% 40%; /* Borders - Medium gray with sufficient contrast */
   --input: 0 0% 11%; /* #1D1D1D - Slightly Lighter Dark Gray */
   --ring: 16 88% 61%; /* #F17947 - Bright Orange/Coral for focus rings */
-  
+
   /* Sidebar colors */
   --sidebar: hsl(240 5.9% 10%);
   --sidebar-foreground: hsl(240 4.8% 95.9%);
@@ -117,7 +117,9 @@ body {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Headlines (h1) use Noto Serif */
@@ -126,7 +128,11 @@ h1 {
 }
 
 /* Subheadings (h2-h6) use Montserrat */
-h2, h3, h4, h5, h6 {
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
 }
 
@@ -190,7 +196,11 @@ p {
   font-family: var(--font-noto-serif), serif;
 }
 
-.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
   color: hsl(var(--foreground));
   font-weight: 600;
   font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
@@ -202,7 +212,8 @@ p {
   font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
 }
 
-.prose ul, .prose ol {
+.prose ul,
+.prose ol {
   color: hsl(var(--muted-foreground));
 }
 
@@ -212,23 +223,33 @@ p {
 
 /* New shadow system with brand colors */
 .shadow-brand {
-  box-shadow: 0 1px 3px rgba(25, 6, 71, 0.1), 0 1px 2px rgba(25, 6, 71, 0.06);
+  box-shadow:
+    0 1px 3px rgba(25, 6, 71, 0.1),
+    0 1px 2px rgba(25, 6, 71, 0.06);
 }
 
 .shadow-brand-md {
-  box-shadow: 0 4px 6px rgba(25, 6, 71, 0.1), 0 2px 4px rgba(25, 6, 71, 0.06);
+  box-shadow:
+    0 4px 6px rgba(25, 6, 71, 0.1),
+    0 2px 4px rgba(25, 6, 71, 0.06);
 }
 
 .shadow-brand-lg {
-  box-shadow: 0 10px 15px rgba(25, 6, 71, 0.1), 0 4px 6px rgba(25, 6, 71, 0.05);
+  box-shadow:
+    0 10px 15px rgba(25, 6, 71, 0.1),
+    0 4px 6px rgba(25, 6, 71, 0.05);
 }
 
 .shadow-brand-xl {
-  box-shadow: 0 20px 25px rgba(25, 6, 71, 0.1), 0 10px 10px rgba(25, 6, 71, 0.04);
+  box-shadow:
+    0 20px 25px rgba(25, 6, 71, 0.1),
+    0 10px 10px rgba(25, 6, 71, 0.04);
 }
 
 .shadow-brand-hover {
-  box-shadow: 0 4px 8px rgba(241, 121, 71, 0.2), 0 2px 4px rgba(241, 121, 71, 0.1);
+  box-shadow:
+    0 4px 8px rgba(241, 121, 71, 0.2),
+    0 2px 4px rgba(241, 121, 71, 0.1);
 }
 
 /* Theme utility classes for consistent styling */
@@ -236,44 +257,58 @@ p {
   background: hsl(var(--card));
   border: 1px solid hsl(var(--border));
   border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(28, 21, 73, 0.1), 0 2px 4px rgba(28, 21, 73, 0.06);
+  box-shadow:
+    0 4px 6px rgba(28, 21, 73, 0.1),
+    0 2px 4px rgba(28, 21, 73, 0.06);
   transition: box-shadow 0.2s ease-in-out;
 }
 
 .theme-card:hover {
-  box-shadow: 0 10px 15px rgba(28, 21, 73, 0.1), 0 4px 6px rgba(28, 21, 73, 0.05);
+  box-shadow:
+    0 10px 15px rgba(28, 21, 73, 0.1),
+    0 4px 6px rgba(28, 21, 73, 0.05);
 }
 
 .theme-button-primary {
   background: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
-  box-shadow: 0 1px 3px rgba(25, 6, 71, 0.1), 0 1px 2px rgba(25, 6, 71, 0.06);
+  box-shadow:
+    0 1px 3px rgba(25, 6, 71, 0.1),
+    0 1px 2px rgba(25, 6, 71, 0.06);
   transition: all 0.2s ease-in-out;
 }
 
 .theme-button-primary:hover {
   background: hsl(var(--accent-orange));
-  box-shadow: 0 4px 8px rgba(241, 121, 71, 0.2), 0 2px 4px rgba(241, 121, 71, 0.1);
+  box-shadow:
+    0 4px 8px rgba(241, 121, 71, 0.2),
+    0 2px 4px rgba(241, 121, 71, 0.1);
 }
 
 .theme-button-secondary {
   background: hsl(var(--secondary));
   color: hsl(var(--secondary-foreground));
-  box-shadow: 0 1px 3px rgba(28, 21, 73, 0.1), 0 1px 2px rgba(28, 21, 73, 0.06);
+  box-shadow:
+    0 1px 3px rgba(28, 21, 73, 0.1),
+    0 1px 2px rgba(28, 21, 73, 0.06);
   transition: all 0.2s ease-in-out;
 }
 
 .theme-button-secondary:hover {
   background: hsl(var(--secondary));
   opacity: 0.9;
-  box-shadow: 0 4px 8px rgba(114, 161, 212, 0.2), 0 2px 4px rgba(114, 161, 212, 0.1);
+  box-shadow:
+    0 4px 8px rgba(114, 161, 212, 0.2),
+    0 2px 4px rgba(114, 161, 212, 0.1);
 }
 
 .theme-button-outline {
   border: 1px solid hsl(var(--primary));
   background: hsl(var(--background));
   color: hsl(var(--foreground));
-  box-shadow: 0 1px 3px rgba(28, 21, 73, 0.1), 0 1px 2px rgba(28, 21, 73, 0.06);
+  box-shadow:
+    0 1px 3px rgba(28, 21, 73, 0.1),
+    0 1px 2px rgba(28, 21, 73, 0.06);
   transition: all 0.2s ease-in-out;
 }
 
@@ -281,7 +316,9 @@ p {
   background: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
   border-color: hsl(var(--primary));
-  box-shadow: 0 4px 8px rgba(241, 121, 71, 0.2), 0 2px 4px rgba(241, 121, 71, 0.1);
+  box-shadow:
+    0 4px 8px rgba(241, 121, 71, 0.2),
+    0 2px 4px rgba(241, 121, 71, 0.1);
 }
 
 .theme-input {
@@ -360,8 +397,12 @@ p {
 
 /* Button text color overrides for better contrast */
 /* Only apply to buttons with bg-primary (not accent-orange) that need primary-foreground color */
-button.bg-primary:not(.bg-accent-orange):not([class*="bg-accent-orange"]):not(.text-white):not([class*="text-white"]),
-a.bg-primary:not(.bg-accent-orange):not([class*="bg-accent-orange"]):not(.text-white):not([class*="text-white"]) {
+button.bg-primary:not(.bg-accent-orange):not([class*="bg-accent-orange"]):not(.text-white):not(
+    [class*="text-white"]
+  ),
+a.bg-primary:not(.bg-accent-orange):not([class*="bg-accent-orange"]):not(.text-white):not(
+    [class*="text-white"]
+  ) {
   color: hsl(var(--primary-foreground)) !important;
 }
 
@@ -410,26 +451,25 @@ header {
     top: 4rem !important; /* 64px - header height */
     height: calc(100vh - 4rem) !important;
   }
-  
+
   /* Ensure separator background color is always applied */
   [data-radix-separator-root] {
     background-color: hsl(var(--border)) !important;
     opacity: 1 !important;
   }
-  
+
   /* Additional safeguard for any element with bg-border class used for separators */
   .bg-border {
     background-color: hsl(var(--border)) !important;
   }
-  
+
   /* Hide scrollbar utility */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none; /* Chrome, Safari and Opera */
   }
 }
-

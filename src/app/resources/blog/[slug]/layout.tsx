@@ -1,6 +1,6 @@
-import type { Metadata } from 'next';
-import { getPostBySlug } from '@/lib/blog';
-import { generateBlogPostMetadata } from '@/lib/seo';
+import type { Metadata } from "next";
+import { getPostBySlug } from "@/lib/blog";
+import { generateBlogPostMetadata } from "@/lib/seo";
 
 interface BlogPostLayoutProps {
   children: React.ReactNode;
@@ -10,7 +10,7 @@ interface BlogPostLayoutProps {
 export async function generateMetadata({ params }: BlogPostLayoutProps): Promise<Metadata> {
   const resolvedParams = await params;
   const post = await getPostBySlug(resolvedParams.slug);
-  
+
   if (!post) {
     return {};
   }

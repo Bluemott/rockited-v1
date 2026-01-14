@@ -51,7 +51,6 @@ sudo /opt/bitnami/bncert-tool
 ```
 
 2. Follow the interactive prompts:
-
    - **Primary domain**: Enter `api.rockited4d.com`
    - **Additional domains**: Leave empty (or add `www.api.rockited4d.com` if needed)
    - **HTTP to HTTPS redirect**: Select **Yes**
@@ -191,10 +190,12 @@ Or use a WordPress plugin like "CORS Headers" for easier management.
 Consider implementing rate limiting on Lightsail:
 
 **Option 1: WordPress Plugin**
+
 - Install "Wordfence" or "Limit Login Attempts" plugin
 - Configure API rate limits
 
 **Option 2: Server-Level (Apache)**
+
 - Use `mod_evasive` or `mod_security`
 - Configure in Apache virtual host
 
@@ -207,18 +208,21 @@ Consider implementing rate limiting on Lightsail:
 Test DNS resolution:
 
 **Windows (PowerShell):**
+
 ```powershell
 nslookup api.rockited4d.com
 nslookup rockited4d.com
 ```
 
 **Mac/Linux:**
+
 ```bash
 dig api.rockited4d.com
 dig rockited4d.com
 ```
 
 **Expected results:**
+
 - `api.rockited4d.com` → `52.23.226.128` (Lightsail IP)
 - `rockited4d.com` → Amplify IP addresses
 
@@ -242,6 +246,7 @@ dig rockited4d.com
 ### Step 3: API Connectivity Testing
 
 1. **Test WooCommerce API endpoint**:
+
    ```bash
    curl https://api.rockited4d.com/wp-json/wc/v3/products?per_page=1
    ```
@@ -278,6 +283,7 @@ dig rockited4d.com
 **Problem**: Certificate validation fails
 
 **Solutions**:
+
 - Ensure DNS record for `api.rockited4d.com` points to Lightsail IP
 - Verify port 80 is open (required for HTTP validation)
 - Wait for DNS propagation (can take up to 48 hours)
@@ -286,6 +292,7 @@ dig rockited4d.com
 **Problem**: Certificate not auto-renewing
 
 **Solution**:
+
 - Bitnami bncert tool should auto-renew
 - Check cron jobs: `sudo crontab -l`
 - Manually renew if needed: `sudo /opt/bitnami/bncert-tool`
@@ -295,6 +302,7 @@ dig rockited4d.com
 **Problem**: Domain not resolving
 
 **Solutions**:
+
 - Wait longer for DNS propagation
 - Clear DNS cache: `ipconfig /flushdns` (Windows) or `sudo dscacheutil -flushcache` (Mac)
 - Verify Route53 records are correct
@@ -305,6 +313,7 @@ dig rockited4d.com
 **Problem**: CORS errors
 
 **Solutions**:
+
 - Verify CORS headers in WordPress/Apache config
 - Check WooCommerce REST API settings
 - Ensure `rockited4d.com` is in allowed origins
@@ -312,6 +321,7 @@ dig rockited4d.com
 **Problem**: Images not loading
 
 **Solutions**:
+
 - Verify `next.config.ts` has correct image patterns
 - Check image URLs are using HTTPS
 - Verify WordPress media library is accessible

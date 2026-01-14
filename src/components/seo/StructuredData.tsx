@@ -1,10 +1,10 @@
-import { WooProduct } from '@/lib/types';
-import { getSiteConfig } from '@/lib/seo';
-import { getBrandFromMetadata, getStructuredMetadata } from '@/lib/productMetadata';
+import { WooProduct } from "@/lib/types";
+import { getSiteConfig } from "@/lib/seo";
+import { getBrandFromMetadata, getStructuredMetadata } from "@/lib/productMetadata";
 
 interface StructuredDataProps {
-  type: 'organization' | 'product' | 'breadcrumb' | 'website';
-  data?: any;
+  type: "organization" | "product" | "breadcrumb" | "website";
+  data?: WooProduct | Array<{ name: string; url: string }>;
 }
 
 export default function StructuredData({ type, data }: StructuredDataProps) {
@@ -12,10 +12,10 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
 
   const getStructuredData = () => {
     switch (type) {
-      case 'organization':
+      case "organization":
         return {
-          '@context': 'https://schema.org',
-          '@type': 'Organization',
+          "@context": "https://schema.org",
+          "@type": "Organization",
           name: siteConfig.name,
           url: siteConfig.url,
           logo: `${siteConfig.url}/Rock_it_ed_Comp.png`,
@@ -25,60 +25,62 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           ],
         };
 
-      case 'website':
+      case "website":
         return {
-          '@context': 'https://schema.org',
-          '@type': 'WebSite',
+          "@context": "https://schema.org",
+          "@type": "WebSite",
           name: siteConfig.name,
           url: siteConfig.url,
           potentialAction: {
-            '@type': 'SearchAction',
+            "@type": "SearchAction",
             target: {
-              '@type': 'EntryPoint',
+              "@type": "EntryPoint",
               urlTemplate: `${siteConfig.url}/search?q={search_term_string}`,
             },
-            'query-input': 'required name=search_term_string',
+            "query-input": "required name=search_term_string",
           },
         };
 
-      case 'product':
+      case "product":
         if (!data) return null;
         const product = data as WooProduct;
         const price = parseFloat(product.price);
-        const regularPrice = parseFloat(product.regular_price || product.price);
-        
+
         // Get metadata
         const metadata = getStructuredMetadata(product);
         const brand = getBrandFromMetadata(product) || siteConfig.name;
-        
+
         // Build product schema
-        const productSchema: any = {
-          '@context': 'https://schema.org',
-          '@type': 'Product',
+        const productSchema: Record<string, unknown> = {
+          "@context": "https://schema.org",
+          "@type": "Product",
           name: product.name,
-          description: product.short_description 
-            ? product.short_description.replace(/<[^>]*>/g, '').substring(0, 500)
-            : product.description?.replace(/<[^>]*>/g, '').substring(0, 500) || '',
-          image: product.images?.map(img => img.src) || [],
+          description: product.short_description
+            ? product.short_description.replace(/<[^>]*>/g, "").substring(0, 500)
+            : product.description?.replace(/<[^>]*>/g, "").substring(0, 500) || "",
+          image: product.images?.map((img) => img.src) || [],
           sku: product.sku || product.id.toString(),
           brand: {
-            '@type': 'Brand',
+            "@type": "Brand",
             name: brand,
           },
           offers: {
-            '@type': 'Offer',
+            "@type": "Offer",
             url: `${siteConfig.url}/products/${product.slug}`,
-            priceCurrency: 'USD',
+            priceCurrency: "USD",
             price: price.toString(),
-            priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            availability: product.stock_status === 'instock' 
-              ? 'https://schema.org/InStock'
-              : product.stock_status === 'outofstock'
-              ? 'https://schema.org/OutOfStock'
-              : 'https://schema.org/PreOrder',
-            itemCondition: `https://schema.org/${metadata.condition === 'new' ? 'NewCondition' : metadata.condition === 'used' ? 'UsedCondition' : 'NewCondition'}`,
+            priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split("T")[0],
+            availability:
+              product.stock_status === "instock"
+                ? "https://schema.org/InStock"
+                : product.stock_status === "outofstock"
+                  ? "https://schema.org/OutOfStock"
+                  : "https://schema.org/PreOrder",
+            itemCondition: `https://schema.org/${metadata.condition === "new" ? "NewCondition" : metadata.condition === "used" ? "UsedCondition" : "NewCondition"}`,
             seller: {
-              '@type': 'Organization',
+              "@type": "Organization",
               name: siteConfig.name,
             },
           },
@@ -87,33 +89,35 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
         // Add weight if available
         if (product.weight && parseFloat(product.weight) > 0) {
           productSchema.weight = {
-            '@type': 'QuantitativeValue',
+            "@type": "QuantitativeValue",
             value: parseFloat(product.weight),
-            unitCode: 'LBR', // Pounds
+            unitCode: "LBR", // Pounds
           };
         }
 
         // Add dimensions if available
-        if (product.dimensions && 
-            (parseFloat(product.dimensions.length) > 0 ||
-             parseFloat(product.dimensions.width) > 0 ||
-             parseFloat(product.dimensions.height) > 0)) {
+        if (
+          product.dimensions &&
+          (parseFloat(product.dimensions.length) > 0 ||
+            parseFloat(product.dimensions.width) > 0 ||
+            parseFloat(product.dimensions.height) > 0)
+        ) {
           productSchema.dimensions = {
-            '@type': 'QuantitativeValue',
+            "@type": "QuantitativeValue",
             length: {
-              '@type': 'Distance',
-              value: parseFloat(product.dimensions.length || '0'),
-              unitCode: 'INH', // Inches
+              "@type": "Distance",
+              value: parseFloat(product.dimensions.length || "0"),
+              unitCode: "INH", // Inches
             },
             width: {
-              '@type': 'Distance',
-              value: parseFloat(product.dimensions.width || '0'),
-              unitCode: 'INH',
+              "@type": "Distance",
+              value: parseFloat(product.dimensions.width || "0"),
+              unitCode: "INH",
             },
             height: {
-              '@type': 'Distance',
-              value: parseFloat(product.dimensions.height || '0'),
-              unitCode: 'INH',
+              "@type": "Distance",
+              value: parseFloat(product.dimensions.height || "0"),
+              unitCode: "INH",
             },
           };
         }
@@ -121,16 +125,16 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
         // Add shipping information if available
         if (product.shipping_required && product.shipping_class) {
           productSchema.shippingDetails = {
-            '@type': 'OfferShippingDetails',
+            "@type": "OfferShippingDetails",
             shippingRate: {
-              '@type': 'MonetaryAmount',
-              currency: 'USD',
+              "@type": "MonetaryAmount",
+              currency: "USD",
             },
             shippingDestination: {
-              '@type': 'DefinedRegion',
+              "@type": "DefinedRegion",
             },
             deliveryTime: {
-              '@type': 'ShippingDeliveryTime',
+              "@type": "ShippingDeliveryTime",
             },
           };
         }
@@ -138,57 +142,57 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
         // Add aggregate rating if available
         if (product.average_rating && parseFloat(product.average_rating) > 0) {
           productSchema.aggregateRating = {
-            '@type': 'AggregateRating',
+            "@type": "AggregateRating",
             ratingValue: product.average_rating,
             reviewCount: product.rating_count || 0,
-            bestRating: '5',
-            worstRating: '1',
+            bestRating: "5",
+            worstRating: "1",
           };
         }
 
         // Add category if available
         if (product.categories && product.categories.length > 0) {
-          productSchema.category = product.categories.map(cat => cat.name).join(', ');
+          productSchema.category = product.categories.map((cat) => cat.name).join(", ");
         }
 
         // Add additional properties from metadata
         if (metadata.warranty) {
           productSchema.warranty = {
-            '@type': 'WarrantyPromise',
-            warrantyScope: 'https://schema.org/WarrantyScope',
+            "@type": "WarrantyPromise",
+            warrantyScope: "https://schema.org/WarrantyScope",
             description: metadata.warranty,
           };
         }
 
         return productSchema;
 
-      case 'breadcrumb':
+      case "breadcrumb":
         if (!data) return null;
         const breadcrumbs = data as Array<{ name: string; url: string }>;
-        
+
         // Validate breadcrumb data
         if (!Array.isArray(breadcrumbs) || breadcrumbs.length === 0) {
           return null;
         }
-        
+
         // Filter out invalid breadcrumbs and ensure proper formatting
         const validBreadcrumbs = breadcrumbs
-          .filter(crumb => crumb && crumb.name && crumb.url)
-          .map(crumb => ({
+          .filter((crumb) => crumb && crumb.name && crumb.url)
+          .map((crumb) => ({
             name: String(crumb.name).trim(),
             url: String(crumb.url).trim(),
           }))
-          .filter(crumb => crumb.name.length > 0 && crumb.url.length > 0);
-        
+          .filter((crumb) => crumb.name.length > 0 && crumb.url.length > 0);
+
         if (validBreadcrumbs.length === 0) {
           return null;
         }
-        
+
         return {
-          '@context': 'https://schema.org',
-          '@type': 'BreadcrumbList',
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
           itemListElement: validBreadcrumbs.map((crumb, index) => ({
-            '@type': 'ListItem',
+            "@type": "ListItem",
             position: index + 1,
             name: crumb.name,
             item: crumb.url,
@@ -211,4 +215,3 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
     />
   );
 }
-

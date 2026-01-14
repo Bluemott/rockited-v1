@@ -25,7 +25,7 @@ A modern, responsive e-commerce website built with Next.js 14, TypeScript, and T
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - WooCommerce store with REST API enabled
 - Stripe account
@@ -33,22 +33,26 @@ A modern, responsive e-commerce website built with Next.js 14, TypeScript, and T
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <your-repo-url>
 cd rockited-v1
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.local.example .env.local
 ```
 
 4. Configure your environment variables in `.env.local`:
+
 ```env
 # WooCommerce Configuration
 WOOCOMMERCE_URL=https://your-lightsail-instance.com
@@ -66,6 +70,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ### Development
 
 Run the development server:
+
 ```bash
 npm run dev
 ```

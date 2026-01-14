@@ -1,4 +1,4 @@
-import ShareButton from '@/components/ui/ShareButton';
+import ShareButton from "@/components/ui/ShareButton";
 
 interface SocialShareProps {
   url: string;
@@ -16,7 +16,7 @@ export function SocialShare({ url, title, description, image }: SocialShareProps
         title={title}
         description={description}
         image={image}
-        platforms={['facebook', 'twitter', 'linkedin', 'copy']}
+        platforms={["facebook", "twitter", "linkedin", "copy"]}
       />
     </div>
   );

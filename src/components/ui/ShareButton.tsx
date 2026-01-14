@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { Share2, Copy, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Share2, Copy, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { shareOnPlatform, type SharePlatform, type ShareData } from '@/lib/share';
-import { toast } from 'sonner';
+} from "@/components/ui/dropdown-menu";
+import { shareOnPlatform, type SharePlatform, type ShareData } from "@/lib/share";
+import { toast } from "sonner";
 
 export interface ShareButtonProps {
   url: string;
@@ -21,13 +21,13 @@ export interface ShareButtonProps {
 }
 
 const platformConfig: Record<SharePlatform, { label: string; icon?: React.ReactNode }> = {
-  pinterest: { label: 'Share on Pinterest' },
-  facebook: { label: 'Share on Facebook' },
-  twitter: { label: 'Share on Twitter/X' },
-  linkedin: { label: 'Share on LinkedIn' },
-  whatsapp: { label: 'Share on WhatsApp' },
-  email: { label: 'Share via Email' },
-  copy: { label: 'Copy Link', icon: <Copy className="h-4 w-4" /> },
+  pinterest: { label: "Share on Pinterest" },
+  facebook: { label: "Share on Facebook" },
+  twitter: { label: "Share on Twitter/X" },
+  linkedin: { label: "Share on LinkedIn" },
+  whatsapp: { label: "Share on WhatsApp" },
+  email: { label: "Share via Email" },
+  copy: { label: "Copy Link", icon: <Copy className="h-4 w-4" /> },
 };
 
 export default function ShareButton({
@@ -35,8 +35,8 @@ export default function ShareButton({
   title,
   description,
   image,
-  platforms = ['pinterest', 'copy'],
-  className = '',
+  platforms = ["pinterest", "copy"],
+  className = "",
 }: ShareButtonProps) {
   const shareData: ShareData = {
     url,
@@ -47,15 +47,15 @@ export default function ShareButton({
 
   const handleShare = async (platform: SharePlatform) => {
     try {
-      if (platform === 'copy') {
+      if (platform === "copy") {
         await shareOnPlatform(platform, shareData);
-        toast.success('Link copied to clipboard!');
+        toast.success("Link copied to clipboard!");
       } else {
         await shareOnPlatform(platform, shareData);
       }
     } catch (error) {
-      console.error('Share error:', error);
-      toast.error('Failed to share. Please try again.');
+      console.error("Share error:", error);
+      toast.error("Failed to share. Please try again.");
     }
   };
 
@@ -71,10 +71,7 @@ export default function ShareButton({
           <Share2 className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="end" 
-        className="min-w-[180px] bg-card"
-      >
+      <DropdownMenuContent align="end" className="min-w-[180px] bg-card">
         {platforms.map((platform) => {
           const config = platformConfig[platform];
           return (
@@ -96,4 +93,3 @@ export default function ShareButton({
     </DropdownMenu>
   );
 }
-

@@ -68,12 +68,14 @@ This 30-60 minute guide walks you through the essential steps to get your infras
 ## 🎯 Current Status
 
 ### ✅ Completed (Code/Configuration)
+
 - Environment variables updated (`.env.local`)
 - Configuration files verified
 - Security headers configured (middleware)
 - Documentation created
 
 ### ⏳ Manual Steps Required
+
 1. **SSL Certificate** - SSH into Lightsail, run bncert tool
 2. **Route53 DNS** - Configure main domain in AWS Console
 3. **Amplify Setup** - Add environment variables in Amplify Console
@@ -104,16 +106,19 @@ api.rockited4d.com (Route53) → Lightsail WordPress/WooCommerce (API Backend)
 ### Common Issues
 
 **DNS not resolving?**
+
 - Wait 5-30 minutes for propagation
 - Clear DNS cache
 - Verify Route53 records
 
 **SSL certificate issues?**
+
 - Check DNS points to correct IP
 - Verify ports 80/443 open
 - See [SSL_SETUP_GUIDE_SUBDOMAIN.md](SSL_SETUP_GUIDE_SUBDOMAIN.md) troubleshooting
 
 **API connectivity problems?**
+
 - Verify environment variables
 - Check CORS configuration
 - See [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md)
@@ -127,15 +132,18 @@ api.rockited4d.com (Route53) → Lightsail WordPress/WooCommerce (API Backend)
 ## 📖 Reading Order
 
 **For Quick Setup:**
+
 1. [QUICK_START_GUIDE.md](QUICK_START_GUIDE.md)
 
 **For Complete Understanding:**
+
 1. [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Overview
 2. [AWS_INFRASTRUCTURE_SETUP_GUIDE.md](AWS_INFRASTRUCTURE_SETUP_GUIDE.md) - Full guide
 3. [TESTING_CHECKLIST.md](TESTING_CHECKLIST.md) - Validation
 4. [SECURITY_CONFIGURATION.md](SECURITY_CONFIGURATION.md) - Security
 
 **For Specific Tasks:**
+
 - Route53 → [ROUTE53_AMPLIFY_SETUP.md](ROUTE53_AMPLIFY_SETUP.md)
 - SSL → [SSL_SETUP_GUIDE_SUBDOMAIN.md](SSL_SETUP_GUIDE_SUBDOMAIN.md)
 - Environment Variables → [AMPLIFY_ENV_VARS.md](AMPLIFY_ENV_VARS.md)

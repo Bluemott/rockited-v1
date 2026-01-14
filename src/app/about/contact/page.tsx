@@ -1,8 +1,8 @@
-import type { Metadata } from 'next';
-import { Card, CardContent } from '@/components/ui/card';
-import { MotionDiv } from '@/components/ui/motion';
-import { Mail, Phone, Clock, MapPin } from 'lucide-react';
-import { generateContactMetadata } from '@/lib/seo';
+import type { Metadata } from "next";
+import { Card, CardContent } from "@/components/ui/card";
+import { MotionDiv } from "@/components/ui/motion";
+import { Mail, Phone, Clock, MapPin } from "lucide-react";
+import { generateContactMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = generateContactMetadata();
 
@@ -10,9 +10,7 @@ export default function ContactPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <MotionDiv variant="fadeInUp" className="mb-8">
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-          Contact Us
-        </h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Contact Us</h1>
         <p className="text-lg text-muted-foreground">
           Get in touch with our team. We're here to help with any questions or concerns.
         </p>
@@ -29,9 +27,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">Email</h3>
                   <p className="text-muted-foreground mb-1">support@rockited.com</p>
-                  <p className="text-sm text-muted-foreground">
-                    24/7 response within 24 hours
-                  </p>
+                  <p className="text-sm text-muted-foreground">24/7 response within 24 hours</p>
                 </div>
               </div>
             </CardContent>
@@ -48,9 +44,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">Phone</h3>
                   <p className="text-muted-foreground mb-1">(555) 123-4567</p>
-                  <p className="text-sm text-muted-foreground">
-                    Monday-Friday, 9 AM - 6 PM EST
-                  </p>
+                  <p className="text-sm text-muted-foreground">Monday-Friday, 9 AM - 6 PM EST</p>
                 </div>
               </div>
             </CardContent>
@@ -84,9 +78,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">Location</h3>
                   <p className="text-muted-foreground mb-1">United States</p>
-                  <p className="text-sm text-muted-foreground">
-                    Online retailer
-                  </p>
+                  <p className="text-sm text-muted-foreground">Online retailer</p>
                 </div>
               </div>
             </CardContent>
@@ -97,9 +89,7 @@ export default function ContactPage() {
       <MotionDiv variant="fadeInUp" delay={0.5}>
         <Card>
           <CardContent className="pt-6">
-            <h2 className="text-2xl font-semibold text-foreground mb-4">
-              Send us a Message
-            </h2>
+            <h2 className="text-2xl font-semibold text-foreground mb-4">Send us a Message</h2>
             <p className="text-muted-foreground mb-6">
               Fill out the form below and we'll get back to you as soon as possible.
             </p>
@@ -165,4 +155,3 @@ export default function ContactPage() {
     </div>
   );
 }
-

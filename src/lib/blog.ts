@@ -1,162 +1,70 @@
 import { BlogPost } from './types';
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
-
-const postsDirectory = path.join(process.cwd(), 'src/content/blog');
+import {
+  getAllWordPressPosts,
+  getWordPressPostBySlug,
+  getAllWordPressCategories,
+  getAllWordPressTags,
+  getWordPressPostsByCategory,
+  getWordPressPostsByTag,
+  getWordPressRelatedPosts,
+  searchWordPressPosts,
+} from './wordpress';
 
 /**
  * Get all blog posts sorted by date (newest first)
  */
-export function getAllPosts(): BlogPost[] {
-  try {
-    if (!fs.existsSync(postsDirectory)) {
-      return [];
-    }
-
-    const fileNames = fs.readdirSync(postsDirectory);
-    const allPostsData = fileNames
-      .filter((fileName) => fileName.endsWith('.md'))
-      .map((fileName) => {
-        const fullPath = path.join(postsDirectory, fileName);
-        const fileContents = fs.readFileSync(fullPath, 'utf8');
-        const { data, content } = matter(fileContents);
-
-        return {
-          id: data.id || fileName.replace(/\.md$/, ''),
-          slug: data.slug || fileName.replace(/\.md$/, ''),
-          title: data.title || '',
-          excerpt: data.excerpt || '',
-          content,
-          author: data.author || 'ROCK IT ED Team',
-          publishedAt: data.publishedAt ? new Date(data.publishedAt) : new Date(),
-          updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
-          tags: data.tags || [],
-          category: data.category || 'Recovery',
-          featuredImage: data.featuredImage || '',
-          seoKeywords: data.seoKeywords || [],
-        } as BlogPost;
-      })
-      .filter((post) => post.title) // Only include posts with titles
-      .sort((a, b) => {
-        return b.publishedAt.getTime() - a.publishedAt.getTime();
-      });
-
-    return allPostsData;
-  } catch (error) {
-    console.error('Error reading blog posts:', error);
-    return [];
-  }
+export async function getAllPosts(): Promise<BlogPost[]> {
+  return await getAllWordPressPosts();
 }
 
 /**
  * Get a single blog post by slug
  */
-export function getPostBySlug(slug: string): BlogPost | null {
-  try {
-    const allPosts = getAllPosts();
-    return allPosts.find((post) => post.slug === slug) || null;
-  } catch (error) {
-    console.error('Error getting post by slug:', error);
-    return null;
-  }
+export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+  return await getWordPressPostBySlug(slug);
 }
 
 /**
  * Get all unique categories from blog posts
  */
-export function getAllCategories(): string[] {
-  const posts = getAllPosts();
-  const categories = new Set<string>();
-  posts.forEach((post) => {
-    if (post.category) {
-      categories.add(post.category);
-    }
-  });
-  return Array.from(categories).sort();
+export async function getAllCategories(): Promise<string[]> {
+  return await getAllWordPressCategories();
 }
 
 /**
  * Get all unique tags from blog posts
  */
-export function getAllTags(): string[] {
-  const posts = getAllPosts();
-  const tags = new Set<string>();
-  posts.forEach((post) => {
-    if (post.tags && Array.isArray(post.tags)) {
-      post.tags.forEach((tag) => tags.add(tag));
-    }
-  });
-  return Array.from(tags).sort();
+export async function getAllTags(): Promise<string[]> {
+  return await getAllWordPressTags();
 }
 
 /**
  * Get posts by category
  */
-export function getPostsByCategory(category: string): BlogPost[] {
-  const allPosts = getAllPosts();
-  return allPosts.filter((post) => post.category === category);
+export async function getPostsByCategory(category: string): Promise<BlogPost[]> {
+  return await getWordPressPostsByCategory(category);
 }
 
 /**
  * Get posts by tag
  */
-export function getPostsByTag(tag: string): BlogPost[] {
-  const allPosts = getAllPosts();
-  return allPosts.filter(
-    (post) => post.tags && Array.isArray(post.tags) && post.tags.includes(tag)
-  );
+export async function getPostsByTag(tag: string): Promise<BlogPost[]> {
+  return await getWordPressPostsByTag(tag);
 }
 
 /**
  * Get related posts based on tags and category
  */
-export function getRelatedPosts(currentPost: BlogPost, limit: number = 3): BlogPost[] {
-  const allPosts = getAllPosts();
-  const related = allPosts
-    .filter((post) => post.id !== currentPost.id)
-    .map((post) => {
-      let score = 0;
-      
-      // Score based on shared tags
-      if (currentPost.tags && post.tags) {
-        const sharedTags = currentPost.tags.filter((tag) => post.tags?.includes(tag));
-        score += sharedTags.length * 2;
-      }
-      
-      // Score based on same category
-      if (currentPost.category === post.category) {
-        score += 1;
-      }
-      
-      return { post, score };
-    })
-    .filter((item) => item.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((item) => item.post);
-
-  return related;
+export async function getRelatedPosts(
+  currentPost: BlogPost,
+  limit: number = 3
+): Promise<BlogPost[]> {
+  return await getWordPressRelatedPosts(currentPost, limit);
 }
 
 /**
  * Search posts by query string
  */
-export function searchPosts(query: string): BlogPost[] {
-  const allPosts = getAllPosts();
-  const lowerQuery = query.toLowerCase().trim();
-  
-  if (!lowerQuery) {
-    return allPosts;
-  }
-
-  return allPosts.filter((post) => {
-    const titleMatch = post.title.toLowerCase().includes(lowerQuery);
-    const excerptMatch = post.excerpt.toLowerCase().includes(lowerQuery);
-    const contentMatch = post.content.toLowerCase().includes(lowerQuery);
-    const tagMatch = post.tags?.some((tag) => tag.toLowerCase().includes(lowerQuery));
-    const categoryMatch = post.category.toLowerCase().includes(lowerQuery);
-    
-    return titleMatch || excerptMatch || contentMatch || tagMatch || categoryMatch;
-  });
+export async function searchPosts(query: string): Promise<BlogPost[]> {
+  return await searchWordPressPosts(query);
 }

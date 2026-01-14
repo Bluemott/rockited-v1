@@ -133,7 +133,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Generate blog post pages
     let blogPages: MetadataRoute.Sitemap = [];
     try {
-      const blogPosts = getAllPosts();
+      const blogPosts = await getAllPosts();
       blogPages = blogPosts.map((post) => ({
         url: `${siteUrl}/resources/blog/${post.slug}`,
         lastModified: post.updatedAt || post.publishedAt,
@@ -178,7 +178,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Try to include blog posts even in fallback
     let blogPages: MetadataRoute.Sitemap = [];
     try {
-      const blogPosts = getAllPosts();
+      const blogPosts = await getAllPosts();
       blogPages = blogPosts.map((post) => ({
         url: `${siteUrl}/resources/blog/${post.slug}`,
         lastModified: post.updatedAt || post.publishedAt,

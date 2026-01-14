@@ -19,7 +19,7 @@ interface BlogPostPageProps {
 
 export async function generateMetadata({ params }: BlogPostPageProps) {
   const resolvedParams = await params;
-  const post = getPostBySlug(resolvedParams.slug);
+  const post = await getPostBySlug(resolvedParams.slug);
   
   if (!post) {
     return {};
@@ -30,13 +30,13 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const resolvedParams = await params;
-  const post = getPostBySlug(resolvedParams.slug);
+  const post = await getPostBySlug(resolvedParams.slug);
 
   if (!post) {
     notFound();
   }
 
-  const relatedPosts = getRelatedPosts(post, 3);
+  const relatedPosts = await getRelatedPosts(post, 3);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rockited4d.com';
   const postUrl = `${siteUrl}/resources/blog/${post.slug}`;
   const featuredImage = post.featuredImage 

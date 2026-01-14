@@ -9,7 +9,7 @@ interface BlogPostLayoutProps {
 
 export async function generateMetadata({ params }: BlogPostLayoutProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const post = getPostBySlug(resolvedParams.slug);
+  const post = await getPostBySlug(resolvedParams.slug);
   
   if (!post) {
     return {};

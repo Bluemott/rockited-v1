@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkInventory } from "@/lib/woocommerce";
+
 import { sanitizeInteger } from "@/lib/sanitize";
 import type { InventoryApiResponse, ErrorApiResponse } from "@/lib/types";
+import { checkInventory } from "@/lib/woocommerce";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -11,7 +12,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     let productId: number;
     try {
       productId = sanitizeInteger(resolvedParams.id, 1);
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { error: "Invalid product ID. Must be a positive integer." },
         { status: 400 }

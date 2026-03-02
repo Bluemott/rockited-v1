@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
-import { createWooCommerceOrder, findOrderByStripeSessionId } from "@/lib/orders";
 import type Stripe from "stripe";
+
+import { env } from "@/lib/env";
+import { createWooCommerceOrder, findOrderByStripeSessionId } from "@/lib/orders";
+import { stripe } from "@/lib/stripe";
 import type { WebhookApiResponse, ErrorApiResponse } from "@/lib/types";
 
 // Disable body parsing, we need the raw body for signature verification
@@ -13,7 +15,7 @@ async function getRawBody(request: NextRequest): Promise<Buffer> {
     // For Next.js App Router, we need to read the body as text and convert to buffer
     const text = await request.text();
     return Buffer.from(text);
-  } catch (error) {
+  } catch {
     throw new Error("Failed to read request body");
   }
 }
@@ -51,16 +53,16 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
     const existingOrder = await findOrderByStripeSessionId(session.id);
 
     if (existingOrder) {
-      console.log(`Order already exists for session ${session.id}: ${existingOrder.id}`);
+      console.warn(`Order already exists for session ${session.id}: ${existingOrder.id}`);
       return;
     }
 
     // Only create order if payment is successful
     if (session.payment_status === "paid") {
       const order = await createWooCommerceOrder(session);
-      console.log(`✅ Order created successfully: ${order.id} for session ${session.id}`);
+      console.warn(`✅ Order created successfully: ${order.id} for session ${session.id}`);
     } else {
-      console.log(
+      console.warn(
         `⚠️ Payment not completed for session ${session.id}. Status: ${session.payment_status}`
       );
     }
@@ -84,7 +86,7 @@ async function handleAsyncPaymentSucceeded(session: Stripe.Checkout.Session): Pr
       await handleCheckoutSessionCompleted(session);
     } else {
       // Update existing order status if needed
-      console.log(`Async payment succeeded for session ${session.id}, order ${existingOrder.id}`);
+      console.warn(`Async payment succeeded for session ${session.id}, order ${existingOrder.id}`);
       // You could update the order status here if needed
     }
   } catch (error: unknown) {
@@ -98,7 +100,7 @@ async function handleAsyncPaymentSucceeded(session: Stripe.Checkout.Session): Pr
  */
 async function handleAsyncPaymentFailed(session: Stripe.Checkout.Session): Promise<void> {
   try {
-    console.log(`⚠️ Async payment failed for session ${session.id}`);
+    console.warn(`⚠️ Async payment failed for session ${session.id}`);
     // You could update order status to failed or pending here
     // For now, just log the event
   } catch (error: unknown) {
@@ -109,7 +111,6 @@ async function handleAsyncPaymentFailed(session: Stripe.Checkout.Session): Promi
 /**
  * Main webhook handler
  */
-import { env } from "@/lib/env";
 
 export async function POST(request: NextRequest) {
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
@@ -148,7 +149,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Log the event for debugging
-    console.log(`📥 Received webhook event: ${event.type} (ID: ${event.id})`);
+    console.warn(`📥 Received webhook event: ${event.type} (ID: ${event.id})`);
 
     // Handle the event based on type
     // Return 200 quickly, then process asynchronously
@@ -195,7 +196,7 @@ async function processEventAsync(event: Stripe.Event): Promise<void> {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.warn(`Unhandled event type: ${event.type}`);
     }
   } catch (error: unknown) {
     console.error(`Error processing event ${event.type}:`, error);

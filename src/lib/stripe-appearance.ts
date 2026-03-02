@@ -42,5 +42,16 @@ export function getStripeAppearance(mode: ThemeMode = "light") {
       fontFamily: 'Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       fontSizeBase: "16px",
     },
+    rules: {
+      // Soften internal dividers so lines don't appear to run through headings/labels
+      ".BlockDivider": {
+        backgroundColor: "transparent",
+        border: "none",
+      },
+      ".InputDivider": {
+        backgroundColor: "transparent",
+        border: "none",
+      },
+    },
   };
 }

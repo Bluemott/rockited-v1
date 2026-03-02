@@ -178,7 +178,7 @@ export const getThemeColor = (
 
 // Validation helpers
 export const isValidBrandColor = (color: string): boolean => {
-  return Object.values(brandColors).includes(color as any);
+  return Object.keys(brandColors).includes(color);
 };
 
 // Export all theme utilities

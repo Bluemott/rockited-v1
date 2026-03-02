@@ -1,9 +1,10 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { MotionDiv } from "@/components/ui/motion";
-import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const faqItems = [
@@ -109,7 +110,7 @@ export default function FAQPage() {
             <div className="text-center">
               <h2 className="text-xl font-semibold text-foreground mb-2">Still have questions?</h2>
               <p className="text-muted-foreground mb-4">
-                Can't find what you're looking for? Our customer service team is here to help.
+                Can&apos;t find what you&apos;re looking for? Our customer service team is here to help.
               </p>
               <a
                 href="/about/contact"

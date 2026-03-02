@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { calculateShipping } from "@/lib/woocommerce";
+
 import {
   sanitizeString,
   sanitizeInteger,
   sanitizeObjectKeys,
   validateBodySize,
 } from "@/lib/sanitize";
+import {
+  getShippingRates,
+  SHIPPO_NOT_CONFIGURED_MESSAGE,
+  SHIPPO_RATES_UNAVAILABLE_MESSAGE,
+} from "@/lib/shipping";
 import type { ShippingCalculationApiResponse, ErrorApiResponse } from "@/lib/types";
+
+/** Domestic US only: reject non-US with clear message. */
+const DOMESTIC_US_ONLY_MESSAGE = "We only ship domestically within the United States.";
 
 const MAX_BODY_SIZE = 1024 * 1024; // 1MB
 
@@ -34,6 +42,14 @@ export async function POST(request: NextRequest) {
     if (sanitizedCountry.length !== 2 || !/^[A-Z]{2}$/.test(sanitizedCountry)) {
       return NextResponse.json(
         { error: "Invalid country code format. Must be a 2-letter ISO code." },
+        { status: 400 }
+      );
+    }
+
+    // Domestic US only: do not calculate shipping for non-US
+    if (sanitizedCountry !== "US") {
+      return NextResponse.json(
+        { error: DOMESTIC_US_ONLY_MESSAGE },
         { status: 400 }
       );
     }
@@ -78,8 +94,8 @@ export async function POST(request: NextRequest) {
       : undefined;
     const sanitizedCity = city ? sanitizeString(String(city)).substring(0, 100) : undefined;
 
-    // Calculate shipping
-    const shipping = await calculateShipping({
+    // Calculate shipping (USPS for US + ZIP when configured, else WooCommerce or fallback)
+    const shipping = await getShippingRates({
       country: sanitizedCountry,
       state: sanitizedState,
       postcode: sanitizedPostcode,
@@ -94,8 +110,12 @@ export async function POST(request: NextRequest) {
 
     console.error("Shipping calculation API error:", errorMessage);
 
-    // Validation errors should return 400
+    // Policy / user-facing errors: return 400 so client shows message
     if (
+      errorMessage === DOMESTIC_US_ONLY_MESSAGE ||
+      errorMessage === SHIPPO_NOT_CONFIGURED_MESSAGE ||
+      errorMessage === SHIPPO_RATES_UNAVAILABLE_MESSAGE ||
+      errorMessage.includes("valid 5-digit") ||
       errorMessage.includes("Invalid") ||
       errorMessage.includes("must be") ||
       errorMessage.includes("required")

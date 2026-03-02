@@ -1,9 +1,10 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
+import { Lock, ShieldCheck } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTheme } from "next-themes";
+import * as React from "react";
 
 export default function Footer() {
   const { theme, resolvedTheme } = useTheme();
@@ -131,8 +132,19 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-border mt-8 pt-8 text-center">
-          <p className="text-muted-foreground text-sm">
+        <div className="border-t border-border mt-8 pt-8 flex flex-col items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground" role="group" aria-label="Security and payment trust">
+            <span className="flex items-center gap-1.5">
+              <Lock className="h-3.5 w-3.5" aria-hidden />
+              <span>Secure checkout</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
+              <span>SSL encrypted</span>
+            </span>
+            <span>Payments secured by Stripe</span>
+          </div>
+          <p className="text-muted-foreground text-sm text-center">
             © {new Date().getFullYear()} ROCK IT ED. All rights reserved.
           </p>
         </div>

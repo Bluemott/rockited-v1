@@ -1,5 +1,5 @@
-import { BlogPost } from "./types";
 import { env } from "./env";
+import { BlogPost } from "./types";
 
 const WORDPRESS_URL = env.WOOCOMMERCE_URL; // Use same base URL as WooCommerce
 const WORDPRESS_API_BASE = `${WORDPRESS_URL}/wp-json/wp/v2`;
@@ -65,7 +65,9 @@ interface WordPressMedia {
 /**
  * Fetch WordPress posts from REST API
  */
-async function fetchWordPressPosts(params: Record<string, any> = {}): Promise<WordPressPost[]> {
+async function fetchWordPressPosts(
+  params: Record<string, string | number | boolean> = {}
+): Promise<WordPressPost[]> {
   try {
     const queryParams = new URLSearchParams({
       _embed: "1", // Include embedded resources (author, featured media, terms)

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import { generateCheckoutCancelMetadata } from "@/lib/seo";
 
@@ -35,7 +36,7 @@ export default function CheckoutCancelPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Need Help?</h2>
           <div className="space-y-2 text-left">
             <p className="text-gray-600">
-              If you're experiencing issues with checkout, please try:
+              If you&apos;re experiencing issues with checkout, please try:
             </p>
             <ul className="list-disc list-inside space-y-1 text-gray-600">
               <li>Check your internet connection</li>

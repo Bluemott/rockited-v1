@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Script from "next/script";
 import { usePathname } from "next/navigation";
+import Script from "next/script";
+import { useEffect, useState } from "react";
+
 import { trackPageView } from "@/lib/analytics";
 import { hasAnalyticsConsent } from "@/lib/cookies";
 

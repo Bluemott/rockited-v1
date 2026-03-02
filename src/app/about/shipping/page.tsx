@@ -1,7 +1,8 @@
+import { Truck, Clock, Package, MapPin } from "lucide-react";
 import type { Metadata } from "next";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { MotionDiv } from "@/components/ui/motion";
-import { Truck, Clock, Package, MapPin } from "lucide-react";
 import { generateShippingMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = generateShippingMetadata();
@@ -100,11 +101,11 @@ export default function ShippingPage() {
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 <h2 className="text-2xl font-semibold text-foreground mb-4">Order Processing</h2>
                 <p className="text-muted-foreground mb-4">
-                  Once you place an order, here's what happens:
+                  Once you place an order, here&apos;s what happens:
                 </p>
                 <ol className="text-muted-foreground space-y-3 list-decimal list-inside">
                   <li>
-                    <strong className="text-foreground">Order Confirmation:</strong> You'll receive
+                    <strong className="text-foreground">Order Confirmation:</strong> You&apos;ll receive
                     an email confirmation immediately after placing your order.
                   </li>
                   <li>
@@ -113,7 +114,7 @@ export default function ShippingPage() {
                   </li>
                   <li>
                     <strong className="text-foreground">Shipping Notification:</strong> Once your
-                    order ships, you'll receive an email with tracking information.
+                    order ships, you&apos;ll receive an email with tracking information.
                   </li>
                   <li>
                     <strong className="text-foreground">Delivery:</strong> Your package will arrive
@@ -132,11 +133,11 @@ export default function ShippingPage() {
                 <h2 className="text-2xl font-semibold text-foreground mb-4">Tracking Your Order</h2>
                 <p className="text-muted-foreground mb-4">
                   All orders include real-time tracking so you can monitor your package every step
-                  of the way. Once your order ships, you'll receive:
+                  of the way. Once your order ships, you&apos;ll receive:
                 </p>
                 <ul className="text-muted-foreground space-y-2 list-disc list-inside">
                   <li>A tracking number via email</li>
-                  <li>Real-time updates on your package's location</li>
+                  <li>Real-time updates on your package&apos;s location</li>
                   <li>Estimated delivery date</li>
                   <li>Delivery confirmation</li>
                 </ul>
@@ -187,7 +188,7 @@ export default function ShippingPage() {
                   <li>Missing items from your order</li>
                 </ul>
                 <p className="text-muted-foreground">
-                  Please contact our customer service team immediately. We'll work with you and the
+                  Please contact our customer service team immediately. We&apos;ll work with you and the
                   shipping carrier to resolve the issue as quickly as possible.
                 </p>
               </div>

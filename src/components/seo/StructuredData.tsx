@@ -1,6 +1,13 @@
-import { WooProduct } from "@/lib/types";
-import { getSiteConfig } from "@/lib/seo";
 import { getBrandFromMetadata, getStructuredMetadata } from "@/lib/productMetadata";
+import { getSiteConfig } from "@/lib/seo";
+import { WooProduct } from "@/lib/types";
+
+// One year from module load (stable for schema; avoids Date.now() during render)
+const PRICE_VALID_UNTIL = (() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString().split("T")[0];
+})();
 
 interface StructuredDataProps {
   type: "organization" | "product" | "breadcrumb" | "website";
@@ -69,9 +76,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
             url: `${siteConfig.url}/products/${product.slug}`,
             priceCurrency: "USD",
             price: price.toString(),
-            priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-              .toISOString()
-              .split("T")[0],
+            priceValidUntil: PRICE_VALID_UNTIL,
             availability:
               product.stock_status === "instock"
                 ? "https://schema.org/InStock"

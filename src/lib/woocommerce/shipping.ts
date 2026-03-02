@@ -1,6 +1,7 @@
+import type { WooShippingZone, WooShippingMethod, WooShippingRate } from "../types";
+
 import { wooApi } from "./client";
 import { getProduct } from "./products";
-import type { WooShippingZone, WooShippingMethod, WooShippingRate } from "../types";
 
 // Shipping Zones API functions
 export const getShippingZones = async (): Promise<WooShippingZone[]> => {

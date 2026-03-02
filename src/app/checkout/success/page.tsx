@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { useCartStore } from "@/lib/store";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+
 import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useCartStore } from "@/lib/store";
 
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
@@ -24,7 +25,7 @@ function CheckoutSuccessContent() {
         setLoading(false);
       }, 1000);
     } else {
-      setLoading(false);
+      queueMicrotask(() => setLoading(false));
     }
   }, [sessionId, clearCart]);
 
@@ -79,7 +80,7 @@ function CheckoutSuccessContent() {
         </div>
 
         <div className="bg-gray-50 rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">What's Next?</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">What&apos;s Next?</h2>
           <div className="space-y-3 text-left">
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
@@ -88,7 +89,7 @@ function CheckoutSuccessContent() {
               <div>
                 <p className="font-medium text-gray-900">Order Confirmation</p>
                 <p className="text-sm text-gray-600">
-                  You'll receive an email confirmation shortly
+                  You&apos;ll receive an email confirmation shortly
                 </p>
               </div>
             </div>
@@ -98,7 +99,7 @@ function CheckoutSuccessContent() {
               </div>
               <div>
                 <p className="font-medium text-gray-900">Processing</p>
-                <p className="text-sm text-gray-600">We'll prepare your order for shipment</p>
+                <p className="text-sm text-gray-600">We&apos;ll prepare your order for shipment</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
@@ -108,7 +109,7 @@ function CheckoutSuccessContent() {
               <div>
                 <p className="font-medium text-gray-900">Shipping</p>
                 <p className="text-sm text-gray-600">
-                  You'll receive tracking information once shipped
+                  You&apos;ll receive tracking information once shipped
                 </p>
               </div>
             </div>

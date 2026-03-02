@@ -3,17 +3,17 @@ import { WooProduct, WooMetaData } from "./types";
 /**
  * Extract metadata from WooCommerce product meta_data array
  */
-export function extractMetadata(product: WooProduct): Record<string, any> {
+export function extractMetadata(product: WooProduct): Record<string, unknown> {
   if (!product.meta_data || product.meta_data.length === 0) {
     return {};
   }
 
-  const metadata: Record<string, any> = {};
+  const metadata: Record<string, unknown> = {};
 
   product.meta_data.forEach((meta: WooMetaData) => {
     try {
       // Try to parse JSON values, fallback to string
-      let value: any = meta.value;
+      let value: unknown = meta.value;
       if (typeof meta.value === "string") {
         // Check if it's JSON
         if (meta.value.startsWith("{") || meta.value.startsWith("[")) {
@@ -67,9 +67,9 @@ export function getBrandFromMetadata(product: WooProduct): string | null {
  */
 export function getCustomFields(
   product: WooProduct
-): Array<{ key: string; label: string; value: any }> {
+): Array<{ key: string; label: string; value: unknown }> {
   const metadata = extractMetadata(product);
-  const customFields: Array<{ key: string; label: string; value: any }> = [];
+  const customFields: Array<{ key: string; label: string; value: unknown }> = [];
 
   // Also include any ACF (Advanced Custom Fields) keys
   Object.keys(metadata).forEach((key) => {

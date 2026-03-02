@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { WooProduct } from "@/lib/types";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { MotionDiv } from "@/components/ui/motion";
-import { ShoppingCart } from "lucide-react";
 import { useCartStore } from "@/lib/store";
-import { toast } from "sonner";
-import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { WooProduct } from "@/lib/types";
 
 interface FeaturedProductsProps {
   products: WooProduct[];
@@ -39,7 +40,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
     if (isMobile) return;
 
     let isScrolling = false;
-    let rafId: number | null = null;
+    const rafId: number | null = null;
 
     const handleScroll = () => {
       if (!scrollContainer || isScrolling) return;
@@ -134,6 +135,8 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
       price: parseFloat(product.price),
       image: product.images[0]?.src || "/placeholder-product.jpg",
       sku: product.sku,
+      virtual: product.virtual,
+      categories: product.categories?.map((c) => ({ slug: c.slug })),
     });
     toast.success(`${product.name} added to cart`);
   };

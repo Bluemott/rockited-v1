@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { WooProduct, WooCategory } from "@/lib/types";
+
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import {
   ProductFilters,
   defaultFilters,
@@ -9,18 +10,22 @@ import {
   sortProducts,
   getPriceRange,
 } from "@/lib/productFilters";
-import ProductGrid from "./ProductGrid";
+import { WooProduct, WooCategory } from "@/lib/types";
+
 import ProductFiltersSidebar from "./ProductFiltersSidebar";
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import ProductGrid from "./ProductGrid";
+import RecentlyViewedProducts from "./RecentlyViewedProducts";
 
 interface ProductsWithFiltersProps {
   products: WooProduct[];
   categories: WooCategory[];
+  bestsellers?: WooProduct[];
 }
 
 function ProductsContent({
   products,
   categories,
+  bestsellers,
   filters,
   onFiltersChange,
   priceRange,
@@ -28,6 +33,7 @@ function ProductsContent({
 }: {
   products: WooProduct[];
   categories: WooCategory[];
+  bestsellers: WooProduct[];
   filters: ProductFilters;
   onFiltersChange: (filters: ProductFilters) => void;
   priceRange: [number, number];
@@ -77,6 +83,15 @@ function ProductsContent({
             </div>
           </div>
 
+          <RecentlyViewedProducts title="Recently viewed" maxItems={8} />
+
+          {bestsellers.length > 0 && (
+            <section className="mb-12" aria-label="Customers also bought">
+              <h2 className="text-2xl font-bold text-foreground mb-6">Customers also bought</h2>
+              <ProductGrid products={bestsellers} />
+            </section>
+          )}
+
           <div className="mb-4">
             <p className="text-sm text-muted-foreground">
               {filteredAndSortedProducts.length === products.length
@@ -92,7 +107,11 @@ function ProductsContent({
   );
 }
 
-export default function ProductsWithFilters({ products, categories }: ProductsWithFiltersProps) {
+export default function ProductsWithFilters({
+  products,
+  categories,
+  bestsellers = [],
+}: ProductsWithFiltersProps) {
   const [filters, setFilters] = useState<ProductFilters>(defaultFilters);
 
   // Calculate price range from products
@@ -101,10 +120,12 @@ export default function ProductsWithFilters({ products, categories }: ProductsWi
   // Initialize price range in filters
   useEffect(() => {
     if (filters.priceRange[0] === 0 && filters.priceRange[1] === 10000) {
-      setFilters((prev) => ({
-        ...prev,
-        priceRange,
-      }));
+      queueMicrotask(() =>
+        setFilters((prev) => ({
+          ...prev,
+          priceRange,
+        }))
+      );
     }
   }, [priceRange, filters.priceRange]);
 
@@ -124,6 +145,7 @@ export default function ProductsWithFilters({ products, categories }: ProductsWi
       <ProductsContent
         products={products}
         categories={categories}
+        bestsellers={bestsellers}
         filters={filters}
         onFiltersChange={handleFiltersChange}
         priceRange={priceRange}

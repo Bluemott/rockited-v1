@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+
 import { generateFAQMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = generateFAQMetadata();

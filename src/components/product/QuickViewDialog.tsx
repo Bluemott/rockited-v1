@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { ShoppingCart, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { WooProduct } from "@/lib/types";
-import { useCartStore } from "@/lib/store";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ShoppingCart, ExternalLink } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useCartStore } from "@/lib/store";
+import { WooProduct } from "@/lib/types";
+import { normalizeImageUrl } from "@/lib/utils";
 
 interface QuickViewDialogProps {
   product: WooProduct;
@@ -42,12 +44,15 @@ export default function QuickViewDialog({ product, open, onOpenChange }: QuickVi
   };
 
   const handleAddToCart = () => {
+    const imageUrl = product.images[0]?.src || "/placeholder-product.jpg";
     addItem({
       id: product.id,
       name: product.name,
       price: parseFloat(product.price),
-      image: product.images[0]?.src || "/placeholder-product.jpg",
+      image: normalizeImageUrl(imageUrl),
       sku: product.sku,
+      virtual: product.virtual,
+      categories: product.categories?.map((c) => ({ slug: c.slug })),
     });
     toast.success(`${product.name} added to cart`);
     onOpenChange(false);
@@ -115,7 +120,7 @@ export default function QuickViewDialog({ product, open, onOpenChange }: QuickVi
                     }`}
                   >
                     <Image
-                      src={image.src}
+                      src={normalizeImageUrl(image.src)}
                       alt={image.alt || `${product.name} thumbnail ${index + 1}`}
                       fill
                       sizes="80px"

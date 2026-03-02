@@ -1,5 +1,6 @@
-import { wooApi } from "./client";
 import type { WooProduct } from "../types";
+
+import { wooApi } from "./client";
 
 // Product query parameters
 export interface ProductQueryParams {
@@ -102,6 +103,42 @@ export const getFeaturedProducts = async (limit: number = 3): Promise<WooProduct
     return response.data;
   } catch (error) {
     console.error("Error fetching featured products:", error);
+    throw error;
+  }
+};
+
+/** Fetch multiple products by ID. Preserves order of ids where API allows. */
+export const getProductsByIds = async (ids: number[]): Promise<WooProduct[]> => {
+  if (ids.length === 0) return [];
+  try {
+    const response = await wooApi.get("products", {
+      include: ids.join(","),
+      per_page: ids.length,
+      status: "publish",
+    });
+    const data = response.data as WooProduct[];
+    // Preserve requested order (API may return in different order)
+    const byId = new Map(data.map((p) => [p.id, p]));
+    return ids.map((id) => byId.get(id)).filter((p): p is WooProduct => p != null);
+  } catch (error) {
+    console.error("Error fetching products by ids:", error);
+    throw error;
+  }
+};
+
+/** Bestsellers for store-wide "Customers also bought" (order by total sales). */
+export const getBestsellers = async (limit: number = 8): Promise<WooProduct[]> => {
+  try {
+    const response = await wooApi.get("products", {
+      per_page: limit,
+      page: 1,
+      status: "publish",
+      orderby: "popularity",
+      order: "desc",
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching bestsellers:", error);
     throw error;
   }
 };

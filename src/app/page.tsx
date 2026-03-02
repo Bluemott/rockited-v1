@@ -1,14 +1,16 @@
 "use client";
 
+import { ArrowRight, CheckCircle, Truck, Heart, ChevronDown } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
+
+import TestimonialsSection from "@/components/home/TestimonialsSection";
+import FeaturedProducts from "@/components/product/FeaturedProducts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { MotionDiv, StaggerContainer, StaggerItem } from "@/components/ui/motion";
-import { ArrowRight, CheckCircle, Truck, Heart, ChevronDown } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
-import FeaturedProducts from "@/components/product/FeaturedProducts";
+import { Separator } from "@/components/ui/separator";
 import { WooProduct } from "@/lib/types";
 
 export default function HomePage() {
@@ -191,13 +193,19 @@ export default function HomePage() {
         </>
       )}
 
+      {/* Testimonials / Customer Reviews Section */}
+      <TestimonialsSection />
+      <div className="w-full py-8 flex justify-center">
+        <Separator className="w-[80%]" />
+      </div>
+
       {/* Features Section */}
       <section className="py-16 floating-content">
         <div className="container mx-auto px-4">
           <MotionDiv variant="fadeInUp" className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Why Choose Us?</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              We're committed to providing you with the best products and shopping experience.
+              We&apos;re committed to providing you with the best products and shopping experience.
             </p>
           </MotionDiv>
 
@@ -469,7 +477,7 @@ export default function HomePage() {
                       </ul>
                       <p className="text-sm text-muted-foreground pt-2">
                         Whether you need help with product selection, order tracking, returns, or
-                        general inquiries, we're committed to providing exceptional service and
+                        general inquiries, we&apos;re committed to providing exceptional service and
                         resolving any issues quickly and efficiently.
                       </p>
                       <Link

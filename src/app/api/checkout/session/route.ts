@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCheckoutSession } from "@/lib/stripe";
+
 import { sanitizeString } from "@/lib/sanitize";
+import { getCheckoutSession } from "@/lib/stripe";
 import type { CheckoutSessionApiResponse } from "@/lib/types";
 
 export async function GET(request: NextRequest) {

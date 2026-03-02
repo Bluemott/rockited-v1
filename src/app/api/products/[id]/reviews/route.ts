@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { getProductReviews, createProductReview } from "@/lib/woocommerce";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -20,15 +21,25 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     return NextResponse.json(reviews);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Product reviews API error:", error);
-    const errorMessage = error?.message || "Failed to fetch product reviews";
-    const statusCode = error?.response?.status || 500;
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to fetch product reviews";
+    const statusCode =
+      error &&
+      typeof error === "object" &&
+      "response" in error &&
+      typeof (error as { response?: { status?: number } }).response?.status === "number"
+        ? (error as { response: { status: number } }).response.status
+        : 500;
 
     return NextResponse.json(
       {
         error: errorMessage,
-        details: process.env.NODE_ENV === "development" ? error?.stack : undefined,
+        details:
+          process.env.NODE_ENV === "development" && error instanceof Error
+            ? error.stack
+            : undefined,
       },
       { status: statusCode }
     );
@@ -38,53 +49,35 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params;
-    const productId = parseInt(resolvedParams.id);
-
-    if (isNaN(productId)) {
+    const productId = parseInt(resolvedParams.id);    if (isNaN(productId)) {
       return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
-    }
-
-    const body = await request.json();
-    const { reviewer, reviewer_email, review, rating } = body;
-
-    // Validation
+    }    const body = await request.json();
+    const { reviewer, reviewer_email, review, rating } = body;    // Validation
     if (!reviewer || typeof reviewer !== "string" || reviewer.trim().length === 0) {
       return NextResponse.json({ error: "Reviewer name is required" }, { status: 400 });
-    }
-
-    if (
+    }    if (
       !reviewer_email ||
       typeof reviewer_email !== "string" ||
       reviewer_email.trim().length === 0
     ) {
       return NextResponse.json({ error: "Reviewer email is required" }, { status: 400 });
-    }
-
-    // Basic email validation
+    }    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(reviewer_email.trim())) {
       return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
-    }
-
-    if (!rating || typeof rating !== "number" || rating < 1 || rating > 5) {
+    }    if (!rating || typeof rating !== "number" || rating < 1 || rating > 5) {
       return NextResponse.json(
         { error: "Rating must be a number between 1 and 5" },
         { status: 400 }
       );
-    }
-
-    // Review text is optional, but if provided, sanitize it
-    const reviewText = review && typeof review === "string" ? review.trim() : "";
-
-    // Create the review
+    }    // Review text is optional, but if provided, sanitize it
+    const reviewText = review && typeof review === "string" ? review.trim() : "";    // Create the review
     const newReview = await createProductReview(productId, {
       reviewer: reviewer.trim(),
       reviewer_email: reviewer_email.trim(),
       review: reviewText,
       rating: rating,
-    });
-
-    return NextResponse.json(
+    });    return NextResponse.json(
       {
         success: true,
         message: "Review submitted successfully. It will be published after moderation.",
@@ -92,15 +85,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Product review creation API error:", error);
-    const errorMessage = error?.message || "Failed to submit review";
-    const statusCode = error?.response?.status || 500;
-
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to submit review";
+    const statusCode =
+      error &&
+      typeof error === "object" &&
+      "response" in error &&
+      typeof (error as { response?: { status?: number } }).response?.status === "number"
+        ? (error as { response: { status: number } }).response.status
+        : 500;
     return NextResponse.json(
       {
         error: errorMessage,
-        details: process.env.NODE_ENV === "development" ? error?.stack : undefined,
+        details:
+          process.env.NODE_ENV === "development" && error instanceof Error
+            ? error.stack
+            : undefined,
       },
       { status: statusCode }
     );

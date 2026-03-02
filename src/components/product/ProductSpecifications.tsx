@@ -1,8 +1,9 @@
 "use client";
 
-import { WooProduct } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Ruler, Weight, Truck } from "lucide-react";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { WooProduct } from "@/lib/types";
 
 interface ProductSpecificationsProps {
   product: WooProduct;

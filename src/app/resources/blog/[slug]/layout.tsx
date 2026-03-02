@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+
 import { getPostBySlug } from "@/lib/blog";
 import { generateBlogPostMetadata } from "@/lib/seo";
 

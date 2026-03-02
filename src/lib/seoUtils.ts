@@ -14,7 +14,7 @@ export function optimizeMetaDescription(
   }
 
   // Strip HTML tags and decode HTML entities
-  let cleanText = text
+  const cleanText = text
     .replace(/<[^>]*>/g, "") // Remove HTML tags
     .replace(/&nbsp;/g, " ") // Replace &nbsp; with space
     .replace(/&amp;/g, "&") // Decode &amp;

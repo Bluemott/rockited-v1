@@ -1,8 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+
 import { Cart, CartItem } from "./types";
 
 interface CartStore extends Cart {
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
   addItem: (item: Omit<CartItem, "quantity">) => void;
   removeItem: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
@@ -15,6 +18,10 @@ export const useCartStore = create<CartStore>()(
       items: [],
       total: 0,
       itemCount: 0,
+      _hasHydrated: false,
+      setHasHydrated: (state: boolean) => {
+        set({ _hasHydrated: state });
+      },
 
       addItem: (item) => {
         const { items } = get();
@@ -82,6 +89,11 @@ export const useCartStore = create<CartStore>()(
         total: state.total,
         itemCount: state.itemCount,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHasHydrated(true);
+        }
+      },
     }
   )
 );

@@ -1,23 +1,24 @@
 "use client";
 
+import { Cookie } from "lucide-react";
 import { useState, useEffect } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Cookie } from "lucide-react";
-import { getConsentStatus, setConsentStatus } from "@/lib/cookies";
 import { initGA } from "@/lib/analytics";
+import { getConsentStatus, setConsentStatus } from "@/lib/cookies";
 
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
     const consent = getConsentStatus();
 
     // Only show banner if consent hasn't been given yet
     if (consent === null) {
-      setShowBanner(true);
+      queueMicrotask(() => setShowBanner(true));
     }
   }, []);
 

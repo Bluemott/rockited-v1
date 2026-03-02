@@ -1,7 +1,9 @@
+import { RotateCcw, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import type { Metadata } from "next";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { MotionDiv } from "@/components/ui/motion";
-import { RotateCcw, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { RETURN_POLICY_SUMMARY } from "@/lib/content/returns";
 import { generateReturnsMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = generateReturnsMetadata();
@@ -12,7 +14,7 @@ export default function ReturnsPage() {
       <MotionDiv variant="fadeInUp" className="mb-8">
         <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Returns & Refunds</h1>
         <p className="text-lg text-muted-foreground">
-          Learn about our return policy and how to process a return or refund.
+          {RETURN_POLICY_SUMMARY} Below are the full details and how to process a return or refund.
         </p>
       </MotionDiv>
 
@@ -29,7 +31,7 @@ export default function ReturnsPage() {
                     30-Day Return Policy
                   </h2>
                   <p className="text-muted-foreground">
-                    We offer a 30-day return policy on all products. If you're not completely
+                    We offer a 30-day return policy on all products. If you&apos;re not completely
                     satisfied with your purchase, you can return it within 30 days of delivery for a
                     full refund or exchange.
                   </p>
@@ -92,7 +94,7 @@ export default function ReturnsPage() {
                     support@rockited.com or call (555) 123-4567.
                   </li>
                   <li>
-                    We'll provide you with a return authorization number and return shipping label.
+                    We&apos;ll provide you with a return authorization number and return shipping label.
                   </li>
                   <li>Package the item securely in its original packaging (if available).</li>
                   <li>
@@ -100,7 +102,7 @@ export default function ReturnsPage() {
                   </li>
                   <li>Ship the item back using the provided return label.</li>
                   <li>
-                    Once we receive and inspect the item, we'll process your refund within 5-7
+                    Once we receive and inspect the item, we&apos;ll process your refund within 5-7
                     business days.
                   </li>
                 </ol>

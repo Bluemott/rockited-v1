@@ -1,14 +1,28 @@
 "use client";
 
-import { useCartStore } from "@/lib/store";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/utils";
+
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { Button } from "@/components/ui/button";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useCartStore } from "@/lib/store";
+import { formatPrice, normalizeImageUrl } from "@/lib/utils";
 
 export default function CartPage() {
-  const { items, total, itemCount, updateQuantity, removeItem, clearCart } = useCartStore();
+  const { items, total, itemCount, updateQuantity, removeItem, clearCart, _hasHydrated } = useCartStore();
+
+  // Wait for hydration before checking cart state
+  // This prevents showing "empty cart" during SSR/hydration when cart actually has items
+  if (!_hasHydrated) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center py-12">
+          <LoadingSpinner size="lg" />
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -41,11 +55,12 @@ export default function CartPage() {
               {items.map((item) => (
                 <div
                   key={item.id}
+                  data-testid="cart-item"
                   className="bg-card rounded-lg shadow-brand-md p-6 flex items-center space-x-4"
                 >
                   <div className="relative w-20 h-20 flex-shrink-0">
                     <Image
-                      src={item.image}
+                      src={normalizeImageUrl(item.image)}
                       alt={item.name}
                       fill
                       className="object-cover rounded-lg"

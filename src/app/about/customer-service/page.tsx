@@ -1,8 +1,9 @@
+import { Mail, Phone, MessageCircle, HelpCircle, Clock } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { MotionDiv } from "@/components/ui/motion";
-import { Mail, Phone, MessageCircle, HelpCircle, Clock } from "lucide-react";
-import Link from "next/link";
 import { generateCustomerServiceMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = generateCustomerServiceMetadata();
@@ -13,7 +14,7 @@ export default function CustomerServicePage() {
       <MotionDiv variant="fadeInUp" className="mb-8">
         <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Customer Service</h1>
         <p className="text-lg text-muted-foreground">
-          We're committed to providing exceptional customer service. Here's how we can help you.
+          We&apos;re committed to providing exceptional customer service. Here&apos;s how we can help you.
         </p>
       </MotionDiv>
 
@@ -26,7 +27,7 @@ export default function CustomerServicePage() {
                 <p className="text-muted-foreground mb-4">
                   Our dedicated customer service team is available through multiple channels to
                   assist you with any questions, concerns, or issues you may have. Whether you need
-                  help with product selection, order tracking, returns, or general inquiries, we're
+                  help with product selection, order tracking, returns, or general inquiries, we&apos;re
                   here to provide exceptional service and resolve any issues quickly and
                   efficiently.
                 </p>

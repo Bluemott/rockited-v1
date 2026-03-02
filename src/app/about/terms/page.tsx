@@ -1,7 +1,8 @@
+import { FileCheck } from "lucide-react";
 import type { Metadata } from "next";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { MotionDiv } from "@/components/ui/motion";
-import { FileCheck } from "lucide-react";
 import { generateTermsMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = generateTermsMetadata();
@@ -52,7 +53,7 @@ export default function TermsPage() {
                 <h2 className="text-2xl font-semibold text-foreground mb-4">Use License</h2>
                 <p className="text-muted-foreground mb-4">
                   Permission is granted to temporarily download one copy of the materials on ROCK IT
-                  ED's website for personal, non-commercial transitory viewing only. This is the
+                  ED&apos;s website for personal, non-commercial transitory viewing only. This is the
                   grant of a license, not a transfer of title, and under this license you may not:
                 </p>
                 <ul className="text-muted-foreground space-y-2 list-disc list-inside">
@@ -61,7 +62,7 @@ export default function TermsPage() {
                   <li>Attempt to reverse engineer any software contained on the website</li>
                   <li>Remove any copyright or other proprietary notations from the materials</li>
                   <li>
-                    Transfer the materials to another person or "mirror" the materials on any other
+                    Transfer the materials to another person or &quot;mirror&quot; the materials on any other
                     server
                   </li>
                 </ul>
@@ -142,7 +143,7 @@ export default function TermsPage() {
                   In no event shall ROCK IT ED or its suppliers be liable for any damages
                   (including, without limitation, damages for loss of data or profit, or due to
                   business interruption) arising out of the use or inability to use the materials on
-                  ROCK IT ED's website, even if ROCK IT ED or a ROCK IT ED authorized representative
+                  ROCK IT ED&apos;s website, even if ROCK IT ED or a ROCK IT ED authorized representative
                   has been notified orally or in writing of the possibility of such damage.
                 </p>
                 <p className="text-muted-foreground">
@@ -163,7 +164,7 @@ export default function TermsPage() {
                   Revisions and Errata
                 </h2>
                 <p className="text-muted-foreground">
-                  The materials appearing on ROCK IT ED's website could include technical,
+                  The materials appearing on ROCK IT ED&apos;s website could include technical,
                   typographical, or photographic errors. ROCK IT ED does not warrant that any of the
                   materials on its website are accurate, complete, or current. ROCK IT ED may make
                   changes to the materials contained on its website at any time without notice.

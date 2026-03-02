@@ -1,14 +1,16 @@
-import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
-import { getCategoryBySlug, getProducts } from "@/lib/woocommerce";
-import type { WooProduct } from "@/lib/types";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
 import ProductGrid from "@/components/product/ProductGrid";
 import StructuredData from "@/components/seo/StructuredData";
+import { Button } from "@/components/ui/button";
 import { generateCategoryMetadata, getSiteConfig } from "@/lib/seo";
 import { generateCategoryBreadcrumbs } from "@/lib/seoUtils";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import type { WooProduct } from "@/lib/types";
+import { getCategoryBySlug, getProducts } from "@/lib/woocommerce";
+
 
 export const revalidate = 3600; // Revalidate every hour
 

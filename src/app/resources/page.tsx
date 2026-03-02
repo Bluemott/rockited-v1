@@ -1,5 +1,6 @@
-import ResourcesClient from "./ResourcesClient";
 import { getAllPosts, getAllCategories, getAllTags } from "@/lib/blog";
+
+import ResourcesClient from "./ResourcesClient";
 
 export default async function ResourcesPage() {
   const posts = await getAllPosts();

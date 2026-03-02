@@ -1,9 +1,10 @@
-import { WooProduct } from "@/lib/types";
-import ProductCard from "./ProductCard";
-import { ProductGridSkeleton } from "@/components/ui/loading";
-import { EmptyState } from "@/components/ui/error";
-import { StaggerContainer, StaggerItem } from "@/components/ui/motion";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { EmptyState } from "@/components/ui/error";
+import { ProductGridSkeleton } from "@/components/ui/loading";
+import { StaggerContainer, StaggerItem } from "@/components/ui/motion";
+import { WooProduct } from "@/lib/types";
+
+import ProductCard from "./ProductCard";
 
 interface ProductGridProps {
   products: WooProduct[];

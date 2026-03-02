@@ -1,6 +1,8 @@
 "use client";
 
 import { Share2, Copy, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +11,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { shareOnPlatform, type SharePlatform, type ShareData } from "@/lib/share";
-import { toast } from "sonner";
 
 export interface ShareButtonProps {
   url: string;

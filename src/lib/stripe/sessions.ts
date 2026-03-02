@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+
 import { stripe } from "./client";
 
 // Type definitions for better type safety
@@ -9,11 +10,39 @@ export interface CartItem {
   quantity: number;
   image?: string;
   sku?: string;
+  virtual?: boolean;
+  categories?: Array<{ slug?: string }>;
+}
+
+/** Shipping option selected by user before creating the session (shipping-first flow). */
+export interface PreselectedShippingOption {
+  method_id: string;
+  method_title: string;
+  cost: string;
+  estimated_delivery?: string;
+}
+
+/** Shipping address collected before creating the session (shipping-first flow). */
+export interface PreselectedShippingAddress {
+  country: string;
+  postal_code: string;
+  state?: string;
+  city?: string;
+  line1?: string;
+  line2?: string;
+  name?: string;
+}
+
+export interface PreselectedShipping {
+  address: PreselectedShippingAddress;
+  shippingOption: PreselectedShippingOption;
 }
 
 export interface CheckoutSessionOptions {
   customerEmail?: string;
   shippingAddressCollection?: boolean;
+  /** When set, session is created with one shipping option and no address collection (caller must update session with collected_information.shipping_details). */
+  preselectedShipping?: PreselectedShipping;
   allowPromotionCodes?: boolean;
   taxEnabled?: boolean;
   allowedCountries?: string[];
@@ -71,14 +100,15 @@ export const createCheckoutSession = async (
       quantity: item.quantity,
     }));
 
+    // Omit payment_method_types to use Dynamic Payment Methods (cards, Apple Pay, Google Pay, Link via Dashboard)
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {
         cart_items: JSON.stringify(cartItems),
+        source: "rockited_checkout",
       },
     };
 
@@ -153,7 +183,7 @@ export const createEmbeddedCheckoutSession = async (
               woocommerce_product_id: item.id.toString(),
             },
             // Tax code goes on product_data, not price_data
-            ...(taxEnabled && { tax_code: getTaxCodeForProduct() }),
+            ...(taxEnabled && { tax_code: getTaxCodeForProduct(item) }),
           },
           unit_amount: Math.round(item.price * 100), // Convert to cents
           // Tax behavior goes on price_data
@@ -165,14 +195,15 @@ export const createEmbeddedCheckoutSession = async (
       return lineItem;
     });
 
+    // Omit payment_method_types to use Dynamic Payment Methods (cards, Apple Pay, Google Pay, Link via Dashboard)
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      ui_mode: "custom", // Changed from 'embedded' to 'custom' for Payment Element
-      payment_method_types: ["card"],
+      ui_mode: "custom",
       line_items: lineItems,
       mode: "payment",
       return_url: returnUrl,
       metadata: {
         cart_items: JSON.stringify(cartItems),
+        source: "rockited_checkout",
       },
     };
 
@@ -181,15 +212,67 @@ export const createEmbeddedCheckoutSession = async (
       sessionParams.customer_email = options.customerEmail;
     }
 
-    // Configure shipping address collection for Payment Element
-    // With custom mode, shipping is handled via Address Element and updateShippingAddress
-    if (options?.shippingAddressCollection) {
+    // Preselected shipping (shipping-first flow): one option, no address collection; caller updates session with shipping_details after create
+    if (options?.preselectedShipping) {
+      const opt = options.preselectedShipping.shippingOption;
+      const costCents = Math.round(Math.max(0, parseFloat(opt.cost || "0")) * 100);
+      const deliveryMatch = (opt.estimated_delivery || "").match(
+        /(\d+)[-–](\d+)\s*(business\s*)?day/i
+      );
+      const deliveryEstimate =
+        deliveryMatch && deliveryMatch[1] && deliveryMatch[2]
+          ? {
+              minimum: {
+                unit: (deliveryMatch[3] ? "business_day" : "day") as "business_day" | "day",
+                value: parseInt(deliveryMatch[1], 10),
+              },
+              maximum: {
+                unit: (deliveryMatch[3] ? "business_day" : "day") as "business_day" | "day",
+                value: parseInt(deliveryMatch[2], 10),
+              },
+            }
+          : { minimum: { unit: "business_day" as const, value: 3 }, maximum: { unit: "business_day" as const, value: 7 } };
+
+      sessionParams.shipping_options = [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: costCents, currency: "usd" },
+            display_name: opt.method_title || "Standard Shipping",
+            delivery_estimate: deliveryEstimate,
+          },
+        },
+      ];
+      // permissions.update_shipping_details=server_only requires shipping_address_collection to be set
       sessionParams.shipping_address_collection = {
         allowed_countries:
           allowedCountries as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[],
       };
-      // Note: permissions and initial shipping_options not needed for custom mode
-      // Shipping will be updated dynamically via session.updateShippingAddress()
+      sessionParams.permissions = {
+        update_shipping_details: "server_only",
+      };
+      // Billing fields shown so we can prefill from shipping (use shipping for billing or fill manually)
+      sessionParams.billing_address_collection = "required";
+      // Caller updates session with collected_information.shipping_details so address is prefilled; we do not show ShippingAddressElement in UI
+    } else if (options?.shippingAddressCollection) {
+      // Legacy: Stripe collects address; /api/checkout/shipping updates session with rates
+      sessionParams.shipping_address_collection = {
+        allowed_countries:
+          allowedCountries as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[],
+      };
+      sessionParams.shipping_options = [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: 0, currency: "usd" },
+            display_name: "Standard Shipping",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 3 },
+              maximum: { unit: "business_day", value: 5 },
+            },
+          },
+        },
+      ];
     }
 
     // Enable automatic tax calculation

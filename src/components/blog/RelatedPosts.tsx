@@ -1,4 +1,5 @@
 import { BlogPost } from "@/lib/types";
+
 import { BlogCard } from "./BlogCard";
 
 interface RelatedPostsProps {

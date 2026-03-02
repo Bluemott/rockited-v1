@@ -1,0 +1,22 @@
+---
+alwaysApply: true
+---
+---
+description: Rules for SEO, Metadata API, Open Graph, and JSON-LD structured data.
+globs: app/**/layout.tsx, app/**/page.tsx, components/seo/*.tsx
+---
+
+# SEO & Metadata Rules
+
+- **Metadata Base:** Always define `metadataBase: new URL('https://yourdomain.com')` in the root `layout.tsx`. This ensures Open Graph images use absolute URLs, preventing broken previews on social platforms.
+- **Title Templates:** Use the `title.template` pattern in the root layout (e.g., `title: { default: 'Rockited', template: '%s | Rockited' }`). Every page must have a unique, descriptive title.
+- **Dynamic Product Metadata:** For Product Detail Pages (PDP), use `generateMetadata()`. 
+  - Fetch product details from the WooCommerce API.
+  - Map `product.name` to `title`.
+  - Map `product.description` (stripped of HTML) to `description`.
+- **Canonical URLs:** Explicitly set canonical URLs in `alternates` for every route to prevent duplicate content issues between Lightsail and Amplify URLs.
+- **JSON-LD Structured Data:** Proactively suggest adding a `<script type="application/ld+json">` tag for:
+  - **Product:** Include price, availability, and rating.
+  - **BreadcrumbList:** To help Google display the site hierarchy.
+- **Semantic HTML:** Enforce the use of `<main>`, `<article>`, and `<h1>` to `<h3>` tags. Avoid "Div Soup" which confuses crawlers.
+- **Robots & Sitemaps:** Ensure a `sitemap.ts` and `robots.ts` exist in the `app/` directory that dynamically pull slugs from the WooCommerce API.

@@ -1,8 +1,9 @@
-import Link from "next/link";
-import Image from "next/image";
 import { Calendar, User, Tag } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
+import Link from "next/link";
+
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { BlogPost } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 

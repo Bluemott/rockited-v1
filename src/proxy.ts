@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
 import { checkRateLimit, getClientIP } from "./lib/rate-limit";
 
 /**
- * Security headers and rate limiting proxy
- * Applies security headers to all routes and rate limiting to API routes
+ * Security headers and rate limiting proxy (Next.js 16 proxy convention).
+ * Applies security headers to all routes and rate limiting to API routes.
  */
-export async function proxy(request: NextRequest) {
+async function proxyHandler(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Skip proxy for static assets and Next.js internals
@@ -24,9 +25,13 @@ export async function proxy(request: NextRequest) {
       return NextResponse.next();
     }
 
-    // Determine endpoint type for rate limiting
-    let endpointType: "checkout" | "products" | "shipping" | "default" = "default";
-    if (pathname.startsWith("/api/checkout") || pathname.startsWith("/api/shipping")) {
+    // Determine endpoint type for rate limiting (shipping/address routes get stricter presets)
+    let endpointType: "checkout" | "products" | "shipping" | "addressValidate" | "cityState" | "default" = "default";
+    if (pathname === "/api/address/validate") {
+      endpointType = "addressValidate";
+    } else if (pathname === "/api/shipping/city-state") {
+      endpointType = "cityState";
+    } else if (pathname.startsWith("/api/checkout") || pathname.startsWith("/api/shipping")) {
       endpointType = pathname.startsWith("/api/checkout") ? "checkout" : "shipping";
     } else if (pathname.startsWith("/api/products") || pathname.startsWith("/api/inventory")) {
       endpointType = "products";
@@ -70,15 +75,18 @@ export async function proxy(request: NextRequest) {
   // Apply security headers to non-API routes
   const response = NextResponse.next();
 
-  // Content Security Policy
+  // Content Security Policy: allow Stripe, Google Maps/Places, and inline scripts used by Next.js.
+  // Note: Do NOT add sha256/nonce hashes—when present, browsers ignore 'unsafe-inline' and block
+  // Next.js inline bootstrap/hydration scripts, causing InvariantError (self.__next_r undefined).
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://js.stripe.com https://*.stripe.com",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://maps.googleapis.com https://js.stripe.com https://*.stripe.com https://m.stripe.network",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://api.stripe.com https://*.stripe.com https://api.rockited4d.com https://rockited4d.com https://www.rockited4d.com",
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+    "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://maps.googleapis.com https://*.googleapis.com https://api.stripe.com https://*.stripe.com https://m.stripe.network https://api.rockited4d.com https://rockited4d.com https://www.rockited4d.com",
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://m.stripe.network",
+    "worker-src 'self' blob:",
     "form-action 'self' https://js.stripe.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -100,6 +108,8 @@ export async function proxy(request: NextRequest) {
 
   return response;
 }
+
+export default proxyHandler;
 
 /**
  * Configure which routes should run the proxy

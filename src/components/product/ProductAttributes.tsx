@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { WooProduct, WooAttribute } from "@/lib/types";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -10,8 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { WooProduct, WooAttribute } from "@/lib/types";
 
 interface ProductAttributesProps {
   product: WooProduct;
@@ -30,10 +31,12 @@ export default function ProductAttributes({ product, onAttributeChange }: Produc
           defaults[attr.id.toString()] = attr.option;
         }
       });
-      setSelectedAttributes(defaults);
-      if (onAttributeChange) {
-        onAttributeChange(defaults);
-      }
+      queueMicrotask(() => {
+        setSelectedAttributes(defaults);
+        if (onAttributeChange) {
+          onAttributeChange(defaults);
+        }
+      });
     }
   }, [product.default_attributes, onAttributeChange]);
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFeaturedProducts } from "@/lib/woocommerce";
+
 import type { FeaturedProductsApiResponse, ErrorApiResponse } from "@/lib/types";
+import { getFeaturedProducts } from "@/lib/woocommerce";
 
 export async function GET(_request: NextRequest) {
   try {

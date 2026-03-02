@@ -1,0 +1,15 @@
+---
+alwaysApply: true
+---
+---
+description: Rules for task completion and code verification.
+globs: **/*
+---
+
+# Verification Workflow
+
+- **Pre-Completion Check:** Before stating a task is complete, Cursor MUST run:
+  1. `npm run type-check` to ensure no TypeScript regressions.
+  2. `npm run lint` to ensure style consistency.
+- **New Components:** If a new UI component is created, Cursor should proactively suggest a Vitest unit test in the same directory (e.g., `MyComponent.test.tsx`).
+- **Critical Paths:** Any changes to the Checkout or Cart logic require a suggestion to run `npm run test:e2e` (Playwright) to ensure the shop remains functional.

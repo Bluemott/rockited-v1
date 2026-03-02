@@ -1,8 +1,9 @@
-import Image from "next/image";
+import { Mail, Phone, Clock, MapPin } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { MotionDiv } from "@/components/ui/motion";
-import { Mail, Phone, Clock, MapPin } from "lucide-react";
 import { generateAboutMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = generateAboutMetadata();
@@ -36,7 +37,7 @@ export default function AboutPage() {
                 </p>
                 <p className="text-muted-foreground">
                   At ROCK IT ED, we believe that great products should be accessible to everyone.
-                  That's why we work tirelessly to bring you the best value without compromising on
+                  That&apos;s why we work tirelessly to bring you the best value without compromising on
                   quality.
                 </p>
               </div>
@@ -78,7 +79,7 @@ export default function AboutPage() {
                   </li>
                   <li className="flex items-start">
                     <span className="font-semibold text-foreground mr-2">Customer Focus:</span>
-                    Your satisfaction is our priority. We're here to help with any questions or
+                    Your satisfaction is our priority. We&apos;re here to help with any questions or
                     concerns.
                   </li>
                   <li className="flex items-start">
@@ -122,7 +123,7 @@ export default function AboutPage() {
             <CardContent className="pt-6">
               <h2 className="text-2xl font-semibold text-foreground mb-4">Contact Us</h2>
               <p className="text-muted-foreground mb-6">
-                Get in touch with our team. We're here to help with any questions or concerns.
+                Get in touch with our team. We&apos;re here to help with any questions or concerns.
               </p>
             </CardContent>
           </Card>
@@ -213,7 +214,7 @@ export default function AboutPage() {
             <CardContent className="pt-6">
               <h2 className="text-2xl font-semibold text-foreground mb-4">Send us a Message</h2>
               <p className="text-muted-foreground mb-6">
-                Fill out the form below and we'll get back to you as soon as possible.
+                Fill out the form below and we&apos;ll get back to you as soon as possible.
               </p>
               <form className="space-y-4">
                 <div>

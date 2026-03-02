@@ -1,18 +1,22 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
-import { getProductBySlug, getProducts } from "@/lib/woocommerce";
-import { WooProduct, WooImage } from "@/lib/types";
-import ProductCard from "@/components/product/ProductCard";
+import { notFound } from "next/navigation";
+
+import ProductViewTracker from "@/components/analytics/ProductViewTracker";
 import AddToCartButton from "@/components/product/AddToCartButton";
-import ShippingEstimator from "@/components/product/ShippingEstimator";
-import ProductSpecifications from "@/components/product/ProductSpecifications";
-import ProductReviews from "@/components/product/ProductReviews";
 import ProductAttributes from "@/components/product/ProductAttributes";
+import ProductCard from "@/components/product/ProductCard";
+import ProductReviews from "@/components/product/ProductReviews";
+import ProductSpecifications from "@/components/product/ProductSpecifications";
+import RecentlyViewedProducts from "@/components/product/RecentlyViewedProducts";
+import { ReturnPolicySummary } from "@/components/returns/ReturnPolicySummary";
+import ShippingEstimator from "@/components/product/ShippingEstimator";
 import StructuredData from "@/components/seo/StructuredData";
 import { generateProductMetadata, getSiteConfig } from "@/lib/seo";
 import { generateProductBreadcrumbs } from "@/lib/seoUtils";
-import ProductViewTracker from "@/components/analytics/ProductViewTracker";
+import { WooProduct, WooImage } from "@/lib/types";
+import { normalizeImageUrl } from "@/lib/utils";
+import { getProductBySlug, getProducts, getProductsByIds } from "@/lib/woocommerce";
 
 export const revalidate = 3600; // Revalidate every hour
 
@@ -43,13 +47,25 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  // Get related products
-  const relatedProducts = product.categories?.[0]?.id
+  // Suggested for you: same category
+  const suggestedProducts = product.categories?.[0]?.id
     ? await getProducts({
         per_page: 4,
         category: product.categories[0].id,
       }).then((products) => products.filter((p: WooProduct) => p.id !== product.id))
     : [];
+
+  // Customers also bought: from WooCommerce related/upsell/cross_sell IDs
+  const customerAlsoBoughtIds = [
+    ...(product.related_ids ?? []),
+    ...(product.upsell_ids ?? []),
+    ...(product.cross_sell_ids ?? []),
+  ]
+    .filter((id) => id !== product.id)
+    .filter((id, i, arr) => arr.indexOf(id) === i)
+    .slice(0, 8);
+  const customersAlsoBought =
+    customerAlsoBoughtIds.length > 0 ? await getProductsByIds(customerAlsoBoughtIds) : [];
 
   const siteConfig = getSiteConfig();
   const breadcrumbs = generateProductBreadcrumbs(product, siteConfig);
@@ -65,7 +81,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="space-y-4">
             <div className="aspect-w-1 aspect-h-1 relative">
               <Image
-                src={product.images[0]?.src || "/placeholder-product.jpg"}
+                src={normalizeImageUrl(product.images[0]?.src || "/placeholder-product.jpg")}
                 alt={product.images[0]?.alt || product.name}
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -78,7 +94,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.images.slice(1, 5).map((image: WooImage) => (
                   <div key={image.id || image.src} className="aspect-w-1 aspect-h-1 relative">
                     <Image
-                      src={image.src}
+                      src={normalizeImageUrl(image.src)}
                       alt={image.alt || product.name}
                       fill
                       sizes="(max-width: 1024px) 25vw, 200px"
@@ -155,6 +171,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {/* Shipping Estimator */}
             <ShippingEstimator product={product} />
 
+            {/* Return policy summary (expandable) */}
+            <ReturnPolicySummary variant="expandable" />
+
             {/* Product Specifications */}
             <ProductSpecifications product={product} />
           </div>
@@ -176,19 +195,36 @@ export default async function ProductPage({ params }: ProductPageProps) {
         {/* Product Reviews */}
         <ProductReviews product={product} />
 
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
+        {/* Suggested for you */}
+        {suggestedProducts.length > 0 && (
           <div className="mt-16">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-              Related Products
+              Suggested for you
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((product: WooProduct) => (
-                <ProductCard key={product.id} product={product} />
+              {suggestedProducts.map((p: WooProduct) => (
+                <ProductCard key={p.id} product={p} />
               ))}
             </div>
           </div>
         )}
+
+        {/* Customers also bought */}
+        {customersAlsoBought.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+              Customers also bought
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {customersAlsoBought.map((p: WooProduct) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recently viewed (client, excludes current product) */}
+        <RecentlyViewedProducts excludeProductId={product.id} title="Recently viewed" maxItems={4} />
       </div>
     </>
   );

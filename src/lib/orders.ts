@@ -1,6 +1,7 @@
-import { wooApi } from "./woocommerce";
 import type Stripe from "stripe";
+
 import { stripe } from "./stripe";
+import { wooApi } from "./woocommerce";
 
 export interface WooCommerceOrderItem {
   product_id: number;
@@ -47,7 +48,9 @@ export interface WooCommerceOrderData {
 /**
  * Create a WooCommerce order from a Stripe checkout session
  */
-export async function createWooCommerceOrder(session: Stripe.Checkout.Session): Promise<any> {
+export async function createWooCommerceOrder(
+  session: Stripe.Checkout.Session
+): Promise<{ id: number; [key: string]: unknown }> {
   try {
     // Retrieve full session details with line items
     const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
@@ -72,7 +75,7 @@ export async function createWooCommerceOrder(session: Stripe.Checkout.Session): 
         country?: string | null;
       });
     const shipping =
-      ((fullSession as any).shipping?.address as {
+      ((fullSession as { shipping?: { address?: Record<string, string | null> } }).shipping?.address as {
         line1?: string | null;
         line2?: string | null;
         city?: string | null;
@@ -170,22 +173,23 @@ export async function createWooCommerceOrder(session: Stripe.Checkout.Session): 
     const response = await wooApi.post("orders", orderData);
 
     if (response.status === 201) {
-      console.log(
+      console.warn(
         `✅ WooCommerce order created: ${response.data.id} for Stripe session ${session.id}`
       );
       return response.data;
     } else {
       throw new Error(`Failed to create WooCommerce order: ${response.status}`);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating WooCommerce order:", error);
 
     // Log detailed error information
-    if (error.response) {
+    const err = error as { response?: { status: number; statusText: string; data?: unknown } };
+    if (err.response) {
       console.error("WooCommerce API Error:", {
-        status: error.response.status,
-        statusText: error.response.statusText,
-        data: error.response.data,
+        status: err.response.status,
+        statusText: err.response.statusText,
+        data: err.response.data,
       });
     }
 
@@ -196,7 +200,9 @@ export async function createWooCommerceOrder(session: Stripe.Checkout.Session): 
 /**
  * Check if an order already exists for a given Stripe session ID
  */
-export async function findOrderByStripeSessionId(sessionId: string): Promise<any | null> {
+export async function findOrderByStripeSessionId(
+  sessionId: string
+): Promise<{ id: number; [key: string]: unknown } | null> {
   try {
     const response = await wooApi.get("orders", {
       meta_key: "_stripe_session_id",

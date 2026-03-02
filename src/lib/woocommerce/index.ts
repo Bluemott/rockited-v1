@@ -9,6 +9,8 @@ export {
   getProducts,
   getProduct,
   getProductBySlug,
+  getProductsByIds,
+  getBestsellers,
   getCategories,
   getCategoryBySlug,
   getFeaturedProducts,
@@ -20,7 +22,13 @@ export {
 } from "./products";
 
 // Export review functions
-export { getProductReviews, createProductReview, type ReviewQueryParams } from "./reviews";
+export {
+  getProductReviews,
+  getSiteReviews,
+  createProductReview,
+  type ReviewQueryParams,
+  type SiteReviewsParams,
+} from "./reviews";
 
 // Export inventory functions
 export { checkInventory } from "./inventory";

@@ -260,6 +260,10 @@ export interface CartItem {
   quantity: number;
   image: string;
   sku: string;
+  /** For Stripe Tax: digital vs physical product code. */
+  virtual?: boolean;
+  /** For Stripe Tax: product categories (e.g. for tax code fallback). */
+  categories?: Array<{ slug?: string }>;
 }
 
 export interface Cart {
@@ -385,10 +389,10 @@ export interface ProductsApiResponse {
   total_pages?: number;
 }
 
-export interface FeaturedProductsApiResponse extends Array<WooProduct> {}
+export type FeaturedProductsApiResponse = WooProduct[];
 
 // API Response Types - Product Reviews
-export interface ProductReviewsApiResponse extends Array<WooReview> {}
+export type ProductReviewsApiResponse = WooReview[];
 
 export interface ReviewSubmissionApiResponse {
   success: boolean;

@@ -1,18 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { WooProduct } from "@/lib/types";
-import { useCartStore } from "@/lib/store";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { ShoppingCart, Eye } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import ShareButton from "@/components/ui/ShareButton";
 import { getSiteConfig } from "@/lib/seo";
+import { useCartStore } from "@/lib/store";
+import { WooProduct } from "@/lib/types";
+import { normalizeImageUrl } from "@/lib/utils";
+
 import QuickViewDialog from "./QuickViewDialog";
 
 interface ProductCardProps {
@@ -24,12 +27,15 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
   const handleAddToCart = () => {
+    const imageUrl = product.images[0]?.src || "/placeholder-product.jpg";
     addItem({
       id: product.id,
       name: product.name,
       price: parseFloat(product.price),
-      image: product.images[0]?.src || "/placeholder-product.jpg",
+      image: normalizeImageUrl(imageUrl),
       sku: product.sku,
+      virtual: product.virtual,
+      categories: product.categories?.map((c) => ({ slug: c.slug })),
     });
     toast.success(`${product.name} added to cart`);
   };
@@ -61,6 +67,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <motion.div
+      role="article"
+      data-testid="product-card"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -72,7 +80,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <Link href={`/products/${product.slug}`}>
             <div className="aspect-square relative">
               <Image
-                src={product.images[0]?.src || "/placeholder-product.jpg"}
+                src={normalizeImageUrl(product.images[0]?.src || "/placeholder-product.jpg")}
                 alt={product.images[0]?.alt || product.name}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -97,29 +105,22 @@ export default function ProductCard({ product }: ProductCardProps) {
             />
           </div>
 
+          {/* Quick View button - appears on hover without blocking clicks */}
           <motion.div
-            initial={{ opacity: 0 }}
-            whileHover={{ opacity: 1 }}
-            className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileHover={{ opacity: 1, scale: 1 }}
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-all duration-300"
           >
-            {/* Base overlay for overall contrast */}
-            <div className="absolute inset-0 bg-black/40" />
-
-            {/* Radial gradient overlay - darker in center where button is */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "radial-gradient(circle at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.2) 100%)",
-              }}
-            />
-
-            {/* Button with enhanced styling */}
             <Button
               variant="default"
               size="sm"
-              onClick={() => setIsQuickViewOpen(true)}
-              className="rounded-full relative z-10 shadow-lg border-2 border-white/20 text-white hover:text-white"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsQuickViewOpen(true);
+              }}
+              className="rounded-full shadow-lg bg-background/90 backdrop-blur-sm text-foreground hover:bg-background border border-border"
+              data-testid="quick-view-button"
             >
               <Eye className="h-4 w-4 mr-2" />
               Quick View
@@ -178,10 +179,15 @@ export default function ProductCard({ product }: ProductCardProps) {
             variant="default"
             className="flex-1 min-w-0"
             size="sm"
+            name={product.stock_status === "outofstock" ? "out of stock" : "add to cart"}
+            data-testid="add-to-cart-button"
           >
-            <ShoppingCart className="h-4 w-4 mr-2 shrink-0" />
-            <span className="truncate">
+            <ShoppingCart className="h-4 w-4 shrink-0" />
+            <span className="ml-2 hidden sm:inline">
               {product.stock_status === "outofstock" ? "Out of Stock" : "Add to Cart"}
+            </span>
+            <span className="ml-2 sm:hidden">
+              {product.stock_status === "outofstock" ? "Out" : "Add"}
             </span>
           </Button>
         </CardFooter>

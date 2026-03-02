@@ -4,8 +4,8 @@ import { hasAnalyticsConsent } from "./cookies";
 
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer?: any[];
+    gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
   }
 }
 
@@ -24,7 +24,7 @@ export function initGA(measurementId: string): void {
   }
 
   if (!window.gtag) {
-    function gtag(...args: any[]) {
+    function gtag(...args: unknown[]) {
       window.dataLayer!.push(args);
     }
     window.gtag = gtag;
@@ -53,7 +53,7 @@ export function trackPageView(url: string): void {
 /**
  * Track a custom event
  */
-export function trackEvent(eventName: string, eventParams?: Record<string, any>): void {
+export function trackEvent(eventName: string, eventParams?: Record<string, unknown>): void {
   if (typeof window === "undefined" || !window.gtag || !hasAnalyticsConsent()) {
     return;
   }

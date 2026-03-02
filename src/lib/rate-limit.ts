@@ -17,6 +17,16 @@ export const rateLimitConfig = {
     limit: 20,
     window: "1 m", // 1 minute
   },
+  /** Address validation (one call per address attempt). */
+  addressValidate: {
+    limit: 10,
+    window: "1 m",
+  },
+  /** City/state by ZIP (autofill; one per ZIP change). */
+  cityState: {
+    limit: 15,
+    window: "1 m",
+  },
   default: {
     limit: 30,
     window: "1 m", // 1 minute

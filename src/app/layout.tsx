@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { Noto_Serif, Montserrat } from "next/font/google";
+import { ThemeProvider } from "next-themes";
+
 import "./globals.css";
-import Layout from "@/components/layout/Layout";
-import StructuredData from "@/components/seo/StructuredData";
+
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import CookieConsent from "@/components/consent/CookieConsent";
+import Layout from "@/components/layout/Layout";
+import StructuredData from "@/components/seo/StructuredData";
 import { generateHomeMetadata } from "@/lib/seo";
-import { ThemeProvider } from "next-themes";
 
 const notoSerif = Noto_Serif({
   variable: "--font-noto-serif",

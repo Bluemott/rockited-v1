@@ -1,13 +1,16 @@
 "use client";
 
+import { Search, Phone, Mail, ExternalLink, Filter, BookOpen } from "lucide-react";
 import * as React from "react";
 import { useState, useMemo } from "react";
-import { Search, Phone, Mail, ExternalLink, Filter, BookOpen } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+
+import { BlogCard } from "@/components/blog/BlogCard";
+import { BlogFilters } from "@/components/blog/BlogFilters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MotionDiv } from "@/components/ui/motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -17,8 +20,6 @@ import {
   type RecoveryResource,
   type ResourceCategory,
 } from "@/lib/recoveryResources";
-import { BlogCard } from "@/components/blog/BlogCard";
-import { BlogFilters } from "@/components/blog/BlogFilters";
 import { BlogPost } from "@/lib/types";
 
 interface ResourcesClientProps {

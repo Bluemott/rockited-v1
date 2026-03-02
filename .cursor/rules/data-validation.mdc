@@ -1,0 +1,16 @@
+---
+alwaysApply: true
+---
+---
+description: Rules for data fetching, WooCommerce API interaction, and Zod validation.
+globs: lib/api/**/*.ts, types/**/*.ts, app/api/**/*.ts
+---
+
+# Data Validation & API Rules
+
+- **Zod Schemas:** Every API response from Lightsail/WooCommerce must be validated using a Zod schema. 
+- **Safe Fetching:** Create a wrapper for `fetch` that includes:
+  - Cache tags for Next.js Revalidation.
+  - Zod `.parse()` or `.safeParse()` to catch API contract changes early.
+- **Error Handling:** If an API call fails, never crash the page. Use Error Boundaries or return a "Safe Null" state that the UI can handle gracefully.
+- **Stripe Integration:** Ensure Stripe client-side loading only occurs on the Checkout page to save bandwidth on the Home/Product pages.

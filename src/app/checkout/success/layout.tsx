@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+
 import { generateCheckoutSuccessMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = generateCheckoutSuccessMetadata();

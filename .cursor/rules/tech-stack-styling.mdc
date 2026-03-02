@@ -1,0 +1,14 @@
+---
+alwaysApply: true
+---
+---
+description: Rules for styling, UI components, and client-side state.
+globs: components/**/*.tsx, store/**/*.ts
+---
+
+# Styling & State Rules
+
+- **Tailwind v4:** Use modern Tailwind utility patterns. Favor the `@tailwindcss/postcss` workflow.
+- **Shadcn UI:** When adding new components, use `npx shadcn@latest add [component]`. Do not reinvent wheels for Radix primitives.
+- **Zustand for Cart:** Use Zustand for global client-side state (Cart, User Preferences). Ensure the store is persistent (using `persist` middleware) where appropriate for the shopping cart.
+- **Animations:** Use `framer-motion` sparingly. Prioritize CSS transitions for simple hover effects to keep the main thread light.

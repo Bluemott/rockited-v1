@@ -1,5 +1,6 @@
-import { wooApi } from "./client";
 import type { WooReview } from "../types";
+
+import { wooApi } from "./client";
 
 // Review query parameters
 export interface ReviewQueryParams {
@@ -8,6 +9,36 @@ export interface ReviewQueryParams {
   status?: string;
   [key: string]: unknown;
 }
+
+// Site-wide reviews (homepage testimonials): orderby date = recent, rating = most helpful
+export interface SiteReviewsParams {
+  per_page?: number;
+  page?: number;
+  orderby?: "date" | "rating";
+  order?: "asc" | "desc";
+}
+
+export const getSiteReviews = async (
+  params: SiteReviewsParams = {}
+): Promise<WooReview[]> => {
+  try {
+    const response = await wooApi.get("products/reviews", {
+      per_page: params.per_page ?? 10,
+      page: params.page ?? 1,
+      status: "approved",
+      orderby: params.orderby ?? "date",
+      order: params.order ?? "desc",
+    });
+    return response.data || [];
+  } catch (error: unknown) {
+    const errorObj = error as { response?: { status?: number } };
+    console.error("Error fetching site reviews:", error);
+    if (errorObj?.response?.status === 404) {
+      return [];
+    }
+    throw error;
+  }
+};
 
 // Product Reviews API functions
 export const getProductReviews = async (

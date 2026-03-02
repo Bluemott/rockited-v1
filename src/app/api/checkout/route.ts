@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createEmbeddedCheckoutSession } from "@/lib/stripe";
+
 import { env } from "@/lib/env";
 import {
   sanitizeString,
@@ -9,6 +9,8 @@ import {
   sanitizeObjectKeys,
   validateBodySize,
 } from "@/lib/sanitize";
+import { checkoutBodySchema } from "@/lib/schemas/checkout";
+import { createEmbeddedCheckoutSession, stripe } from "@/lib/stripe";
 import type { CheckoutApiResponse, ErrorApiResponse } from "@/lib/types";
 
 // Maximum request body size (1MB)
@@ -22,20 +24,12 @@ export async function POST(request: NextRequest) {
 
     // Parse and sanitize body
     const body = sanitizeObjectKeys(JSON.parse(bodyText));
-    const { items, customerEmail } = body;
-
-    // Validate input
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ error: "No items in cart" }, { status: 400 });
+    const parsed = checkoutBodySchema.safeParse(body);
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? "Invalid checkout request";
+      return NextResponse.json({ error: String(message) }, { status: 400 });
     }
-
-    // Limit maximum number of items
-    if (items.length > 100) {
-      return NextResponse.json(
-        { error: "Too many items in cart. Maximum 100 items allowed." },
-        { status: 400 }
-      );
-    }
+    const { items, customerEmail, shippingAddress, selectedShippingRate, standardizedAddress } = parsed.data;
 
     // Validate and sanitize items structure
     const sanitizedItems = items.map((item: unknown, index: number) => {
@@ -61,6 +55,16 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const virtual =
+        typeof sanitizedItem.virtual === "boolean"
+          ? sanitizedItem.virtual
+          : undefined;
+      const categories = Array.isArray(sanitizedItem.categories)
+        ? (sanitizedItem.categories as Array<{ slug?: unknown }>)
+            .slice(0, 50)
+            .map((c) => ({ slug: c?.slug != null ? sanitizeString(String(c.slug)) : undefined }))
+        : undefined;
+
       return {
         id,
         name,
@@ -68,6 +72,8 @@ export async function POST(request: NextRequest) {
         quantity,
         image: sanitizedItem.image ? sanitizeString(String(sanitizedItem.image)) : undefined,
         sku: sanitizedItem.sku ? sanitizeString(String(sanitizedItem.sku)) : undefined,
+        virtual,
+        categories,
       };
     });
 
@@ -76,9 +82,53 @@ export async function POST(request: NextRequest) {
     if (customerEmail) {
       try {
         sanitizedEmail = sanitizeEmail(String(customerEmail));
-      } catch (error) {
+      } catch {
         return NextResponse.json({ error: "Invalid email address format" }, { status: 400 });
       }
+    }
+
+    // Shipping-first flow: validate and sanitize shippingAddress + selectedShippingRate when both provided
+    let preselectedShipping: { address: { country: string; postal_code: string; state?: string; city?: string; line1?: string; line2?: string; name?: string }; shippingOption: { method_id: string; method_title: string; cost: string; estimated_delivery?: string } } | undefined;
+    if (shippingAddress && selectedShippingRate) {
+      if (typeof shippingAddress !== "object" || typeof selectedShippingRate !== "object") {
+        return NextResponse.json(
+          { error: "shippingAddress and selectedShippingRate must be objects" },
+          { status: 400 }
+        );
+      }
+      const addr = sanitizeObjectKeys(shippingAddress as Record<string, unknown>);
+      const country = sanitizeString(String(addr.country ?? "")).toUpperCase();
+      const postal_code = sanitizeString(String(addr.postal_code ?? "")).trim().substring(0, 20);
+      if (country.length !== 2 || !/^[A-Z]{2}$/.test(country)) {
+        return NextResponse.json({ error: "Valid shipping country (2-letter code) is required" }, { status: 400 });
+      }
+      if (!postal_code) {
+        return NextResponse.json({ error: "Shipping postal code is required" }, { status: 400 });
+      }
+      const rate = sanitizeObjectKeys(selectedShippingRate as Record<string, unknown>);
+      const method_id = sanitizeString(String(rate.method_id ?? "")).substring(0, 100);
+      const method_title = sanitizeString(String(rate.method_title ?? "Standard Shipping")).substring(0, 200);
+      const cost = String(rate.cost ?? "0");
+      if (!method_id) {
+        return NextResponse.json({ error: "selectedShippingRate.method_id is required" }, { status: 400 });
+      }
+      preselectedShipping = {
+        address: {
+          country,
+          postal_code,
+          state: addr.state ? sanitizeString(String(addr.state)).substring(0, 100) : undefined,
+          city: addr.city ? sanitizeString(String(addr.city)).substring(0, 100) : undefined,
+          line1: addr.line1 ? sanitizeString(String(addr.line1)).substring(0, 200) : undefined,
+          line2: addr.line2 ? sanitizeString(String(addr.line2)).substring(0, 200) : undefined,
+          name: addr.name ? sanitizeString(String(addr.name)).substring(0, 200) : undefined,
+        },
+        shippingOption: {
+          method_id,
+          method_title,
+          cost,
+          estimated_delivery: rate.estimated_delivery ? sanitizeString(String(rate.estimated_delivery)).substring(0, 100) : undefined,
+        },
+      };
     }
 
     // Build return URL - use validated environment variable
@@ -92,7 +142,7 @@ export async function POST(request: NextRequest) {
         try {
           const url = new URL(origin);
           baseUrl = `${url.protocol}//${url.host}`;
-        } catch (e) {
+        } catch {
           // Fall back to validated env var
         }
       }
@@ -108,37 +158,34 @@ export async function POST(request: NextRequest) {
     const taxEnabled = env.STRIPE_TAX_ENABLED !== false;
 
     // Create checkout session with options
+    const sessionOptions = {
+      customerEmail: sanitizedEmail,
+      ...(preselectedShipping
+        ? { preselectedShipping }
+        : { shippingAddressCollection: true as const }),
+      allowPromotionCodes: true,
+      taxEnabled,
+      allowedCountries: ["US"],
+      brandingLogoUrl: logoUrl,
+    };
+
     let session;
     try {
-      session = await createEmbeddedCheckoutSession(sanitizedItems, returnUrl, {
-        customerEmail: sanitizedEmail,
-        shippingAddressCollection: true, // Enable shipping address collection
-        allowPromotionCodes: true, // Allow discount codes
-        taxEnabled, // Enable automatic tax calculation (if enabled in Stripe Dashboard)
-        allowedCountries: ["US"], // US only shipping
-        brandingLogoUrl: logoUrl, // Add logo branding
-      });
+      session = await createEmbeddedCheckoutSession(sanitizedItems, returnUrl, sessionOptions);
     } catch (error: unknown) {
       const errorObj = error as { message?: string; type?: string; code?: string };
-      // Handle tax-related errors specifically
       if (errorObj.message?.includes("tax") || errorObj.type === "StripeInvalidRequestError") {
         console.error("Tax configuration error:", {
           message: errorObj.message,
           type: errorObj.type,
           code: errorObj.code,
         });
-
-        // If tax fails but is optional, retry without tax
         if (taxEnabled && errorObj.message?.includes("tax")) {
           console.warn("Tax calculation failed, retrying without tax");
           try {
             session = await createEmbeddedCheckoutSession(sanitizedItems, returnUrl, {
-              customerEmail: sanitizedEmail,
-              shippingAddressCollection: true,
-              allowPromotionCodes: true,
-              taxEnabled: false, // Disable tax as fallback
-              allowedCountries: ["US"],
-              brandingLogoUrl: logoUrl,
+              ...sessionOptions,
+              taxEnabled: false,
             });
           } catch (retryError: unknown) {
             throw retryError;
@@ -151,6 +198,50 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // When shipping was preselected, update session with collected_information.shipping_details so Stripe has the address and correct total
+    if (preselectedShipping && session) {
+      const addr = preselectedShipping.address;
+      const metadata: Record<string, string> = {
+        ...session.metadata,
+        shipping_address: JSON.stringify({
+          country: addr.country,
+          postal_code: addr.postal_code,
+          state: addr.state,
+          city: addr.city,
+          line1: addr.line1,
+          line2: addr.line2,
+          name: addr.name,
+        }),
+      };
+      if (standardizedAddress && typeof standardizedAddress === "object") {
+        const std = sanitizeObjectKeys(standardizedAddress as Record<string, unknown>);
+        if (std.line1 || std.city || std.state || std.postal_code) {
+          metadata.shipping_address_standardized = JSON.stringify({
+            line1: sanitizeString(String(std.line1 ?? "")).substring(0, 200),
+            city: sanitizeString(String(std.city ?? "")).substring(0, 100),
+            state: sanitizeString(String(std.state ?? "")).substring(0, 10),
+            postal_code: sanitizeString(String(std.postal_code ?? "")).replace(/\D/g, "").slice(0, 10),
+          });
+        }
+      }
+      await stripe.checkout.sessions.update(session.id, {
+        metadata,
+        collected_information: {
+          shipping_details: {
+            name: addr.name ?? "",
+            address: {
+              line1: addr.line1 ?? "",
+              line2: addr.line2 ?? undefined,
+              city: addr.city ?? "",
+              state: addr.state ?? "",
+              postal_code: addr.postal_code,
+              country: addr.country,
+            },
+          },
+        },
+      });
+    }
+
     // For custom mode Checkout Sessions, we use the session's client_secret directly
     // The PaymentIntent will be created when the payment is confirmed
     if (!session.client_secret) {
@@ -160,7 +251,7 @@ export async function POST(request: NextRequest) {
     // Verify tax status if enabled
     const taxStatus = session.automatic_tax?.status;
     if (taxEnabled && taxStatus) {
-      console.log("Tax calculation status:", taxStatus);
+      console.warn("Tax calculation status:", taxStatus);
     }
 
     const response: CheckoutApiResponse = {

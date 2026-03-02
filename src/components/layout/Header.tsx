@@ -1,16 +1,18 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { ShoppingCart, Menu } from "lucide-react";
-import { useCartStore } from "@/lib/store";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import Image from "next/image";
+import Link from "next/link";
 import { useTheme } from "next-themes";
+import * as React from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useCartStore } from "@/lib/store";
+
 
 export default function Header() {
   const { itemCount } = useCartStore();
@@ -76,6 +78,7 @@ export default function Header() {
                 {itemCount > 0 && (
                   <Badge
                     variant="destructive"
+                    data-testid="cart-badge-count"
                     className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
                   >
                     {itemCount}

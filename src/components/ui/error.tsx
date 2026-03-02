@@ -1,6 +1,7 @@
+import { AlertCircle, RefreshCw } from "lucide-react";
+
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCw } from "lucide-react";
 
 interface ErrorStateProps {
   title?: string;
@@ -95,7 +96,7 @@ export function NotFound() {
         </div>
         <h3 className="text-lg font-medium text-foreground mb-2">Page not found</h3>
         <p className="text-muted-foreground mb-6">
-          The page you're looking for doesn't exist or has been moved.
+          The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
         <Button onClick={() => window.history.back()}>Go back</Button>
       </div>

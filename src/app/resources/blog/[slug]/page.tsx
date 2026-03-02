@@ -1,17 +1,18 @@
-import { notFound } from "next/navigation";
+import { Calendar, User, Tag, ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, User, Tag, ArrowLeft } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { MotionDiv } from "@/components/ui/motion";
-import { getPostBySlug, getRelatedPosts } from "@/lib/blog";
+import { notFound } from "next/navigation";
+
 import { BlogPostContent } from "@/components/blog/BlogPostContent";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
 import { SocialShare } from "@/components/blog/SocialShare";
 import { BlogStructuredData } from "@/components/seo/BlogStructuredData";
-import { formatDate } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { MotionDiv } from "@/components/ui/motion";
+import { getPostBySlug, getRelatedPosts } from "@/lib/blog";
 import { generateBlogPostMetadata } from "@/lib/seo";
+import { formatDate } from "@/lib/utils";
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;

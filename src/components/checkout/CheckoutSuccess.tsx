@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useCartStore } from "@/lib/store";
+import { motion } from "framer-motion";
+import { CheckCircle, Package, Truck, Mail } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Package, Truck, Mail } from "lucide-react";
-import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trackPurchase } from "@/lib/analytics";
+import { useCartStore } from "@/lib/store";
 
 interface CheckoutSuccessProps {
   sessionId: string;
@@ -17,7 +18,7 @@ interface CheckoutSuccessProps {
 
 export default function CheckoutSuccess({ sessionId }: CheckoutSuccessProps) {
   const { clearCart } = useCartStore();
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
@@ -76,8 +77,10 @@ export default function CheckoutSuccess({ sessionId }: CheckoutSuccessProps) {
           setLoading(false);
         });
     } else {
-      setLoading(false);
-      setError("No session ID provided");
+      queueMicrotask(() => {
+        setLoading(false);
+        setError("No session ID provided");
+      });
     }
   }, [sessionId, clearCart]);
 
@@ -182,7 +185,7 @@ export default function CheckoutSuccess({ sessionId }: CheckoutSuccessProps) {
       >
         <Card>
           <CardHeader>
-            <CardTitle>What's Next?</CardTitle>
+            <CardTitle>What&apos;s Next?</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <motion.div
@@ -197,7 +200,7 @@ export default function CheckoutSuccess({ sessionId }: CheckoutSuccessProps) {
               <div className="text-left">
                 <p className="font-medium text-foreground">Order Confirmation</p>
                 <p className="text-sm text-muted-foreground">
-                  You'll receive an email confirmation shortly
+                  You&apos;ll receive an email confirmation shortly
                 </p>
               </div>
             </motion.div>
@@ -214,7 +217,7 @@ export default function CheckoutSuccess({ sessionId }: CheckoutSuccessProps) {
               <div className="text-left">
                 <p className="font-medium text-foreground">Processing</p>
                 <p className="text-sm text-muted-foreground">
-                  We'll prepare your order for shipment
+                  We&apos;ll prepare your order for shipment
                 </p>
               </div>
             </motion.div>
@@ -231,7 +234,7 @@ export default function CheckoutSuccess({ sessionId }: CheckoutSuccessProps) {
               <div className="text-left">
                 <p className="font-medium text-foreground">Shipping</p>
                 <p className="text-sm text-muted-foreground">
-                  You'll receive tracking information once shipped
+                  You&apos;ll receive tracking information once shipped
                 </p>
               </div>
             </motion.div>

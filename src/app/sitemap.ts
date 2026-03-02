@@ -1,7 +1,8 @@
 import { MetadataRoute } from "next";
-import { getProducts, getCategories } from "@/lib/woocommerce";
+
 import { getAllPosts } from "@/lib/blog";
 import type { WooProduct, WooCategory } from "@/lib/types";
+import { getProducts, getCategories } from "@/lib/woocommerce";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rockited4d.com";
 
@@ -187,7 +188,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "monthly" as const,
         priority: 0.7,
       }));
-    } catch (error) {
+    } catch {
       // Silently fail for blog posts in fallback
     }
 

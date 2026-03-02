@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { Home, ShoppingBag, RefreshCw, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MotionDiv } from "@/components/ui/motion";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Home, ShoppingBag, RefreshCw, AlertCircle } from "lucide-react";
+
 
 // Note: Error boundaries in Next.js must be client components and cannot export metadata.
 // The generateErrorMetadata() function is available in @/lib/seo.ts and can be used
@@ -44,8 +46,8 @@ export default function Error({ error, reset }: ErrorProps) {
                   Something Went Wrong
                 </h1>
                 <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto">
-                  We encountered an unexpected error. Don't worry, our team has been notified and
-                  we're working to fix it.
+                  We encountered an unexpected error. Don&apos;t worry, our team has been notified and
+                  we&apos;re working to fix it.
                 </p>
               </MotionDiv>
 

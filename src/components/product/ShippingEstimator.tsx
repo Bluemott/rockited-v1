@@ -1,13 +1,13 @@
 "use client";
 
+import { Loader2, Package, Truck } from "lucide-react";
 import { useState } from "react";
-import { WooProduct, WooShippingRate } from "@/lib/types";
+
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Package, Truck } from "lucide-react";
-import { toast } from "sonner";
+import { WooProduct, WooShippingRate } from "@/lib/types";
 
 interface ShippingEstimatorProps {
   product: WooProduct;
@@ -21,62 +21,64 @@ interface ShippingCalculationResult {
   total_weight: string;
 }
 
+const FALLBACK_MESSAGE =
+  "Standard shipping applies; exact rate at checkout.";
+
+const SHIPPING_ESTIMATE_ERROR_MESSAGE =
+  "Unable to load shipping estimate. Try again or see checkout for exact rates.";
+
 export default function ShippingEstimator({ product, quantity = 1 }: ShippingEstimatorProps) {
-  const [country, setCountry] = useState("US");
-  const [state, setState] = useState("");
   const [postcode, setPostcode] = useState("");
-  const [city, setCity] = useState("");
   const [isCalculating, setIsCalculating] = useState(false);
   const [shippingRates, setShippingRates] = useState<ShippingCalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showFallback, setShowFallback] = useState(false);
 
   // Skip if product doesn't require shipping
   if (!product.shipping_required || product.virtual) {
     return null;
   }
 
+  const zip5 = postcode.trim().replace(/\D/g, "").slice(0, 5);
+  const canCalculate = zip5.length === 5;
+
   const handleCalculate = async () => {
-    if (!country) {
-      toast.error("Please select a country");
-      return;
-    }
+    if (!canCalculate) return;
 
     setIsCalculating(true);
     setError(null);
     setShippingRates(null);
+    setShowFallback(false);
 
     try {
       const response = await fetch("/api/shipping/calculate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          country,
-          state: state || undefined,
-          postcode: postcode || undefined,
-          city: city || undefined,
-          products: [
-            {
-              id: product.id,
-              quantity: quantity || 1,
-            },
-          ],
+          country: "US",
+          postcode: zip5,
+          products: [{ id: product.id, quantity: quantity || 1 }],
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to calculate shipping");
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.error || "Failed to calculate shipping");
+        setIsCalculating(false);
+        return;
       }
 
       const data: ShippingCalculationResult = await response.json();
-      setShippingRates(data);
-    } catch (err: unknown) {
-      const errorObj = err as { message?: string };
-      const errorMessage = errorObj?.message || "Failed to calculate shipping rates";
-      setError(errorMessage);
-      toast.error(errorMessage);
+      if (data.rates?.length) {
+        setShippingRates(data);
+        setError(null);
+      } else {
+        setShowFallback(true);
+        setError(null);
+      }
+    } catch {
+      setError(SHIPPING_ESTIMATE_ERROR_MESSAGE);
+      setShowFallback(false);
     } finally {
       setIsCalculating(false);
     }
@@ -96,50 +98,33 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
           <Truck className="h-5 w-5" />
           Shipping Estimator
         </CardTitle>
-        <CardDescription>Calculate shipping costs for this product</CardDescription>
+        <CardDescription>
+          {shippingRates?.rates?.length
+            ? `From ${formatPrice(shippingRates.rates[0]?.cost ?? "0")} to ZIP ${zip5} — options below.`
+            : "Estimate shipping to a US ZIP code. Ships in 2–5 business days to the continental US."}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="country">Country *</Label>
-            <Input
-              id="country"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              placeholder="US"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="state">State/Province</Label>
-            <Input
-              id="state"
-              value={state}
-              onChange={(e) => setState(e.target.value)}
-              placeholder="CA"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="postcode">Postal Code</Label>
-            <Input
-              id="postcode"
-              value={postcode}
-              onChange={(e) => setPostcode(e.target.value)}
-              placeholder="90210"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="Los Angeles"
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="postcode">ZIP code</Label>
+          <Input
+            id="postcode"
+            value={postcode}
+            onChange={(e) => setPostcode(e.target.value.replace(/\D/g, "").slice(0, 5))}
+            placeholder="90210"
+            maxLength={5}
+            aria-describedby="postcode-hint"
+          />
+          <p id="postcode-hint" className="text-xs text-muted-foreground">
+            Enter a 5-digit US ZIP code
+          </p>
         </div>
 
-        <Button onClick={handleCalculate} disabled={isCalculating || !country} className="w-full">
+        <Button
+          onClick={handleCalculate}
+          disabled={isCalculating || !canCalculate}
+          className="w-full"
+        >
           {isCalculating ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -148,7 +133,7 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
           ) : (
             <>
               <Package className="mr-2 h-4 w-4" />
-              Calculate Shipping
+              Get estimate
             </>
           )}
         </Button>
@@ -157,37 +142,44 @@ export default function ShippingEstimator({ product, quantity = 1 }: ShippingEst
           <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">{error}</div>
         )}
 
-        {shippingRates && (
+        {showFallback && !shippingRates && (
+          <div className="p-3 rounded-md border bg-muted/50 text-sm text-muted-foreground">
+            {FALLBACK_MESSAGE}
+          </div>
+        )}
+
+        {shippingRates && shippingRates.rates.length > 0 && (
           <div className="mt-4 space-y-3">
             <div className="text-sm text-muted-foreground">
-              Shipping to: {shippingRates.zone_name}
+              Shipping to ZIP {zip5}
               {shippingRates.total_weight && (
                 <span className="ml-2">(Total weight: {shippingRates.total_weight} lbs)</span>
               )}
             </div>
             <div className="space-y-2">
-              {shippingRates.rates.length > 0 ? (
-                shippingRates.rates.map((rate, index) => (
-                  <div
-                    key={`${rate.method_id}-${index}`}
-                    className="flex items-center justify-between p-3 rounded-md border bg-card"
-                  >
-                    <div>
-                      <div className="font-medium">{rate.method_title}</div>
-                      {rate.estimated_delivery && (
-                        <div className="text-sm text-muted-foreground">
-                          {rate.estimated_delivery}
-                        </div>
+              {shippingRates.rates.map((rate, index) => (
+                <div
+                  key={`${rate.method_id}-${index}`}
+                  className="flex items-center justify-between p-3 rounded-md border bg-card"
+                >
+                  <div>
+                    <div className="font-medium flex items-center gap-2">
+                      {rate.method_title}
+                      {index === 0 && (
+                        <span className="text-xs font-normal text-primary rounded bg-primary/10 px-1.5 py-0.5">
+                          Best value
+                        </span>
                       )}
                     </div>
-                    <div className="font-bold text-lg">{formatPrice(rate.cost)}</div>
+                    {rate.estimated_delivery && (
+                      <div className="text-sm text-muted-foreground">
+                        {rate.estimated_delivery}
+                      </div>
+                    )}
                   </div>
-                ))
-              ) : (
-                <div className="text-sm text-muted-foreground p-3 rounded-md border">
-                  No shipping methods available for this location.
+                  <div className="font-bold text-lg">{formatPrice(rate.cost)}</div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         )}

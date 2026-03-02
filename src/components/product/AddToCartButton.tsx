@@ -1,8 +1,9 @@
 "use client";
 
+import { ShoppingCart, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { WooProduct } from "@/lib/types";
-import { useCartStore } from "@/lib/store";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,9 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ShoppingCart, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { trackAddToCart } from "@/lib/analytics";
+import { useCartStore } from "@/lib/store";
+import { WooProduct } from "@/lib/types";
+import { normalizeImageUrl } from "@/lib/utils";
 
 interface AddToCartButtonProps {
   product: WooProduct;
@@ -42,13 +44,19 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
       });
 
       // Add multiple items based on quantity
+      // Normalize image URL to use domain instead of IP address
+      const imageUrl = product.images[0]?.src || "/placeholder-product.jpg";
+      const normalizedImageUrl = normalizeImageUrl(imageUrl);
+
       for (let i = 0; i < quantity; i++) {
         addItem({
           id: product.id,
           name: product.name,
           price,
-          image: product.images[0]?.src || "/placeholder-product.jpg",
+          image: normalizedImageUrl,
           sku: product.sku,
+          virtual: product.virtual,
+          categories: product.categories?.map((c) => ({ slug: c.slug })),
         });
       }
 

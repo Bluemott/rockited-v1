@@ -70,6 +70,18 @@ const envSchema = z.object({
     .optional()
     .transform((val) => val !== "false"),
   NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
+
+  // Shippo Shipping (optional; when set, US domestic address validation and rates use Shippo)
+  SHIPPO_API_KEY: z.string().optional(),
+  SHIPPO_ORIGIN_NAME: z.string().optional(),
+  SHIPPO_ORIGIN_STREET1: z.string().optional(),
+  SHIPPO_ORIGIN_CITY: z.string().optional(),
+  SHIPPO_ORIGIN_STATE: z.string().optional(),
+  SHIPPO_ORIGIN_ZIP: z.string().optional(),
+  SHIPPO_ORIGIN_COUNTRY: z.string().optional(),
+
+  // Address autocomplete (optional; when set, checkout shows address search dropdown via Google Places)
+  NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().optional(),
 });
 
 /**
@@ -89,6 +101,14 @@ export const env = (() => {
       STRIPE_LOGO_URL: process.env.STRIPE_LOGO_URL,
       STRIPE_TAX_ENABLED: process.env.STRIPE_TAX_ENABLED,
       NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+      SHIPPO_API_KEY: process.env.SHIPPO_API_KEY,
+      SHIPPO_ORIGIN_NAME: process.env.SHIPPO_ORIGIN_NAME,
+      SHIPPO_ORIGIN_STREET1: process.env.SHIPPO_ORIGIN_STREET1,
+      SHIPPO_ORIGIN_CITY: process.env.SHIPPO_ORIGIN_CITY,
+      SHIPPO_ORIGIN_STATE: process.env.SHIPPO_ORIGIN_STATE,
+      SHIPPO_ORIGIN_ZIP: process.env.SHIPPO_ORIGIN_ZIP,
+      SHIPPO_ORIGIN_COUNTRY: process.env.SHIPPO_ORIGIN_COUNTRY,
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

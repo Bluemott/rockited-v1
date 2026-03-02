@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { WooProduct } from "./types";
+
 import {
   getStructuredMetadata,
   getSEOMetaDescription,
@@ -8,6 +8,7 @@ import {
   getSEOKeywords,
 } from "./productMetadata";
 import { optimizeMetaDescription } from "./seoUtils";
+import { WooProduct } from "./types";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rockited4d.com";
 const siteName = "ROCK IT ED";

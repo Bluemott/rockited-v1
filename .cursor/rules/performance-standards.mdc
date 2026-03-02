@@ -1,0 +1,15 @@
+---
+alwaysApply: true
+---
+---
+description: Rules for ensuring maximum performance, low bandwidth, and fast page loads for the eCommerce storefront.
+globs: app/**/*.{tsx,ts}, components/**/*.{tsx,ts}
+---
+
+# Performance & Bandwidth Rules
+
+- **Server Components by Default:** Use React Server Components (RSC) for all data fetching (WooCommerce API). Only use `'use client'` for interactive elements (Cart drawers, checkout forms, sliders).
+- **Image Optimization:** Always use `next/image`. Enforce `priority` for the LCP element (e.g., the main product image on PDP). 
+- **Payload Minimization:** Never fetch entire WooCommerce objects. Use Zod schemas to pick only the fields required for the UI (e.g., `id`, `name`, `price`, `images[0].src`).
+- **Streaming:** Wrap slow-loading components (like "Related Products") in `<Suspense>` with a skeleton loader to improve perceived speed.
+- **Bundle Size:** Favor `lucide-react` or `@heroicons/react` icons. Avoid large third-party libraries unless necessary.

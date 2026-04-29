@@ -48,7 +48,10 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
   }, [product.id, product.reviews_allowed]);
 
   useEffect(() => {
-    fetchReviews();
+    const timer = setTimeout(() => {
+      void fetchReviews();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchReviews]);
 
   if (!product.reviews_allowed) {

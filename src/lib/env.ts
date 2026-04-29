@@ -70,6 +70,9 @@ const envSchema = z.object({
     .optional()
     .transform((val) => val !== "false"),
   NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
+  NEXT_PUBLIC_MEDIA_BASE_URL: z.string().optional(),
+  NEXT_PUBLIC_MEDIA_HOSTS: z.string().optional(),
+  MEDIA_HOST_REWRITE_MAP: z.string().optional(),
 
   // Shippo Shipping (optional; when set, US domestic address validation and rates use Shippo)
   SHIPPO_API_KEY: z.string().optional(),
@@ -101,6 +104,9 @@ export const env = (() => {
       STRIPE_LOGO_URL: process.env.STRIPE_LOGO_URL,
       STRIPE_TAX_ENABLED: process.env.STRIPE_TAX_ENABLED,
       NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+      NEXT_PUBLIC_MEDIA_BASE_URL: process.env.NEXT_PUBLIC_MEDIA_BASE_URL,
+      NEXT_PUBLIC_MEDIA_HOSTS: process.env.NEXT_PUBLIC_MEDIA_HOSTS,
+      MEDIA_HOST_REWRITE_MAP: process.env.MEDIA_HOST_REWRITE_MAP,
       SHIPPO_API_KEY: process.env.SHIPPO_API_KEY,
       SHIPPO_ORIGIN_NAME: process.env.SHIPPO_ORIGIN_NAME,
       SHIPPO_ORIGIN_STREET1: process.env.SHIPPO_ORIGIN_STREET1,

@@ -145,7 +145,10 @@ export default function TestimonialsSection() {
   }, []);
 
   useEffect(() => {
-    fetchReviews(sort);
+    const timer = setTimeout(() => {
+      void fetchReviews(sort);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [sort, fetchReviews]);
 
   const toggleExpand = useCallback((id: number) => {

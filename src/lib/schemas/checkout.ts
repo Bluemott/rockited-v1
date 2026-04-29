@@ -28,20 +28,12 @@ const selectedShippingRateSchema = z.object({
   estimated_delivery: z.string().optional(),
 });
 
-const standardizedAddressSchema = z.object({
-  line1: z.string(),
-  city: z.string(),
-  state: z.string(),
-  postal_code: z.string(),
-});
-
 /** POST /api/checkout request body */
 export const checkoutBodySchema = z.object({
   items: z.array(checkoutItemSchema).min(1, "At least one item is required").max(100),
   customerEmail: z.union([z.string().email(), z.literal("")]).optional(),
   shippingAddress: shippingAddressSchema.optional(),
   selectedShippingRate: selectedShippingRateSchema.optional(),
-  standardizedAddress: standardizedAddressSchema.optional(),
 }).refine(
   (data) => {
     if (data.shippingAddress && !data.selectedShippingRate) return false;
@@ -52,24 +44,3 @@ export const checkoutBodySchema = z.object({
 );
 
 export type CheckoutBody = z.infer<typeof checkoutBodySchema>;
-
-/** POST /api/checkout/shipping request body (Stripe dynamic shipping) */
-export const checkoutShippingBodySchema = z.object({
-  checkoutSessionId: z.string().min(1, "checkoutSessionId is required").refine(
-    (id) => id.startsWith("cs_") && id.length >= 10 && id.length <= 200,
-    "Invalid checkout session ID format"
-  ),
-  shippingDetails: z.object({
-    name: z.string().optional(),
-    address: z.object({
-      country: z.string().optional(),
-      postal_code: z.string().optional(),
-      state: z.string().optional(),
-      city: z.string().optional(),
-      line1: z.string().optional(),
-      line2: z.string().optional(),
-    }).optional(),
-  }).passthrough(),
-});
-
-export type CheckoutShippingBody = z.infer<typeof checkoutShippingBodySchema>;

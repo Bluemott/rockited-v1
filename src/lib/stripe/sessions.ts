@@ -1,6 +1,15 @@
 import Stripe from "stripe";
+import { logger } from "@/lib/logging/logger";
 
 import { stripe } from "./client";
+
+type StripeSessionCreateParams = NonNullable<
+  Parameters<typeof stripe.checkout.sessions.create>[0]
+>;
+type StripeSessionLineItem = NonNullable<StripeSessionCreateParams["line_items"]>[number];
+type StripeAllowedCountry = NonNullable<
+  NonNullable<StripeSessionCreateParams["shipping_address_collection"]>["allowed_countries"]
+>[number];
 
 // Type definitions for better type safety
 export interface CartItem {
@@ -47,6 +56,7 @@ export interface CheckoutSessionOptions {
   taxEnabled?: boolean;
   allowedCountries?: string[];
   brandingLogoUrl?: string;
+  idempotencyKey?: string;
 }
 
 /**
@@ -101,7 +111,7 @@ export const createCheckoutSession = async (
     }));
 
     // Omit payment_method_types to use Dynamic Payment Methods (cards, Apple Pay, Google Pay, Link via Dashboard)
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    const sessionParams: StripeSessionCreateParams = {
       line_items: lineItems,
       mode: "payment",
       success_url: successUrl,
@@ -127,7 +137,10 @@ export const createCheckoutSession = async (
       sessionParams.allow_promotion_codes = true;
     }
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    const requestOptions = options?.idempotencyKey
+      ? { idempotencyKey: options.idempotencyKey }
+      : undefined;
+    const session = await stripe.checkout.sessions.create(sessionParams, requestOptions);
 
     return session;
   } catch (error: unknown) {
@@ -136,7 +149,7 @@ export const createCheckoutSession = async (
       type?: string;
       code?: string;
     };
-    console.error("Error creating checkout session:", {
+    logger.error("stripe_checkout_session_create_failed", {
       message: errorObj.message,
       type: errorObj.type,
       code: errorObj.code,
@@ -154,8 +167,7 @@ export const createCheckoutSession = async (
 };
 
 /**
- * Create Stripe Checkout Session with custom UI mode (Payment Element)
- * Uses ui_mode: 'custom' to enable Payment Element with Appearance API customization
+ * Create Stripe Checkout Session for Embedded Checkout.
  */
 export const createEmbeddedCheckoutSession = async (
   cartItems: CartItem[],
@@ -171,7 +183,7 @@ export const createEmbeddedCheckoutSession = async (
     const taxEnabled = options?.taxEnabled ?? true; // Enable tax by default
 
     const lineItems = cartItems.map((item) => {
-      const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = {
+      const lineItem: StripeSessionLineItem = {
         price_data: {
           currency: "usd",
           product_data: {
@@ -196,8 +208,8 @@ export const createEmbeddedCheckoutSession = async (
     });
 
     // Omit payment_method_types to use Dynamic Payment Methods (cards, Apple Pay, Google Pay, Link via Dashboard)
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      ui_mode: "custom",
+    const sessionParams: StripeSessionCreateParams = {
+      ui_mode: "embedded" as unknown as StripeSessionCreateParams["ui_mode"],
       line_items: lineItems,
       mode: "payment",
       return_url: returnUrl,
@@ -246,7 +258,7 @@ export const createEmbeddedCheckoutSession = async (
       // permissions.update_shipping_details=server_only requires shipping_address_collection to be set
       sessionParams.shipping_address_collection = {
         allowed_countries:
-          allowedCountries as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[],
+          allowedCountries as StripeAllowedCountry[],
       };
       sessionParams.permissions = {
         update_shipping_details: "server_only",
@@ -254,25 +266,6 @@ export const createEmbeddedCheckoutSession = async (
       // Billing fields shown so we can prefill from shipping (use shipping for billing or fill manually)
       sessionParams.billing_address_collection = "required";
       // Caller updates session with collected_information.shipping_details so address is prefilled; we do not show ShippingAddressElement in UI
-    } else if (options?.shippingAddressCollection) {
-      // Legacy: Stripe collects address; /api/checkout/shipping updates session with rates
-      sessionParams.shipping_address_collection = {
-        allowed_countries:
-          allowedCountries as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[],
-      };
-      sessionParams.shipping_options = [
-        {
-          shipping_rate_data: {
-            type: "fixed_amount",
-            fixed_amount: { amount: 0, currency: "usd" },
-            display_name: "Standard Shipping",
-            delivery_estimate: {
-              minimum: { unit: "business_day", value: 3 },
-              maximum: { unit: "business_day", value: 5 },
-            },
-          },
-        },
-      ];
     }
 
     // Enable automatic tax calculation
@@ -283,7 +276,7 @@ export const createEmbeddedCheckoutSession = async (
       };
 
       // Collect billing address for tax calculation if shipping is not collected
-      if (!options?.shippingAddressCollection) {
+      if (!options?.preselectedShipping) {
         sessionParams.billing_address_collection = "required";
       }
     }
@@ -292,7 +285,10 @@ export const createEmbeddedCheckoutSession = async (
       sessionParams.allow_promotion_codes = true;
     }
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    const requestOptions = options?.idempotencyKey
+      ? { idempotencyKey: options.idempotencyKey }
+      : undefined;
+    const session = await stripe.checkout.sessions.create(sessionParams, requestOptions);
 
     return session;
   } catch (error: unknown) {
@@ -304,7 +300,7 @@ export const createEmbeddedCheckoutSession = async (
       detail?: string;
       raw?: { message?: string };
     };
-    console.error("Error creating embedded checkout session:", {
+    logger.error("stripe_embedded_session_create_failed", {
       message: errorObj.message,
       type: errorObj.type,
       code: errorObj.code,
@@ -352,7 +348,8 @@ export const getCheckoutSession = async (
       type?: string;
       code?: string;
     };
-    console.error(`Error retrieving checkout session ${sessionId}:`, {
+    logger.error("stripe_checkout_session_retrieve_failed", {
+      sessionId,
       message: errorObj.message,
       type: errorObj.type,
       code: errorObj.code,

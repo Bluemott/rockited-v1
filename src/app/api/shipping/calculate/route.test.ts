@@ -13,6 +13,7 @@ vi.mock("@/lib/shipping", async (importOriginal) => {
 });
 
 import { POST } from "./route";
+import { SHIPPO_RATES_UNAVAILABLE_MESSAGE } from "@/lib/shipping";
 
 describe("POST /api/shipping/calculate", () => {
   beforeEach(() => {
@@ -109,6 +110,29 @@ describe("POST /api/shipping/calculate", () => {
     expect(data.error).toMatch(/id|quantity|required|invalid/i);
   });
 
+  it("returns 400 when products exceed 100 items", async () => {
+    const products = Array.from({ length: 101 }).map((_, idx) => ({ id: idx + 1, quantity: 1 }));
+    const req = createMockRequest("/api/shipping/calculate", {
+      method: "POST",
+      body: { country: "US", products },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/maximum 100/i);
+  });
+
+  it("returns 400 when product entry is not an object", async () => {
+    const req = createMockRequest("/api/shipping/calculate", {
+      method: "POST",
+      body: { country: "US", products: [1] },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/invalid product/i);
+  });
+
   it("returns 200 with rates when valid US and products", async () => {
     const req = createMockRequest("/api/shipping/calculate", {
       method: "POST",
@@ -132,5 +156,17 @@ describe("POST /api/shipping/calculate", () => {
     expect(res.status).toBe(500);
     const data = await res.json();
     expect(data.error).toMatch(/shipping|try again|failed/i);
+  });
+
+  it("returns 400 for explicit upstream shipping outage messages", async () => {
+    getShippingRatesMock.mockRejectedValueOnce(new Error(SHIPPO_RATES_UNAVAILABLE_MESSAGE));
+    const req = createMockRequest("/api/shipping/calculate", {
+      method: "POST",
+      body: { country: "US", products: [{ id: 1, quantity: 1 }] },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/unable to get shipping rates/i);
   });
 });

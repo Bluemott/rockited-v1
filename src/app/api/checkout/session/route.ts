@@ -72,7 +72,6 @@ export async function GET(request: NextRequest) {
       customer_email: session.customer_email ?? null,
       customer_details: session.customer_details ?? null,
       line_items: lineItems,
-      metadata: session.metadata ?? null,
       total_details: session.total_details ?? null,
       payment_intent: paymentIntentId,
     };

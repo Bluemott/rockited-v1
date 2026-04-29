@@ -4,7 +4,8 @@
       "url": [
         "http://localhost:3000/",
         "http://localhost:3000/products",
-        "http://localhost:3000/cart"
+        "http://localhost:3000/cart",
+        "http://localhost:3000/checkout"
       ],
       "startServerCommand": "npm run start",
       "startServerReadyPattern": "Ready in|started server on",

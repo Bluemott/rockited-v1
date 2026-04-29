@@ -21,6 +21,8 @@
 # misc
 .DS_Store
 *.pem
+*.ods
+Screenshot *.png
 
 # debug
 npm-debug.log*
@@ -38,5 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# local reference docs (condensed from root how-tos)
-/docs
+# docs are tracked; keep operational documentation in /docs

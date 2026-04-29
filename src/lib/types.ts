@@ -361,7 +361,6 @@ export interface CheckoutSessionApiResponse {
       }
     | null
     | undefined;
-  metadata: Record<string, string> | null;
   total_details: {
     amount_discount: number;
     amount_shipping: number | null;

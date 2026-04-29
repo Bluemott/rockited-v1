@@ -4,16 +4,12 @@ import { Lock, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import * as React from "react";
+
+import { useMounted } from "@/hooks/use-mounted";
 
 export default function Footer() {
   const { theme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  // Avoid hydration mismatch
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   // Determine which logo to use based on theme
   const isDarkMode = mounted && (theme === "dark" || resolvedTheme === "dark");

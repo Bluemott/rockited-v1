@@ -10,7 +10,7 @@ import {
   fillStripePaymentForm,
 } from "../utils/test-helpers";
 
-test.describe("Checkout - Happy path", { tag: ["@checkout", "@stripe"] }, () => {
+test.describe("Checkout - Happy path", { tag: ["@checkout", "@stripe", "@critical"] }, () => {
   test.beforeEach(async ({ page }) => {
     await setupTest(page);
   });
@@ -52,8 +52,7 @@ test.describe("Checkout - Happy path", { tag: ["@checkout", "@stripe"] }, () => 
     } catch {
       // Loading text might not be present
     }
-    // Brief settle for shipping validation to complete (Stripe has no other observable state here)
-    await page.waitForTimeout(500);
+    await page.waitForLoadState("networkidle");
 
     await fillStripePaymentForm(
       page,
@@ -61,8 +60,7 @@ test.describe("Checkout - Happy path", { tag: ["@checkout", "@stripe"] }, () => 
       TEST_CARD_DETAILS.EXPIRY_DATE,
       TEST_CARD_DETAILS.CVC
     );
-    // waitForSubmitButtonReady below will poll until button is enabled (Stripe card validation)
-    await page.waitForTimeout(800);
+    // waitForSubmitButtonReady below polls until Stripe validation enables submit.
 
     const submitButton = await checkoutPage.waitForSubmitButtonReady(25000);
     await submitButton.click();

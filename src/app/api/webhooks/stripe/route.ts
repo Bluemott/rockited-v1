@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 
 import { env } from "@/lib/env";
-import { createWooCommerceOrder, findOrderByStripeSessionId } from "@/lib/orders";
+import { logger } from "@/lib/logging/logger";
+import {
+  createWooCommerceOrder,
+  findOrderByStripeEventId,
+  findOrderByStripeSessionId,
+} from "@/lib/orders";
 import { stripe } from "@/lib/stripe";
 import type { WebhookApiResponse, ErrorApiResponse } from "@/lib/types";
 
@@ -37,7 +42,10 @@ function verifyWebhookSignature(
     return event;
   } catch (error: unknown) {
     const errorObj = error as { message?: string };
-    console.error("Webhook signature verification failed:", errorObj.message);
+    logger.error("webhook_signature_verification_failed", {
+      route: "/api/webhooks/stripe",
+      message: errorObj.message,
+    });
     throw new Error(
       `Webhook signature verification failed: ${errorObj.message || "Unknown error"}`
     );
@@ -47,65 +55,70 @@ function verifyWebhookSignature(
 /**
  * Handle checkout.session.completed event
  */
-async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  try {
-    // Check if order already exists (idempotency)
-    const existingOrder = await findOrderByStripeSessionId(session.id);
-
-    if (existingOrder) {
-      console.warn(`Order already exists for session ${session.id}: ${existingOrder.id}`);
-      return;
-    }
-
-    // Only create order if payment is successful
-    if (session.payment_status === "paid") {
-      const order = await createWooCommerceOrder(session);
-      console.warn(`✅ Order created successfully: ${order.id} for session ${session.id}`);
-    } else {
-      console.warn(
-        `⚠️ Payment not completed for session ${session.id}. Status: ${session.payment_status}`
-      );
-    }
-  } catch (error: unknown) {
-    console.error(`Error handling checkout.session.completed for session ${session.id}:`, error);
-    // Don't throw - we've already returned 200, log for manual review
-    throw error; // Re-throw to trigger retry mechanism
+async function handleCheckoutSessionCompleted(
+  session: Stripe.Checkout.Session,
+  eventId: string
+): Promise<void> {
+  // Check if order already exists (idempotency)
+  const existingOrder = await findOrderByStripeSessionId(session.id);
+  if (existingOrder) {
+    logger.warn("webhook_dedupe_hit", {
+      route: "/api/webhooks/stripe",
+      sessionId: session.id,
+      existingOrderId: existingOrder.id,
+    });
+    return;
   }
+
+  // Only create order if payment is successful
+  if (session.payment_status === "paid") {
+    const order = await createWooCommerceOrder(session, { stripeEventId: eventId });
+    logger.info("order_created", {
+      route: "/api/webhooks/stripe",
+      sessionId: session.id,
+      orderId: order.id,
+    });
+    return;
+  }
+
+  logger.warn("webhook_skipped_unpaid_session", {
+    route: "/api/webhooks/stripe",
+    sessionId: session.id,
+    paymentStatus: session.payment_status,
+  });
 }
 
 /**
  * Handle async payment succeeded event
  */
-async function handleAsyncPaymentSucceeded(session: Stripe.Checkout.Session): Promise<void> {
-  try {
-    // Check if order exists
-    const existingOrder = await findOrderByStripeSessionId(session.id);
+async function handleAsyncPaymentSucceeded(
+  session: Stripe.Checkout.Session,
+  eventId: string
+): Promise<void> {
+  // Check if order exists
+  const existingOrder = await findOrderByStripeSessionId(session.id);
 
-    if (!existingOrder) {
-      // Create order if it doesn't exist
-      await handleCheckoutSessionCompleted(session);
-    } else {
-      // Update existing order status if needed
-      console.warn(`Async payment succeeded for session ${session.id}, order ${existingOrder.id}`);
-      // You could update the order status here if needed
-    }
-  } catch (error: unknown) {
-    console.error(`Error handling async payment succeeded for session ${session.id}:`, error);
-    throw error;
+  if (!existingOrder) {
+    // Create order if it doesn't exist
+    await handleCheckoutSessionCompleted(session, eventId);
+    return;
   }
+
+  logger.info("webhook_async_payment_succeeded_existing_order", {
+    route: "/api/webhooks/stripe",
+    sessionId: session.id,
+    orderId: existingOrder.id,
+  });
 }
 
 /**
  * Handle async payment failed event
  */
 async function handleAsyncPaymentFailed(session: Stripe.Checkout.Session): Promise<void> {
-  try {
-    console.warn(`⚠️ Async payment failed for session ${session.id}`);
-    // You could update order status to failed or pending here
-    // For now, just log the event
-  } catch (error: unknown) {
-    console.error(`Error handling async payment failed for session ${session.id}:`, error);
-  }
+  logger.warn("webhook_async_payment_failed", {
+    route: "/api/webhooks/stripe",
+    sessionId: session.id,
+  });
 }
 
 /**
@@ -116,7 +129,7 @@ export async function POST(request: NextRequest) {
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    console.error("STRIPE_WEBHOOK_SECRET is not set");
+    logger.error("webhook_secret_missing", { route: "/api/webhooks/stripe" });
     return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
   }
 
@@ -132,60 +145,57 @@ export async function POST(request: NextRequest) {
     try {
       event = verifyWebhookSignature(rawBody, signature, webhookSecret);
     } catch (error: unknown) {
-      console.error("Webhook signature verification failed:", error);
+      logger.error("webhook_signature_verification_failed", {
+        route: "/api/webhooks/stripe",
+        error: error instanceof Error ? error.message : "unknown",
+      });
       const errorResponse: ErrorApiResponse = {
         error: "Invalid signature",
       };
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    // Check for replay attacks (timestamp validation)
-    const eventAge = Date.now() / 1000 - event.created;
-    const fiveMinutes = 5 * 60;
-
-    if (eventAge > fiveMinutes) {
-      console.warn(`⚠️ Event ${event.id} is too old (${eventAge}s), possible replay attack`);
-      return NextResponse.json({ error: "Event too old" }, { status: 400 });
-    }
-
-    // Log the event for debugging
-    console.warn(`📥 Received webhook event: ${event.type} (ID: ${event.id})`);
-
-    // Handle the event based on type
-    // Return 200 quickly, then process asynchronously
+    logger.info("webhook_verified", { route: "/api/webhooks/stripe", eventId: event.id, type: event.type });
+    await processEvent(event);
     const webhookResponse: WebhookApiResponse = { received: true };
-    const response = NextResponse.json(webhookResponse);
-
-    // Process event asynchronously (don't await)
-    processEventAsync(event).catch((error) => {
-      console.error(`Error processing event ${event.id} asynchronously:`, error);
-    });
-
-    return response;
+    return NextResponse.json(webhookResponse, { status: 200 });
   } catch (error: unknown) {
-    console.error("Webhook error:", error);
+    logger.error("webhook_processing_failed", {
+      route: "/api/webhooks/stripe",
+      error: error instanceof Error ? error.message : "unknown",
+    });
     const errorResponse: ErrorApiResponse = {
       error: "Webhook processing failed",
     };
-    return NextResponse.json(errorResponse, { status: 500 });
+    return NextResponse.json(errorResponse, { status: 503 });
   }
 }
 
 /**
- * Process webhook event asynchronously
+ * Process webhook event synchronously so non-2xx can trigger Stripe retries.
  */
-async function processEventAsync(event: Stripe.Event): Promise<void> {
+async function processEvent(event: Stripe.Event): Promise<void> {
   try {
+    const eventAlreadyProcessed = await findOrderByStripeEventId(event.id);
+    if (eventAlreadyProcessed) {
+      logger.warn("webhook_event_already_processed", {
+        route: "/api/webhooks/stripe",
+        eventId: event.id,
+        existingOrderId: eventAlreadyProcessed.id,
+      });
+      return;
+    }
+
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        await handleCheckoutSessionCompleted(session);
+        await handleCheckoutSessionCompleted(session, event.id);
         break;
       }
 
       case "checkout.session.async_payment_succeeded": {
         const session = event.data.object as Stripe.Checkout.Session;
-        await handleAsyncPaymentSucceeded(session);
+        await handleAsyncPaymentSucceeded(session, event.id);
         break;
       }
 
@@ -196,11 +206,19 @@ async function processEventAsync(event: Stripe.Event): Promise<void> {
       }
 
       default:
-        console.warn(`Unhandled event type: ${event.type}`);
+        logger.warn("webhook_unhandled_event_type", {
+          route: "/api/webhooks/stripe",
+          eventId: event.id,
+          type: event.type,
+        });
     }
   } catch (error: unknown) {
-    console.error(`Error processing event ${event.type}:`, error);
-    // Re-throw to allow Stripe to retry
+    logger.error("webhook_process_event_failed", {
+      route: "/api/webhooks/stripe",
+      eventId: event.id,
+      type: event.type,
+      error: error instanceof Error ? error.message : "unknown",
+    });
     throw error;
   }
 }

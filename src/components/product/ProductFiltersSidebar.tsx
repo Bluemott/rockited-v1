@@ -45,7 +45,10 @@ export default function ProductFiltersSidebar({
 
   // Update local filters when props change
   useEffect(() => {
-    setLocalFilters(filters);
+    const timer = setTimeout(() => {
+      setLocalFilters(filters);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [filters]);
 
   // Debounce search input

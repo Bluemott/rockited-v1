@@ -1,5 +1,12 @@
 import { env } from "./env";
+import {
+  wpCategoriesSchema,
+  wpMediaSchema,
+  wpPostsSchema,
+  wpTagsSchema,
+} from "./schemas/external";
 import { BlogPost } from "./types";
+import { normalizeImageUrl } from "./utils";
 
 const WORDPRESS_URL = env.WOOCOMMERCE_URL; // Use same base URL as WooCommerce
 const WORDPRESS_API_BASE = `${WORDPRESS_URL}/wp-json/wp/v2`;
@@ -83,7 +90,8 @@ async function fetchWordPressPosts(
       throw new Error(`WordPress API error: ${response.status} ${response.statusText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return wpPostsSchema.parse(data);
   } catch (error) {
     console.error("Error fetching WordPress posts:", error);
     return [];
@@ -103,7 +111,8 @@ async function fetchWordPressCategories(): Promise<WordPressCategory[]> {
       throw new Error(`WordPress API error: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return wpCategoriesSchema.parse(data);
   } catch (error) {
     console.error("Error fetching WordPress categories:", error);
     return [];
@@ -123,7 +132,8 @@ async function fetchWordPressTags(): Promise<WordPressTag[]> {
       throw new Error(`WordPress API error: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return wpTagsSchema.parse(data);
   } catch (error) {
     console.error("Error fetching WordPress tags:", error);
     return [];
@@ -143,7 +153,8 @@ async function fetchWordPressMedia(mediaId: number): Promise<WordPressMedia | nu
       return null;
     }
 
-    return await response.json();
+    const data = await response.json();
+    return wpMediaSchema.parse(data);
   } catch (error) {
     console.error(`Error fetching WordPress media ${mediaId}:`, error);
     return null;
@@ -167,12 +178,12 @@ async function mapWordPressPostToBlogPost(wpPost: WordPressPost): Promise<BlogPo
   // Extract featured image
   let featuredImage = "";
   if (wpPost.featured_media && wpPost._embedded?.["wp:featuredmedia"]?.[0]) {
-    featuredImage = wpPost._embedded["wp:featuredmedia"][0].source_url;
+    featuredImage = normalizeImageUrl(wpPost._embedded["wp:featuredmedia"][0].source_url);
   } else if (wpPost.featured_media) {
     // Fallback: fetch media if not embedded
     const media = await fetchWordPressMedia(wpPost.featured_media);
     if (media) {
-      featuredImage = media.source_url;
+      featuredImage = normalizeImageUrl(media.source_url);
     }
   }
 

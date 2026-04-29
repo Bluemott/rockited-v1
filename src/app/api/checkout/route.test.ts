@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 import { createMockRequest } from "@/app/api/__tests__/helpers";
 import { createEmbeddedCheckoutSession } from "@/lib/stripe";
+import { getProduct } from "@/lib/woocommerce/products";
 
 vi.mock("@/lib/stripe", () => ({
   stripe: {
@@ -16,10 +17,27 @@ vi.mock("@/lib/stripe", () => ({
   createEmbeddedCheckoutSession: vi.fn(),
 }));
 
+vi.mock("@/lib/woocommerce/products", () => ({
+  getProduct: vi.fn(),
+}));
+
 import { POST } from "./route";
 
 describe("POST /api/checkout", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getProduct).mockResolvedValue({
+      id: 1,
+      name: "Product A",
+      slug: "product-a",
+      price: "10.99",
+      regular_price: "10.99",
+      sale_price: "",
+      stock_status: "instock",
+      stock_quantity: 10,
+      images: [],
+      categories: [],
+    } as unknown as Awaited<ReturnType<typeof getProduct>>);
     vi.mocked(createEmbeddedCheckoutSession).mockResolvedValue({
       id: "cs_test_123",
       client_secret: "pi_secret_123",
@@ -32,14 +50,14 @@ describe("POST /api/checkout", () => {
     { id: 1, name: "Product A", price: 10.99, quantity: 1 },
   ];
 
-  it("returns 400 or 500 when body is not JSON", async () => {
+  it("returns 500 when body is not valid JSON", async () => {
     const req = createMockRequest("/api/checkout", {
       method: "POST",
       body: "not json",
       headers: { "Content-Type": "application/json" },
     });
     const res = await POST(req);
-    expect([400, 500]).toContain(res.status);
+    expect(res.status).toBe(500);
     const data = await res.json();
     expect(data.error).toBeDefined();
   });
@@ -212,5 +230,131 @@ describe("POST /api/checkout", () => {
     expect(res.status).toBe(500);
     const data = await res.json();
     expect(data.error).toMatch(/try again|failed/i);
+  });
+
+  it("returns 400 when live product price differs from cart price", async () => {
+    vi.mocked(getProduct).mockResolvedValueOnce({
+      id: 1,
+      name: "Product A",
+      slug: "product-a",
+      price: "12.99",
+      regular_price: "12.99",
+      sale_price: "",
+      stock_status: "instock",
+      stock_quantity: 10,
+      images: [],
+      categories: [],
+    } as unknown as Awaited<ReturnType<typeof getProduct>>);
+    const req = createMockRequest("/api/checkout", {
+      method: "POST",
+      body: { items: validItems },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/stale/i);
+  });
+
+  it("returns 400 when live product is out of stock", async () => {
+    vi.mocked(getProduct).mockResolvedValueOnce({
+      id: 1,
+      name: "Product A",
+      slug: "product-a",
+      price: "10.99",
+      regular_price: "10.99",
+      sale_price: "",
+      stock_status: "outofstock",
+      stock_quantity: 0,
+      images: [],
+      categories: [],
+    } as unknown as Awaited<ReturnType<typeof getProduct>>);
+    const req = createMockRequest("/api/checkout", {
+      method: "POST",
+      body: { items: validItems },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/out of stock/i);
+  });
+
+  it("sends an idempotency key for checkout session creation", async () => {
+    const payload = { items: validItems, customerEmail: "buyer@example.com" };
+    const req1 = createMockRequest("/api/checkout", { method: "POST", body: payload });
+    const req2 = createMockRequest("/api/checkout", { method: "POST", body: payload });
+
+    await POST(req1);
+    await POST(req2);
+
+    const firstCall = vi.mocked(createEmbeddedCheckoutSession).mock.calls[0];
+    const secondCall = vi.mocked(createEmbeddedCheckoutSession).mock.calls[1];
+    const firstOptions = firstCall?.[2] as { idempotencyKey?: string } | undefined;
+    const secondOptions = secondCall?.[2] as { idempotencyKey?: string } | undefined;
+
+    expect(firstOptions?.idempotencyKey).toMatch(/^[a-f0-9]{64}$/);
+    expect(secondOptions?.idempotencyKey).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("rejects item quantity above live stock quantity", async () => {
+    vi.mocked(getProduct).mockResolvedValueOnce({
+      id: 1,
+      name: "Product A",
+      slug: "product-a",
+      price: "10.99",
+      regular_price: "10.99",
+      sale_price: "",
+      stock_status: "instock",
+      stock_quantity: 1,
+      images: [],
+      categories: [],
+    } as unknown as Awaited<ReturnType<typeof getProduct>>);
+
+    const req = createMockRequest("/api/checkout", {
+      method: "POST",
+      body: {
+        items: [{ id: 1, name: "Product A", price: 10.99, quantity: 2 }],
+      },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/no longer available/i);
+  });
+
+  it("uses caller-provided idempotency key header when present", async () => {
+    const req = createMockRequest("/api/checkout", {
+      method: "POST",
+      body: { items: validItems },
+      headers: { "idempotency-key": "checkout-key-123" },
+    });
+
+    await POST(req);
+
+    const [, , options] = vi.mocked(createEmbeddedCheckoutSession).mock.calls[0] || [];
+    const sessionOptions = options as { idempotencyKey?: string };
+    expect(sessionOptions.idempotencyKey).toBe("checkout-key-123");
+  });
+
+  it("retries without tax when Stripe tax calculation fails", async () => {
+    vi.mocked(createEmbeddedCheckoutSession)
+      .mockRejectedValueOnce({ message: "tax calculation failed", type: "StripeInvalidRequestError" })
+      .mockResolvedValueOnce({
+        id: "cs_retry_1",
+        client_secret: "pi_secret_retry",
+        metadata: {},
+        automatic_tax: { enabled: false, status: "failed" },
+      } as Stripe.Checkout.Session);
+
+    const req = createMockRequest("/api/checkout", {
+      method: "POST",
+      body: { items: validItems },
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(vi.mocked(createEmbeddedCheckoutSession)).toHaveBeenCalledTimes(2);
+    const retryCall = vi.mocked(createEmbeddedCheckoutSession).mock.calls[1];
+    expect((retryCall?.[2] as { taxEnabled?: boolean }).taxEnabled).toBe(false);
   });
 });

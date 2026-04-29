@@ -1,6 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect } from "vitest";
 
-import { formatPrice } from "../utils";
+import { formatPrice, normalizeImageUrl } from "../utils";
+
+const originalEnv = { ...process.env };
+
+afterEach(() => {
+  process.env = { ...originalEnv };
+});
 
 describe("formatPrice", () => {
   it("should format number as USD currency", () => {
@@ -84,5 +90,28 @@ describe("formatPrice", () => {
     expect(formatPrice(10.0)).toBe("$10.00");
     expect(formatPrice(10.1)).toBe("$10.10");
     expect(formatPrice("10.0")).toBe("$10.00");
+  });
+});
+
+describe("normalizeImageUrl", () => {
+  it("rewrites host using MEDIA_HOST_REWRITE_MAP", () => {
+    process.env.MEDIA_HOST_REWRITE_MAP = "52.23.226.128=https://api.rockited4d.com";
+    expect(normalizeImageUrl("http://52.23.226.128/wp-content/uploads/a.webp")).toBe(
+      "https://api.rockited4d.com/wp-content/uploads/a.webp"
+    );
+  });
+
+  it("returns absolute URL unchanged when no rewrite matches", () => {
+    process.env.MEDIA_HOST_REWRITE_MAP = "old.example.com=https://new.example.com";
+    expect(normalizeImageUrl("https://api.rockited4d.com/wp-content/uploads/a.webp")).toBe(
+      "https://api.rockited4d.com/wp-content/uploads/a.webp"
+    );
+  });
+
+  it("resolves relative paths when NEXT_PUBLIC_MEDIA_BASE_URL is set", () => {
+    process.env.NEXT_PUBLIC_MEDIA_BASE_URL = "https://api.rockited4d.com";
+    expect(normalizeImageUrl("/wp-content/uploads/a.webp")).toBe(
+      "https://api.rockited4d.com/wp-content/uploads/a.webp"
+    );
   });
 });

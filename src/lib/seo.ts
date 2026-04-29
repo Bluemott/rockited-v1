@@ -9,6 +9,7 @@ import {
 } from "./productMetadata";
 import { optimizeMetaDescription } from "./seoUtils";
 import { WooProduct } from "./types";
+import { normalizeImageUrl } from "./utils";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rockited4d.com";
 const siteName = "ROCK IT ED";
@@ -93,14 +94,15 @@ export function generateProductMetadata(product: WooProduct): Metadata {
   const productDescription = optimizeMetaDescription(rawDescription);
 
   // Use custom OG image if available, otherwise use first product image
-  const productImage =
-    customOGImage || product.images[0]?.src || `${siteUrl}/placeholder-product.jpg`;
+  const productImage = normalizeImageUrl(
+    customOGImage || product.images[0]?.src || `${siteUrl}/placeholder-product.jpg`
+  );
 
   // Get all product images for Open Graph
   const productImages =
     product.images && product.images.length > 0
       ? product.images.map((img) => ({
-          url: img.src,
+          url: normalizeImageUrl(img.src),
           width: 1200,
           height: 1200,
           alt: img.alt || product.name,

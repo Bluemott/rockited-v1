@@ -25,12 +25,10 @@ test.describe("Cart - Add, update, remove, persist, proceed to checkout", {
       (await firstProductCard.locator("h3").first().textContent()) ||
       (await firstProductCard.locator("a").first().textContent());
 
-    if (!firstProductName?.trim()) {
-      test.skip(true, "No products available for testing");
-      return;
-    }
+    expect(firstProductName?.trim()).toBeTruthy();
 
-    await productPage.addToCart(firstProductName.trim());
+    const normalizedFirstProduct = firstProductName!.trim();
+    await productPage.addToCart(normalizedFirstProduct);
     await verifyCartBadgeCount(page, 1);
     await waitForCartHydration(page);
   });
@@ -47,10 +45,7 @@ test.describe("Cart - Add, update, remove, persist, proceed to checkout", {
     const productCards = page.locator('[role="article"]');
     const productCount = await productCards.count();
 
-    if (productCount < 2) {
-      test.skip(true, "Not enough products for this test");
-      return;
-    }
+    expect(productCount).toBeGreaterThanOrEqual(2);
 
     const firstProductName = (
       (await productCards.nth(0).locator("h3").first().textContent()) ||
@@ -95,12 +90,10 @@ test.describe("Cart - Add, update, remove, persist, proceed to checkout", {
       (await firstProductCard.locator("h3").first().textContent()) ||
       (await firstProductCard.locator("a").first().textContent());
 
-    if (!firstProductName?.trim()) {
-      test.skip(true, "No products available for testing");
-      return;
-    }
+    expect(firstProductName?.trim()).toBeTruthy();
 
-    await productPage.addToCart(firstProductName.trim());
+    const normalizedFirstProduct = firstProductName!.trim();
+    await productPage.addToCart(normalizedFirstProduct);
     await verifyCartBadgeCount(page, 1);
     await waitForCartHydration(page);
 
@@ -108,7 +101,7 @@ test.describe("Cart - Add, update, remove, persist, proceed to checkout", {
     await waitForCartHydration(page);
 
     await cartPage.goto();
-    await cartPage.verifyItemPresent(firstProductName.trim());
+    await cartPage.verifyItemPresent(normalizedFirstProduct);
   });
 
   test("proceed to checkout navigates to checkout when cart has items", async ({
@@ -125,17 +118,15 @@ test.describe("Cart - Add, update, remove, persist, proceed to checkout", {
       (await firstProductCard.locator("h3").first().textContent()) ||
       (await firstProductCard.locator("a").first().textContent());
 
-    if (!firstProductName?.trim()) {
-      test.skip(true, "No products available for testing");
-      return;
-    }
+    expect(firstProductName?.trim()).toBeTruthy();
 
-    await productPage.addToCart(firstProductName.trim());
+    const normalizedFirstProduct = firstProductName!.trim();
+    await productPage.addToCart(normalizedFirstProduct);
     await verifyCartBadgeCount(page, 1);
     await waitForCartHydration(page);
 
     await cartPage.goto();
-    await cartPage.verifyItemPresent(firstProductName.trim());
+    await cartPage.verifyItemPresent(normalizedFirstProduct);
     await cartPage.proceedToCheckout();
 
     await expect(page).toHaveURL(/\/checkout/);

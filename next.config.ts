@@ -1,27 +1,26 @@
 import type { NextConfig } from "next";
 
+const parseCsv = (value: string | undefined): string[] =>
+  (value || "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
+const mediaHosts = parseCsv(process.env.NEXT_PUBLIC_MEDIA_HOSTS);
+const mediaPath = process.env.NEXT_PUBLIC_MEDIA_PATH_GLOB || "/**";
+const staticHosts = ["rockited4d.com", "www.rockited4d.com", "api.rockited4d.com"];
+const imageHosts = Array.from(new Set([...staticHosts, ...mediaHosts]));
+
+const imageRemotePatterns = imageHosts.flatMap((hostname) => [
+  { protocol: "https" as const, hostname, port: "", pathname: mediaPath },
+  { protocol: "http" as const, hostname, port: "", pathname: mediaPath },
+]);
+
 const nextConfig: NextConfig = {
   images: {
     qualities: [75, 90, 100], // Allow qualities used in the app
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "rockited4d.com",
-        port: "",
-        pathname: "/wp-content/uploads/**",
-      },
-      {
-        protocol: "https",
-        hostname: "www.rockited4d.com",
-        port: "",
-        pathname: "/wp-content/uploads/**",
-      },
-      {
-        protocol: "https",
-        hostname: "api.rockited4d.com",
-        port: "",
-        pathname: "/wp-content/uploads/**",
-      },
+      ...imageRemotePatterns,
       // Development/localhost patterns
       {
         protocol: "http",
@@ -32,19 +31,6 @@ const nextConfig: NextConfig = {
       {
         protocol: "http",
         hostname: "127.0.0.1",
-        port: "",
-        pathname: "/**",
-      },
-      // Development: Allow IP address for Lightsail (temporary - should be replaced with domain)
-      {
-        protocol: "http",
-        hostname: "52.23.226.128",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "52.23.226.128",
         port: "",
         pathname: "/**",
       },

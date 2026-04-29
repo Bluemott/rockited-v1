@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHash } from "node:crypto";
 
 import { env } from "@/lib/env";
+import { getRequestId, logger } from "@/lib/logging/logger";
+import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 import {
   sanitizeString,
   sanitizeEmail,
@@ -10,14 +13,35 @@ import {
   validateBodySize,
 } from "@/lib/sanitize";
 import { checkoutBodySchema } from "@/lib/schemas/checkout";
+import { getShippingRates } from "@/lib/shipping";
 import { createEmbeddedCheckoutSession, stripe } from "@/lib/stripe";
 import type { CheckoutApiResponse, ErrorApiResponse } from "@/lib/types";
+import { getProduct } from "@/lib/woocommerce/products";
 
 // Maximum request body size (1MB)
 const MAX_BODY_SIZE = 1024 * 1024;
 
 export async function POST(request: NextRequest) {
+  const requestId = getRequestId(request);
   try {
+    const clientIP = getClientIP(request);
+    const rateLimit = await checkRateLimit(clientIP, "checkout");
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: "Too many checkout attempts. Please wait and try again.",
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": String(rateLimit.limit),
+            "X-RateLimit-Remaining": String(rateLimit.remaining),
+            "X-RateLimit-Reset": String(rateLimit.reset),
+          },
+        }
+      );
+    }
+
     // Get raw body text for size validation
     const bodyText = await request.text();
     validateBodySize(bodyText, MAX_BODY_SIZE);
@@ -29,7 +53,7 @@ export async function POST(request: NextRequest) {
       const message = parsed.error.issues[0]?.message ?? "Invalid checkout request";
       return NextResponse.json({ error: String(message) }, { status: 400 });
     }
-    const { items, customerEmail, shippingAddress, selectedShippingRate, standardizedAddress } = parsed.data;
+    const { items, customerEmail, shippingAddress, selectedShippingRate } = parsed.data;
 
     // Validate and sanitize items structure
     const sanitizedItems = items.map((item: unknown, index: number) => {
@@ -131,6 +155,45 @@ export async function POST(request: NextRequest) {
       };
     }
 
+    if (preselectedShipping) {
+      const recalculatedShipping = await getShippingRates({
+        country: preselectedShipping.address.country,
+        state: preselectedShipping.address.state,
+        postcode: preselectedShipping.address.postal_code,
+        city: preselectedShipping.address.city,
+        products: sanitizedItems.map((item) => ({ id: item.id, quantity: item.quantity })),
+      });
+      const selectedRate = recalculatedShipping.rates.find(
+        (rate) => rate.method_id === preselectedShipping?.shippingOption.method_id
+      );
+      if (!selectedRate) {
+        return NextResponse.json(
+          { error: "Selected shipping method is no longer available. Please refresh shipping options." },
+          { status: 400 }
+        );
+      }
+      const selectedCost = Number.parseFloat(preselectedShipping.shippingOption.cost || "0");
+      const verifiedCost = Number.parseFloat(selectedRate.cost || "0");
+      if (!Number.isFinite(selectedCost) || !Number.isFinite(verifiedCost)) {
+        return NextResponse.json(
+          { error: "Shipping rate validation failed. Please refresh shipping options." },
+          { status: 400 }
+        );
+      }
+      if (Math.abs(selectedCost - verifiedCost) > 0.01) {
+        return NextResponse.json(
+          { error: "Shipping cost has changed. Please refresh shipping options and try again." },
+          { status: 400 }
+        );
+      }
+      preselectedShipping.shippingOption = {
+        method_id: selectedRate.method_id,
+        method_title: selectedRate.method_title,
+        cost: selectedRate.cost,
+        estimated_delivery: selectedRate.estimated_delivery,
+      };
+    }
+
     // Build return URL - use validated environment variable
     let baseUrl = env.NEXT_PUBLIC_SITE_URL;
 
@@ -150,6 +213,31 @@ export async function POST(request: NextRequest) {
 
     const returnUrl = `${baseUrl}/checkout?session_id={CHECKOUT_SESSION_ID}`;
 
+    // Validate cart against WooCommerce source-of-truth to prevent stale price/stock checkouts.
+    await Promise.all(
+      sanitizedItems.map(async (item) => {
+        const liveProduct = await getProduct(item.id);
+        const livePrice = Number.parseFloat(liveProduct.price);
+        const requestedPrice = Number.parseFloat(item.price.toFixed(2));
+        if (!Number.isFinite(livePrice)) {
+          throw new Error(`Product ${item.id} has invalid live price data`);
+        }
+        if (Math.abs(livePrice - requestedPrice) > 0.01) {
+          throw new Error(`Cart data is stale for product ${item.id}. Please refresh and try again.`);
+        }
+        if (liveProduct.stock_status === "outofstock") {
+          throw new Error(`Product ${item.id} is out of stock. Please refresh your cart.`);
+        }
+        if (
+          typeof liveProduct.stock_quantity === "number" &&
+          liveProduct.stock_quantity >= 0 &&
+          item.quantity > liveProduct.stock_quantity
+        ) {
+          throw new Error(`Product ${item.id} quantity is no longer available.`);
+        }
+      })
+    );
+
     // Get logo URL from environment or use default
     const logoUrl = env.STRIPE_LOGO_URL || "/Rockited_Logo_For_Dark_BKGRND.png";
 
@@ -158,15 +246,29 @@ export async function POST(request: NextRequest) {
     const taxEnabled = env.STRIPE_TAX_ENABLED !== false;
 
     // Create checkout session with options
+    const computedIdempotencyKey = createHash("sha256")
+      .update(
+        JSON.stringify({
+          items: sanitizedItems,
+          customerEmail: sanitizedEmail ?? null,
+          shippingAddress: shippingAddress ?? null,
+          selectedShippingRate: selectedShippingRate ?? null,
+        })
+      )
+      .digest("hex")
+      .slice(0, 64);
+    const providedIdempotencyKey = sanitizeString(
+      request.headers.get("idempotency-key") || request.headers.get("x-idempotency-key") || ""
+    ).slice(0, 128);
+
     const sessionOptions = {
       customerEmail: sanitizedEmail,
-      ...(preselectedShipping
-        ? { preselectedShipping }
-        : { shippingAddressCollection: true as const }),
+      ...(preselectedShipping ? { preselectedShipping } : {}),
       allowPromotionCodes: true,
       taxEnabled,
       allowedCountries: ["US"],
       brandingLogoUrl: logoUrl,
+      idempotencyKey: providedIdempotencyKey || computedIdempotencyKey,
     };
 
     let session;
@@ -175,13 +277,15 @@ export async function POST(request: NextRequest) {
     } catch (error: unknown) {
       const errorObj = error as { message?: string; type?: string; code?: string };
       if (errorObj.message?.includes("tax") || errorObj.type === "StripeInvalidRequestError") {
-        console.error("Tax configuration error:", {
+        logger.error("checkout_tax_error", {
+          requestId,
+          route: "/api/checkout",
           message: errorObj.message,
           type: errorObj.type,
           code: errorObj.code,
         });
         if (taxEnabled && errorObj.message?.includes("tax")) {
-          console.warn("Tax calculation failed, retrying without tax");
+          logger.warn("checkout_tax_retry_without_tax", { requestId, route: "/api/checkout" });
           try {
             session = await createEmbeddedCheckoutSession(sanitizedItems, returnUrl, {
               ...sessionOptions,
@@ -201,31 +305,7 @@ export async function POST(request: NextRequest) {
     // When shipping was preselected, update session with collected_information.shipping_details so Stripe has the address and correct total
     if (preselectedShipping && session) {
       const addr = preselectedShipping.address;
-      const metadata: Record<string, string> = {
-        ...session.metadata,
-        shipping_address: JSON.stringify({
-          country: addr.country,
-          postal_code: addr.postal_code,
-          state: addr.state,
-          city: addr.city,
-          line1: addr.line1,
-          line2: addr.line2,
-          name: addr.name,
-        }),
-      };
-      if (standardizedAddress && typeof standardizedAddress === "object") {
-        const std = sanitizeObjectKeys(standardizedAddress as Record<string, unknown>);
-        if (std.line1 || std.city || std.state || std.postal_code) {
-          metadata.shipping_address_standardized = JSON.stringify({
-            line1: sanitizeString(String(std.line1 ?? "")).substring(0, 200),
-            city: sanitizeString(String(std.city ?? "")).substring(0, 100),
-            state: sanitizeString(String(std.state ?? "")).substring(0, 10),
-            postal_code: sanitizeString(String(std.postal_code ?? "")).replace(/\D/g, "").slice(0, 10),
-          });
-        }
-      }
       await stripe.checkout.sessions.update(session.id, {
-        metadata,
         collected_information: {
           shipping_details: {
             name: addr.name ?? "",
@@ -251,7 +331,11 @@ export async function POST(request: NextRequest) {
     // Verify tax status if enabled
     const taxStatus = session.automatic_tax?.status;
     if (taxEnabled && taxStatus) {
-      console.warn("Tax calculation status:", taxStatus);
+      logger.info("checkout_tax_status", {
+        requestId,
+        route: "/api/checkout",
+        taxStatus,
+      });
     }
 
     const response: CheckoutApiResponse = {
@@ -265,7 +349,9 @@ export async function POST(request: NextRequest) {
     // Don't leak internal error details
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
-    console.error("Checkout API error:", {
+    logger.error("checkout_failed", {
+      requestId,
+      route: "/api/checkout",
       message: errorMessage,
       stack: error instanceof Error ? error.stack : undefined,
     });
@@ -279,7 +365,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Validation errors should return 400
-    if (errorMessage.includes("Invalid") || errorMessage.includes("must be")) {
+    if (
+      errorMessage.includes("Invalid") ||
+      errorMessage.includes("must be") ||
+      errorMessage.includes("stale") ||
+      errorMessage.includes("out of stock") ||
+      errorMessage.includes("no longer available")
+    ) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 

@@ -13,9 +13,11 @@ import {
   addFirstProductAndGoToCheckout,
   fillShippingAddressForm,
   fillStripePaymentForm,
+  waitForCheckoutReady,
+  waitForCheckoutAfterSubmit,
 } from "../utils/test-helpers";
 
-test.describe("Stripe payments", { tag: ["@checkout", "@stripe"] }, () => {
+test.describe("Stripe payments", { tag: ["@checkout", "@stripe", "@integration"] }, () => {
   test.beforeEach(async ({ page }) => {
     await setupTest(page);
   });
@@ -40,10 +42,7 @@ test.describe("Stripe payments", { tag: ["@checkout", "@stripe"] }, () => {
       "94102"
     );
 
-    const validatingOrCalculatingText = page.locator("text=/validating|calculating/i");
-    await validatingOrCalculatingText.waitFor({ state: "hidden", timeout: 15000 }).catch(() => {});
-
-    await page.waitForTimeout(500);
+    await waitForCheckoutReady(page);
 
     const submitButton = checkoutPage.getSubmitButton();
     await expect(submitButton).toBeVisible({ timeout: 10000 });
@@ -70,8 +69,7 @@ test.describe("Stripe payments", { tag: ["@checkout", "@stripe"] }, () => {
       "94102"
     );
 
-    await page.locator("text=/validating|calculating/i").waitFor({ state: "hidden", timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(800);
+    await waitForCheckoutReady(page);
 
     await fillStripePaymentForm(
       page,
@@ -79,8 +77,6 @@ test.describe("Stripe payments", { tag: ["@checkout", "@stripe"] }, () => {
       TEST_CARD_DETAILS.EXPIRY_DATE,
       TEST_CARD_DETAILS.CVC
     );
-    await page.waitForTimeout(800);
-
     const submitButton = await checkoutPage.waitForSubmitButtonReady(25000);
     await submitButton.click();
 
@@ -110,8 +106,7 @@ test.describe("Stripe payments", { tag: ["@checkout", "@stripe"] }, () => {
       "CA",
       "94102"
     );
-    await page.locator("text=/validating|calculating/i").waitFor({ state: "hidden", timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(500);
+    await waitForCheckoutReady(page);
 
     await fillStripePaymentForm(
       page,
@@ -119,12 +114,10 @@ test.describe("Stripe payments", { tag: ["@checkout", "@stripe"] }, () => {
       TEST_CARD_DETAILS.EXPIRY_DATE,
       TEST_CARD_DETAILS.CVC
     );
-    await page.waitForTimeout(800);
-
     const submitButton = await checkoutPage.waitForSubmitButtonReady(15000).catch(() => null);
     if (submitButton) {
       await submitButton.click();
-      await page.waitForTimeout(5000);
+      await waitForCheckoutAfterSubmit(page);
     }
 
     expect(page.url()).toContain("/checkout");
@@ -149,8 +142,7 @@ test.describe("Stripe payments", { tag: ["@checkout", "@stripe"] }, () => {
       "CA",
       "94102"
     );
-    await page.locator("text=/validating|calculating/i").waitFor({ state: "hidden", timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(500);
+    await waitForCheckoutReady(page);
 
     await fillStripePaymentForm(
       page,
@@ -158,12 +150,10 @@ test.describe("Stripe payments", { tag: ["@checkout", "@stripe"] }, () => {
       TEST_CARD_DETAILS.EXPIRY_DATE,
       TEST_CARD_DETAILS.CVC
     );
-    await page.waitForTimeout(800);
-
     const submitButton = await checkoutPage.waitForSubmitButtonReady(15000).catch(() => null);
     if (submitButton) {
       await submitButton.click();
-      await page.waitForTimeout(5000);
+      await waitForCheckoutAfterSubmit(page);
     }
 
     expect(page.url()).toContain("/checkout");
@@ -196,8 +186,7 @@ test.describe("Stripe payments", { tag: ["@checkout", "@stripe"] }, () => {
       "83702"
     );
 
-    await page.locator("text=/validating|calculating/i").waitFor({ state: "hidden", timeout: 15000 }).catch(() => {});
-    await page.waitForTimeout(800);
+    await waitForCheckoutReady(page);
 
     await fillStripePaymentForm(
       page,
@@ -205,8 +194,6 @@ test.describe("Stripe payments", { tag: ["@checkout", "@stripe"] }, () => {
       TEST_CARD_DETAILS.EXPIRY_DATE,
       TEST_CARD_DETAILS.CVC
     );
-    await page.waitForTimeout(800);
-
     const submitButton = await checkoutPage.waitForSubmitButtonReady(25000);
     await submitButton.click();
 

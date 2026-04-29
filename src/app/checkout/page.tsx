@@ -45,7 +45,6 @@ const initialShippingForm: ShippingForm = {
 function CheckoutContent() {
   const { items, itemCount, updateQuantity, removeItem, _hasHydrated } = useCartStore();
   const [clientSecret, setClientSecret] = useState<string>("");
-  const [checkoutSessionId, setCheckoutSessionId] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [checkoutStep, setCheckoutStep] = useState<1 | 2>(1);
 
@@ -303,14 +302,12 @@ function CheckoutContent() {
           customerEmail: emailTrimmed,
           shippingAddress,
           selectedShippingRate,
-          ...(standardizedAddress && { standardizedAddress }),
         }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       if (!data.clientSecret) throw new Error("Failed to create checkout session");
       setClientSecret(data.clientSecret);
-      if (data.sessionId) setCheckoutSessionId(data.sessionId);
       setCheckoutStep(2);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start payment");
@@ -327,7 +324,6 @@ function CheckoutContent() {
     updateQuantity(id, newQuantity);
     if (checkoutStep === 2) {
       setClientSecret("");
-      setCheckoutSessionId("");
       setCheckoutStep(1);
     }
     setShippingRates(null);
@@ -338,7 +334,6 @@ function CheckoutContent() {
     removeItem(id);
     if (checkoutStep === 2) {
       setClientSecret("");
-      setCheckoutSessionId("");
       setCheckoutStep(1);
     }
     setShippingRates(null);
@@ -807,7 +802,6 @@ function CheckoutContent() {
                         onClick={() => {
                           setCheckoutStep(1);
                           setClientSecret("");
-                          setCheckoutSessionId("");
                           // Keep shippingRates and selectedShippingRate so user can change method or address
                         }}
                       >
@@ -835,18 +829,6 @@ function CheckoutContent() {
                       <div className="space-y-4" data-testid="checkout-payment-ready">
                         <PaymentElementComponent
                           clientSecret={clientSecret}
-                          sessionId={checkoutSessionId}
-                          shippingAlreadyCollected
-                          customerEmail={emailTrimmed || undefined}
-                          shippingAddressForBilling={{
-                            name: shippingForm.name || undefined,
-                            line1: shippingForm.line1 || undefined,
-                            line2: shippingForm.line2 || undefined,
-                            city: shippingForm.city || undefined,
-                            state: shippingForm.state || undefined,
-                            postal_code: shippingForm.postal_code.trim().replace(/\D/g, "").slice(0, 5) || undefined,
-                            country: shippingForm.country || "US",
-                          }}
                         />
                         <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground" role="status">
                           <Lock className="h-3.5 w-3.5" aria-hidden />

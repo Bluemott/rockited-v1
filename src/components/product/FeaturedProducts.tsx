@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
 import { MotionDiv } from "@/components/ui/motion";
 import { useCartStore } from "@/lib/store";
 import { WooProduct } from "@/lib/types";
+import { normalizeImageUrl } from "@/lib/utils";
 
 interface FeaturedProductsProps {
   products: WooProduct[];
@@ -133,7 +134,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
       id: product.id,
       name: product.name,
       price: parseFloat(product.price),
-      image: product.images[0]?.src || "/placeholder-product.jpg",
+      image: normalizeImageUrl(product.images[0]?.src || "/placeholder-product.jpg"),
       sku: product.sku,
       virtual: product.virtual,
       categories: product.categories?.map((c) => ({ slug: c.slug })),
@@ -178,7 +179,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
                   <Link href={`/products/${product.slug}`}>
                     <div className="aspect-[4/3] relative">
                       <Image
-                        src={product.images[0]?.src || "/placeholder-product.jpg"}
+                        src={normalizeImageUrl(product.images[0]?.src || "/placeholder-product.jpg")}
                         alt={product.images[0]?.alt || product.name}
                         fill
                         sizes="(max-width: 640px) 100vw, 50vw"
@@ -290,7 +291,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
                       <Link href={`/products/${product.slug}`}>
                         <div className="aspect-[4/3] relative">
                           <Image
-                            src={product.images[0]?.src || "/placeholder-product.jpg"}
+                            src={normalizeImageUrl(product.images[0]?.src || "/placeholder-product.jpg")}
                             alt={product.images[0]?.alt || product.name}
                             fill
                             sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"

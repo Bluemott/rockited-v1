@@ -4,6 +4,7 @@
  */
 
 import { derivePackageFromProducts } from "@/lib/shipping/package";
+import { logger } from "@/lib/logging/logger";
 import { isShippoConfigured, getShippoRates } from "@/lib/shippo";
 import type { WooShippingCalculation } from "@/lib/types";
 import { getProduct } from "@/lib/woocommerce/products";
@@ -45,7 +46,10 @@ export async function getShippingRates(
     const pkg = derivePackageFromProducts(productDetails);
 
     if (!isShippoConfigured()) {
-      // Return a single placeholder rate so ZIP estimator and checkout don't 400 before Shippo is configured
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(SHIPPO_NOT_CONFIGURED_MESSAGE);
+      }
+      // Non-production fallback to preserve local development workflows.
       return {
         zone_id: 0,
         zone_name: "Shippo",
@@ -91,7 +95,10 @@ export async function getShippingRates(
       ) {
         throw err;
       }
-      console.warn("Shippo shipping rates failed:", err);
+      logger.warn("shippo_rates_failed", {
+        action: "getShippingRates",
+        error: err instanceof Error ? err.message : "unknown",
+      });
       throw new Error(SHIPPO_RATES_UNAVAILABLE_MESSAGE);
     }
   }

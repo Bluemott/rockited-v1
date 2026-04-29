@@ -1,6 +1,7 @@
 import { getBrandFromMetadata, getStructuredMetadata } from "@/lib/productMetadata";
 import { getSiteConfig } from "@/lib/seo";
 import { WooProduct } from "@/lib/types";
+import { normalizeImageUrl } from "@/lib/utils";
 
 // One year from module load (stable for schema; avoids Date.now() during render)
 const PRICE_VALID_UNTIL = (() => {
@@ -65,7 +66,7 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           description: product.short_description
             ? product.short_description.replace(/<[^>]*>/g, "").substring(0, 500)
             : product.description?.replace(/<[^>]*>/g, "").substring(0, 500) || "",
-          image: product.images?.map((img) => img.src) || [],
+          image: product.images?.map((img) => normalizeImageUrl(img.src)) || [],
           sku: product.sku || product.id.toString(),
           brand: {
             "@type": "Brand",

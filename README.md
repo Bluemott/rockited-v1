@@ -1,226 +1,128 @@
-# YourBrand - Next.js WooCommerce Marketing Site
+# ROCK IT ED Storefront
 
-A modern, responsive e-commerce website built with Next.js 14, TypeScript, and Tailwind CSS. Features WooCommerce as a headless backend and Stripe for payments.
+Next.js storefront for ROCK IT ED using WooCommerce (WordPress) for catalog/content, Stripe for payments, and Shippo for shipping rates/address validation.
 
-## Features
+## Project Overview
 
-- 🛍️ **Product Catalog**: Display products from WooCommerce with ISR (Incremental Static Regeneration)
-- 🛒 **Shopping Cart**: Persistent cart with local storage using Zustand
-- 💳 **Stripe Checkout**: Secure payment processing
-- 📱 **Responsive Design**: Mobile-first design with Tailwind CSS
-- ⚡ **Performance**: Optimized with Next.js 14 App Router and ISR
-- 🎨 **Dark Theme**: Clean, modern design with dark theme preference
-- 📦 **Real-time Inventory**: Live pricing and stock status updates
-- ↩️ **Return policy**: Summary on checkout and product pages with link to full policy at /about/returns
+- **Frontend:** Next.js App Router + TypeScript + Tailwind.
+- **Commerce backend:** WooCommerce REST API hosted on WordPress.
+- **Payments:** Stripe Embedded Checkout with webhook-driven order finalization.
+- **Shipping:** Shippo-based domestic US shipping flow.
+- **Deployment:** AWS Amplify hosting with domain and DNS managed in AWS.
 
-## Tech Stack
+## Architecture Snapshot
 
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
-- **Backend**: WooCommerce REST API
-- **Payments**: Stripe Checkout
-- **State Management**: Zustand
-- **Deployment**: AWS Amplify
-- **Hosting**: AWS CloudFront CDN
+```text
+rockited4d.com            -> AWS Amplify (Next.js app)
+api.rockited4d.com        -> Lightsail WordPress/WooCommerce API
+Stripe                    -> Checkout + webhook callbacks
+Shippo                    -> address validation + rates
+```
 
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+
-- npm or yarn
-- WooCommerce store with REST API enabled
-- Stripe account
+- Node.js 20+
+- npm 10+
+- WooCommerce API credentials
+- Stripe test keys
+- Shippo API key (for shipping workflows)
 
-### Installation
-
-1. Clone the repository:
-
-```bash
-git clone <your-repo-url>
-cd rockited-v1
-```
-
-2. Install dependencies:
+### Install and run
 
 ```bash
 npm install
-```
-
-3. Set up environment variables:
-
-```bash
-cp .env.local.example .env.local
-```
-
-4. Configure your environment variables in `.env.local`:
-
-```env
-# WooCommerce Configuration
-WOOCOMMERCE_URL=https://your-lightsail-instance.com
-WOOCOMMERCE_CONSUMER_KEY=ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-WOOCOMMERCE_CONSUMER_SECRET=cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# Stripe Configuration
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# Site Configuration
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-```
-
-For checkout and shipping setup (Stripe test mode, Tax, WooCommerce, local URL), see the `docs/` folder locally (CHECKOUT-STRIPE.md).
-
-#### Shippo setup (domestic US shipping)
-
-Shipping is **domestic US only** via [Shippo](https://goshippo.com). We use Shippo for address validation and shipping rates. Set `SHIPPO_API_KEY` and your origin address (`SHIPPO_ORIGIN_STREET1`, `SHIPPO_ORIGIN_CITY`, `SHIPPO_ORIGIN_STATE`, `SHIPPO_ORIGIN_ZIP`, etc.) in `.env.local`; see [Shippo API](https://docs.goshippo.com/). Test keys (`shippo_test_*`) work for rates; address validation may require a live key. For accurate estimates, set **Weight** and **Dimensions** (L×W×H in inches) on each shippable product in WooCommerce. See [docs/SHIPPING.md](docs/SHIPPING.md) for details. We do not ship to PO boxes.
-
-#### Checkout, shipping & billing
-
-- **Shipping**: Collected on the checkout page, validated with Shippo (address validation), then Shippo rates are fetched. The customer selects a shipping method; that cost is passed to Stripe as a shipping option and **charged in the same payment** as the products (no separate charge).
-- **Billing**: Collected by Stripe (Payment Element), prefilled from the shipping address when available.
-- **Configuration**: Stripe keys (`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`), Shippo (`SHIPPO_API_KEY` + origin address), and optionally `STRIPE_TAX_ENABLED` (default true) and `STRIPE_LOGO_URL`. See `.env.local.example` and `docs/CHECKOUT-SHIPPING-BILLING.md` for flow details.
-
-### Development
-
-Run the development server:
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-**Verification:** `npm run type-check`, `npm run lint`, `npm run test`, `npm run test:e2e` (optional). **npm audit:** Remaining high-severity findings (minimatch ReDoS) are in the ESLint/Next lint stack; upgrading to ESLint 10 would fix them but is blocked by eslint-plugin-react compatibility. Lighthouse CI (`@lhci/cli`) was removed to reduce audit surface; use `npx lighthouse` for one-off audits if needed.
+## Environment Setup
 
-### Building for Production
-
-```bash
-npm run build
-npm start
-```
-
-## Project Structure
-
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── page.tsx           # Homepage
-│   ├── products/          # Product pages
-│   ├── cart/              # Shopping cart
-│   ├── checkout/          # Checkout flow
-│   └── api/               # API routes
-├── components/            # React components
-│   ├── ui/               # Reusable UI components
-│   ├── product/          # Product-specific components
-│   └── layout/           # Layout components
-└── lib/                   # Utilities & configs
-    ├── woocommerce.ts    # WooCommerce API client
-    ├── stripe.ts         # Stripe integration
-    ├── store.ts          # Zustand store
-    └── types.ts          # TypeScript types
-```
-
-## Deployment
-
-### AWS Amplify
-
-1. Connect your GitHub repository to AWS Amplify
-2. The `amplify.yml` file is already configured for the build process
-3. Set environment variables in the Amplify console
-4. Deploy your custom domain
-
-### Environment Variables for Production
-
-Make sure to set these in your Amplify console:
+Create `.env.local` from `.env.local.example` and fill required values:
 
 - `WOOCOMMERCE_URL`
 - `WOOCOMMERCE_CONSUMER_KEY`
 - `WOOCOMMERCE_CONSUMER_SECRET`
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `NEXT_PUBLIC_SITE_URL`
-- `SHIPPO_API_KEY` (domestic US shipping)
-- `SHIPPO_ORIGIN_STREET1`, `SHIPPO_ORIGIN_CITY`, `SHIPPO_ORIGIN_STATE`, `SHIPPO_ORIGIN_ZIP` (ship-from address)
 
-## WooCommerce Setup
+Optional but recommended for shipping:
 
-1. Enable REST API in your WooCommerce store
-2. Generate API credentials (Consumer Key & Secret)
-3. Ensure your WooCommerce store is accessible from the internet
-4. Configure CORS if needed for your domain
+- `SHIPPO_API_KEY`
+- `SHIPPO_ORIGIN_NAME`
+- `SHIPPO_ORIGIN_STREET1`
+- `SHIPPO_ORIGIN_CITY`
+- `SHIPPO_ORIGIN_STATE`
+- `SHIPPO_ORIGIN_ZIP`
 
-## Stripe Setup
+## Core Commands
 
-1. Create a Stripe account
-2. Get your publishable and secret keys (use **test** keys for development: `pk_test_*`, `sk_test_*`)
-3. Configure webhook endpoints (see [Stripe testing](#stripe-testing) for local webhooks)
-4. For Apple Pay / Google Pay: register your domain in [Payment Method Domains](https://dashboard.stripe.com/settings/payment_method_domains) and enable wallets in Payment Methods settings
+- `npm run dev` - start development server
+- `npm run build` - production build
+- `npm run start` - run production server
+- `npm run type-check` - TypeScript checks
+- `npm run lint` - lint checks
+- `npm run test` - unit tests
+- `npm run test:coverage` - coverage-enabled unit/API tests
+- `npm run test:e2e` - run all Playwright suite projects
+- `npm run test:e2e:smoke` - deterministic smoke/cart suite
+- `npm run test:e2e:critical` - deterministic checkout-critical suite
+- `npm run test:e2e:integration` - live Stripe integration suite
+- `npm run test:e2e:preview` - run critical suite against `PLAYWRIGHT_BASE_URL`
+- `npm run test:security` - dependency vulnerability audit
+- `npm run format` - format codebase
 
-### Stripe Tax (dev)
+## E2E CI and preview contract
 
-To test tax calculation in development:
+- PR CI runs deterministic E2E (`test:e2e:critical`) and uploads `playwright-report` + `test-results` artifacts on every run.
+- Preview E2E job runs when `PREVIEW_E2E_BASE_URL` secret is set and maps it to `PLAYWRIGHT_BASE_URL`.
+- Integration checkout tests (`@integration`, Stripe-backed) should run in controlled environments (preview/nightly/manual), not every PR.
+- If checkout/cart logic changes, also run `npm run test:e2e` or at minimum `npm run test:e2e:critical`.
 
-1. **Enable Stripe Tax** — [Tax settings](https://dashboard.stripe.com/test/settings/tax) (test mode) → turn on Stripe Tax / complete “Get started” if prompted.
-2. **Head office address** — Same page: set or confirm head office (business/ship-from address).
-3. **Preset product tax code** — Set default product tax code (e.g. “General – Physical goods”). The app sends `txcd_99999999` per line item; Dashboard default is fallback.
-4. **Add one test registration** — [Tax → Registrations](https://dashboard.stripe.com/test/tax/registrations): add at least one registration (e.g. **Idaho** or **New Jersey**) so tax can be calculated. Sandbox registrations do not affect live mode.
+## Dependency Maintenance
 
-Use test keys and omit `STRIPE_TAX_ENABLED` or set `STRIPE_TAX_ENABLED=true`. Run checkout with a shipping address in a registered state; the Payment Element shows the tax line when `total_details.amount_tax` is present. See [Stripe Tax setup](https://docs.stripe.com/tax/set-up) and [Testing Stripe Tax](https://docs.stripe.com/tax/testing).
+- `npm outdated` should return no results for normal update cycles.
+- `npm audit` and `npm run test:security` should report zero vulnerabilities before release.
+- Use `npm install <pkg>@latest` (or `npm install -D <pkg>@latest`) for targeted updates and re-run verification gates.
+- If `postcss` advisories reappear through nested dependencies, keep the `overrides.postcss` pin in `package.json` updated to a non-vulnerable 8.5.x release.
 
-### Stripe testing
+## Documentation
 
-- **Test keys**: Use `sk_test_*` and `pk_test_*` in `.env.local` for development. Never use live keys locally.
-- **Local webhooks**: Install [Stripe CLI](https://docs.stripe.com/stripe-cli) and run:
-  ```bash
-  stripe listen --forward-to localhost:3000/api/webhooks/stripe
-  ```
-  Use the webhook signing secret from the CLI output in `.env.local` as `STRIPE_WEBHOOK_SECRET`.
-- **Test cards**: [Stripe test cards](https://docs.stripe.com/testing) — e.g. `4242 4242 4242 4242` (success), `4000 0000 0000 0002` (declined), `4000 0027 6000 3184` (3D Secure). See `src/lib/stripe/testing.ts` and `e2e/fixtures/test-data.ts` for constants.
-- **E2E payment tests**: `npm run test:e2e` runs checkout and Stripe payment flows; focus on payment-only tests with `npm run test:e2e e2e/checkout/stripe-payments.spec.ts`.
+- [Roadmap](docs/ROADMAP.md)
+- [Documentation Index](docs/INDEX.md)
+- [Checkout and Stripe](docs/CHECKOUT-STRIPE.md)
+- [Checkout, Shipping, Billing](docs/CHECKOUT-SHIPPING-BILLING.md)
+- [Shipping](docs/SHIPPING.md)
+- [Infrastructure Notes](docs/INFRASTRUCTURE.md)
+- [Testing Notes](docs/TESTING.md)
+- [Staging Subdomain Setup](docs/STAGING-SUBDOMAIN.md)
+- [Stripe Webhook Runbook](docs/runbooks/STRIPE-WEBHOOK.md)
+- [CloudWatch Observability Runbook](docs/runbooks/CLOUDWATCH-OBSERVABILITY.md)
 
-### Testing
+## Root Directory Hygiene
 
-- **Type check**: `npm run type-check`
-- **Lint**: `npm run lint`
-- **Unit tests**: `npm run test` — Vitest; includes **API route tests** in `src/app/api/**/*.test.ts` (checkout, webhooks, shipping, address, products, inventory). Use `npm run test src/app/api` to run only API tests.
-- **E2E (Playwright)**: `npm run test:e2e` — recommended after checkout/cart changes. Checkout flow: shipping address (optional Google autofill), address validation (no PO boxes), shipping options, then payment; billing is prefilled from shipping in Stripe. Verify: US address, validate & get shipping, at least one rate appears and total updates; optionally product page → enter ZIP → Get estimate → rates or message appear.
+- Keep root focused on build/config entrypoints and high-signal files.
+- Put operational docs in `docs/` and keep `README.md` concise.
+- Do not commit generated artifacts (for example `.next`, coverage reports, local test outputs).
+- Prefer feature-specific docs updates in the same PR as code changes.
 
-### Performance (Lighthouse CI)
+## Current Priorities
 
-Lighthouse CI runs against the production build to monitor performance and accessibility. Config: [lighthouserc.json](lighthouserc.json).
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the active implementation backlog, risks, and integration hardening priorities.
 
-```bash
-npm run build && npm run perf:lighthouse
-```
+## Payment Reliability Baseline
 
-This starts the production server, audits the configured URLs (homepage, products, cart), and asserts against `lighthouse:recommended` plus optional performance/accessibility score thresholds. For collect-only (no assertions): `npm run perf:lighthouse:collect`. GitHub Actions runs Lighthouse CI on push/PR (see [.github/workflows/lighthouse.yml](.github/workflows/lighthouse.yml)).
-
-## Performance Features
-
-- **ISR (Incremental Static Regeneration)**: Product pages are statically generated and revalidated
-- **Image Optimization**: Next.js Image component with lazy loading
-- **Code Splitting**: Automatic code splitting with Next.js
-- **CDN**: AWS CloudFront for global content delivery
-
-## Cost Optimization
-
-- **ISR over SSR**: Reduces serverless function invocations
-- **Static Generation**: Homepage and product listings are pre-built
-- **Client-side Inventory**: Real-time checks only when needed
-- **AWS Free Tier**: Designed to stay within AWS free tier limits
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
-
-## Support
-
-For support, email support@yourbrand.com or create an issue in the repository.
+- Stripe webhooks are signature-verified and processed synchronously before returning success, so downstream order failures can return non-2xx and be retried by Stripe.
+- Woo order creation rejects unmapped Stripe line items to avoid silent `product_id` fallback orders.
+- Shipping behavior is fail-closed in production when Shippo is unavailable or returns no usable rates.
+- Critical checkout/shipping/webhook logs now emit structured JSON events with redaction and correlation-friendly request IDs.
+- Recommended verification after payment-path changes:
+  - `npm run type-check`
+  - `npm run lint`
+  - `npm run test -- src/app/api/webhooks/stripe/route.test.ts src/app/api/checkout/shipping/route.test.ts src/app/api/checkout/route.test.ts src/app/api/shipping/calculate/route.test.ts`
+  - `npm run test:security`
+  - `npm run test:e2e` (checkout-critical path)

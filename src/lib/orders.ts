@@ -1,4 +1,5 @@
 import type Stripe from "stripe";
+import { logger } from "@/lib/logging/logger";
 
 import { stripe } from "./stripe";
 import { wooApi } from "./woocommerce";
@@ -45,11 +46,16 @@ export interface WooCommerceOrderData {
   transaction_id?: string;
 }
 
+export interface WooOrderCreationOptions {
+  stripeEventId?: string;
+}
+
 /**
  * Create a WooCommerce order from a Stripe checkout session
  */
 export async function createWooCommerceOrder(
-  session: Stripe.Checkout.Session
+  session: Stripe.Checkout.Session,
+  options: WooOrderCreationOptions = {}
 ): Promise<{ id: number; [key: string]: unknown }> {
   try {
     // Retrieve full session details with line items
@@ -102,22 +108,25 @@ export async function createWooCommerceOrder(
           item.price?.metadata?.product_id || item.price?.metadata?.woocommerce_product_id || null;
 
         if (productId) {
+          const numericProductId = parseInt(productId, 10);
+          if (!Number.isInteger(numericProductId) || numericProductId <= 0) {
+            throw new Error(`Invalid Woo product mapping for session ${session.id} and item ${item.id}`);
+          }
           lineItems.push({
-            product_id: parseInt(productId, 10),
+            product_id: numericProductId,
             quantity: item.quantity || 1,
             price: ((item.amount_total || 0) / 100).toFixed(2),
           });
         } else {
-          // If no product ID, create order item with name and price
-          lineItems.push({
-            product_id: 0, // Will need to be created or matched manually
-            quantity: item.quantity || 1,
-            price: ((item.amount_total || 0) / 100).toFixed(2),
-            name: item.description || "Product",
-            sku: item.price?.metadata?.sku || "",
-          });
+          throw new Error(
+            `Missing Woo product mapping for Stripe line item ${item.id} in session ${session.id}`
+          );
         }
       }
+    }
+
+    if (lineItems.length === 0) {
+      throw new Error(`No valid line items found for session ${session.id}`);
     }
 
     // Build order data
@@ -151,6 +160,14 @@ export async function createWooCommerceOrder(
           key: "_stripe_customer_id",
           value: (session.customer as string) ?? "",
         },
+        ...(options.stripeEventId
+          ? [
+              {
+                key: "_stripe_event_id",
+                value: options.stripeEventId,
+              },
+            ]
+          : []),
       ],
       transaction_id: (session.payment_intent as string) ?? session.id,
     };
@@ -173,20 +190,26 @@ export async function createWooCommerceOrder(
     const response = await wooApi.post("orders", orderData);
 
     if (response.status === 201) {
-      console.warn(
-        `✅ WooCommerce order created: ${response.data.id} for Stripe session ${session.id}`
-      );
+      logger.info("order_created", {
+        action: "createWooCommerceOrder",
+        orderId: response.data.id,
+        sessionId: session.id,
+      });
       return response.data;
     } else {
       throw new Error(`Failed to create WooCommerce order: ${response.status}`);
     }
   } catch (error: unknown) {
-    console.error("Error creating WooCommerce order:", error);
+    logger.error("order_create_failed", {
+      action: "createWooCommerceOrder",
+      error: error instanceof Error ? error.message : "unknown",
+    });
 
     // Log detailed error information
     const err = error as { response?: { status: number; statusText: string; data?: unknown } };
     if (err.response) {
-      console.error("WooCommerce API Error:", {
+      logger.error("woocommerce_api_error", {
+        action: "createWooCommerceOrder",
         status: err.response.status,
         statusText: err.response.statusText,
         data: err.response.data,
@@ -194,6 +217,34 @@ export async function createWooCommerceOrder(
     }
 
     throw error;
+  }
+}
+
+/**
+ * Check if an order already exists for a given Stripe event ID.
+ */
+export async function findOrderByStripeEventId(
+  eventId: string
+): Promise<{ id: number; [key: string]: unknown } | null> {
+  try {
+    const response = await wooApi.get("orders", {
+      meta_key: "_stripe_event_id",
+      meta_value: eventId,
+      per_page: 1,
+    });
+
+    if (response.data && response.data.length > 0) {
+      return response.data[0];
+    }
+
+    return null;
+  } catch (error) {
+    logger.error("order_lookup_by_event_failed", {
+      action: "findOrderByStripeEventId",
+      eventId,
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    throw new Error(`Failed to lookup existing Woo order for Stripe event ${eventId}`);
   }
 }
 
@@ -216,7 +267,11 @@ export async function findOrderByStripeSessionId(
 
     return null;
   } catch (error) {
-    console.error("Error finding order by Stripe session ID:", error);
-    return null;
+    logger.error("order_lookup_by_session_failed", {
+      action: "findOrderByStripeSessionId",
+      sessionId,
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    throw new Error(`Failed to lookup existing Woo order for Stripe session ${sessionId}`);
   }
 }

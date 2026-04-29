@@ -1,4 +1,4 @@
-import { type Frame, Page, expect } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 
 /**
  * Clear cart state from localStorage
@@ -22,8 +22,18 @@ export async function clearCart(page: Page): Promise<void> {
     }
   });
 
-  // Wait for cart to be cleared - verify badge count is 0 or badge is not visible
-  await page.waitForTimeout(500);
+  // Wait for cart storage mutation to apply in UI.
+  await page.waitForFunction(() => {
+    try {
+      const data = localStorage.getItem("cart-storage");
+      if (!data) return true;
+      const parsed = JSON.parse(data);
+      const items = parsed.state?.items || parsed.items || [];
+      return items.length === 0;
+    } catch {
+      return false;
+    }
+  });
   // Use header-specific selector to avoid matching filter badges
   const cartBadge = page.locator('header [data-testid="cart-badge-count"]');
   
@@ -37,7 +47,17 @@ export async function clearCart(page: Page): Promise<void> {
       await page.evaluate(() => {
         localStorage.removeItem("cart-storage");
       });
-      await page.waitForTimeout(500);
+      await page.waitForFunction(() => {
+        try {
+          const data = localStorage.getItem("cart-storage");
+          if (!data) return true;
+          const parsed = JSON.parse(data);
+          const items = parsed.state?.items || parsed.items || [];
+          return items.length === 0;
+        } catch {
+          return false;
+        }
+      });
     }
   }
 }
@@ -49,140 +69,26 @@ export async function clearCart(page: Page): Promise<void> {
  * Improved with better iframe detection using URL matching and frame load events
  */
 export async function waitForStripe(page: Page, timeout = 20000): Promise<void> {
-  const startTime = Date.now();
-  
-  // Wait for both shipping and payment iframes to appear
-  // Stripe Embedded Checkout uses multiple iframes
-  // Try multiple selectors to find Stripe iframes
-  const iframeSelectors = [
-    'iframe[title*="shipping"]',
-    'iframe[title*="payment"]',
-    'iframe[title*="Shipping"]',
-    'iframe[title*="Payment"]',
-    'iframe[name*="stripe"]',
-    'iframe[name*="__privateStripeFrame"]',
-    'iframe[src*="stripe"]',
-    'iframe[src*="js.stripe.com"]',
-  ];
-
-  // Wait for at least one Stripe iframe to be visible
-  await Promise.race(
-    iframeSelectors.map((selector) =>
-      page.waitForSelector(selector, { state: "visible", timeout: Math.min(10000, timeout) }).catch(() => {})
-    )
-  );
-
-  // Verify that we can actually find the iframes by checking frames
-  // Use URL matching as primary method, then fall back to content detection
-  let foundShipping = false;
-  let foundPayment = false;
-  let shippingFrame: Frame | null = null;
-  let paymentFrame: Frame | null = null;
-  const maxAttempts = 20; // Increased attempts for slower browsers
-  let attempts = 0;
-
-  while ((!foundShipping || !foundPayment) && attempts < maxAttempts && (Date.now() - startTime) < timeout) {
-    const frames = page.frames();
-    
-    for (const frame of frames) {
-      try {
-        const frameUrl = frame.url();
-        
-        // Check frame URL for Stripe indicators
-        const isStripeFrame = frameUrl.includes("stripe.com") || 
-                              frameUrl.includes("js.stripe.com") ||
-                              frameUrl.includes("__privateStripeFrame");
-        
-        if (isStripeFrame) {
-          // Wait for frame to be loaded before checking content
-          try {
-            await frame.waitForLoadState("domcontentloaded", { timeout: 2000 }).catch(() => {});
-            await frame.waitForLoadState("networkidle", { timeout: 2000 }).catch(() => {});
-          } catch {
-            // Frame might not support load states, continue anyway
-          }
-          
-          // Check for shipping frame by looking for "Full name" field
-          if (!foundShipping) {
-            try {
-              const fullNameField = frame.getByRole("textbox", { name: /full name/i });
-              if (await fullNameField.isVisible({ timeout: 1000 }).catch(() => false)) {
-                foundShipping = true;
-                shippingFrame = frame;
-                continue; // Found shipping, move to next frame
-              }
-            } catch {
-              // Try alternative: check for address-related fields
-              try {
-                const addressField = frame.getByRole("combobox", { name: /address/i });
-                if (await addressField.isVisible({ timeout: 500 }).catch(() => false)) {
-                  foundShipping = true;
-                  shippingFrame = frame;
-                  continue;
-                }
-              } catch {
-                // Continue checking
-              }
-            }
-          }
-          
-          // Check for payment frame by looking for "Card number" field
-          if (!foundPayment) {
-            try {
-              const cardField = frame.getByRole("textbox", { name: /card number/i });
-              if (await cardField.isVisible({ timeout: 1000 }).catch(() => false)) {
-                foundPayment = true;
-                paymentFrame = frame;
-                continue;
-              }
-            } catch {
-              // Try alternative: check for payment-related text
-              try {
-                const paymentText = frame.locator('text=/card|payment|expir/i');
-                if (await paymentText.first().isVisible({ timeout: 500 }).catch(() => false)) {
-                  foundPayment = true;
-                  paymentFrame = frame;
-                  continue;
-                }
-              } catch {
-                // Continue checking
-              }
-            }
-          }
+  await expect
+    .poll(
+      async () => {
+        let foundStripeFrame = false;
+        for (const frame of page.frames()) {
+          const frameUrl = frame.url();
+          const isStripeFrame =
+            frameUrl.includes("stripe.com") ||
+            frameUrl.includes("js.stripe.com") ||
+            frameUrl.includes("__privateStripeFrame") ||
+            frameUrl.includes("elements.stripe.com");
+          if (!isStripeFrame) continue;
+          foundStripeFrame = true;
+          break;
         }
-      } catch {
-        // Frame might not be accessible, continue
-        continue;
-      }
-    }
-
-    if (foundShipping && foundPayment) {
-      break;
-    }
-
-    attempts++;
-    await page.waitForTimeout(500);
-  }
-
-  // If we found frames, wait for them to be fully interactive
-  if (shippingFrame) {
-    try {
-      await shippingFrame.waitForLoadState("domcontentloaded", { timeout: 2000 }).catch(() => {});
-    } catch {
-      // Ignore if frame doesn't support load states
-    }
-  }
-  
-  if (paymentFrame) {
-    try {
-      await paymentFrame.waitForLoadState("domcontentloaded", { timeout: 2000 }).catch(() => {});
-    } catch {
-      // Ignore if frame doesn't support load states
-    }
-  }
-
-  // Wait a bit more for the forms to be fully ready inside the iframes
-  await page.waitForTimeout(1000);
+        return foundStripeFrame;
+      },
+      { timeout, message: "Stripe frames did not become ready" }
+    )
+    .toBeTruthy();
 }
 
 /**
@@ -262,256 +168,75 @@ export async function fillShippingAddressForm(
   state: string = "CA",
   zipCode: string = "94102"
 ): Promise<void> {
-  // Wait for Stripe elements to load
   await waitForStripe(page);
-  
-  // Dismiss cookie consent if it appears on checkout page
   await dismissCookieConsent(page);
 
-  // Find the shipping address frame using page.frames()
-  // The shipping frame contains a "Full name" textbox
-  const frames = page.frames();
-  let shippingFrame = null;
-  
-  for (const frame of frames) {
-    try {
-      const fullNameField = frame.getByRole("textbox", { name: /full name/i });
-      if (await fullNameField.isVisible({ timeout: 500 }).catch(() => false)) {
-        shippingFrame = frame;
-        break;
+  const shippingFrame = await expect
+    .poll(async () => {
+      for (const frame of page.frames()) {
+        const visible = await frame
+          .locator('[autocomplete*="name"], [autocomplete*="address"], [autocomplete*="postal-code"], [aria-label*="address" i], [placeholder*="address" i], input[name*="address"], input[name*="city"]')
+          .isVisible({ timeout: 500 })
+          .catch(() => false);
+        if (visible) return frame.name() || frame.url();
       }
-    } catch {
-      continue;
-    }
-  }
-
+      return null;
+    }, { timeout: 10000 })
+    .not.toBeNull()
+    .then(async () => {
+      for (const frame of page.frames()) {
+        const visible = await frame
+          .locator('[autocomplete*="name"], [autocomplete*="address"], [autocomplete*="postal-code"], [aria-label*="address" i], [placeholder*="address" i], input[name*="address"], input[name*="city"]')
+          .isVisible({ timeout: 500 })
+          .catch(() => false);
+        if (visible) return frame;
+      }
+      return null;
+    });
   if (!shippingFrame) {
     throw new Error("Could not find shipping address iframe");
   }
 
-  // Fill Full Name (textbox)
-  const fullNameField = shippingFrame.getByRole("textbox", { name: /full name/i });
+  const fullNameField = shippingFrame
+    .getByRole("textbox", { name: /full name|name/i })
+    .or(shippingFrame.locator('[autocomplete*="name"], input[name*="name"], [aria-label*="name" i]'))
+    .first();
   await fullNameField.waitFor({ state: "visible", timeout: 10000 });
-  await fullNameField.click();
   await fullNameField.fill(fullName);
-  await page.waitForTimeout(200); // Reduced from 300ms
 
-  // Fill Address Line 1 (combobox with autocomplete)
-  const addressCombobox = shippingFrame.getByRole("combobox", { name: /address/i });
+  const addressCombobox = shippingFrame
+    .getByRole("combobox", { name: /address/i })
+    .or(shippingFrame.getByRole("textbox", { name: /address/i }))
+    .or(shippingFrame.locator('[autocomplete*="address-line1"], [autocomplete*="address"], input[name*="address"], [aria-label*="address" i]'))
+    .first();
   await addressCombobox.waitFor({ state: "visible", timeout: 5000 });
-  await addressCombobox.click();
   await addressCombobox.fill(address);
-  await page.waitForTimeout(600); // Reduced from 800ms
-  // Press Escape to dismiss autocomplete dropdown
   await page.keyboard.press("Escape");
-  await page.waitForTimeout(300); // Reduced from 500ms
-  // Press Tab to move to next field (this helps Stripe's form advance)
-  await page.keyboard.press("Tab");
-  await page.waitForTimeout(200); // Reduced from 300ms
-  // Press Tab again to skip Address Line 2 if present
-  await page.keyboard.press("Tab");
-  // Wait for form to advance and show City/State/ZIP fields
-  // Also wait for any "City" text to appear, indicating the field is ready
-  await Promise.race([
-    shippingFrame.locator('text=/city/i').waitFor({ state: "visible", timeout: 2000 }).catch(() => {}),
-    page.waitForTimeout(1500), // Reduced from 2000ms
-  ]);
-
-  // Fill City (textbox) - Stripe's form structure has City label in a generic container
-  // Wait for City field to appear (form may need time to render after address is filled)
-  let cityField;
-  const maxAttempts = 5;
-  let attempts = 0;
-  
-  while (attempts < maxAttempts) {
-    try {
-      // Strategy 1: Try to find textbox with accessible name containing "city"
-      cityField = shippingFrame.getByRole("textbox", { name: /city/i });
-      if (await cityField.isVisible({ timeout: 3000 }).catch(() => false)) {
-        break;
-      }
-    } catch {}
-    
-    // Strategy 2: Find by position - get all visible textboxes
-    const allTextboxes = shippingFrame.getByRole("textbox");
-    const count = await allTextboxes.count();
-    
-    // Find empty textbox that's not Full Name (filled), Address Line 2 (has placeholder), or ZIP (has "zip" in attributes)
-    for (let i = 0; i < count; i++) {
-      const textbox = allTextboxes.nth(i);
-      try {
-        if (!(await textbox.isVisible({ timeout: 1000 }).catch(() => false))) continue;
-        
-        const value = await textbox.inputValue().catch(() => "");
-        const placeholder = await textbox.getAttribute("placeholder").catch(() => "");
-        const name = await textbox.getAttribute("name").catch(() => "");
-        const ariaLabel = await textbox.getAttribute("aria-label").catch(() => "");
-        
-        // Skip filled fields
-        if (value && value.trim() !== "") continue;
-        // Skip Address Line 2 (has placeholder about apt/suite)
-        if (placeholder?.toLowerCase().includes("apt") || placeholder?.toLowerCase().includes("suite")) continue;
-        // Skip ZIP code (has "zip" in name or label)
-        if (name?.toLowerCase().includes("zip") || ariaLabel?.toLowerCase().includes("zip")) continue;
-        
-        // This should be City - it's empty, visible, and not Address Line 2 or ZIP
-        // City is typically the 3rd or 4th textbox (after Full Name and possibly Address Line 2)
-        if (i >= 2) {
-          cityField = textbox;
-          break;
-        }
-      } catch {
-        continue;
-      }
-    }
-    
-    if (cityField) {
-      break;
-    }
-    
-    attempts++;
-    await page.waitForTimeout(500);
-  }
-  
-  if (!cityField) {
-    // Last resort: try to get 3rd textbox (assuming: 1=Full Name, 2=Address Line 2 (optional), 3=City)
-    const allTextboxes = shippingFrame.getByRole("textbox");
-    const count = await allTextboxes.count();
-    if (count >= 3) {
-      cityField = allTextboxes.nth(2);
-    } else if (count >= 2) {
-      cityField = allTextboxes.nth(1);
-    }
-  }
-  
-  if (!cityField) {
-    throw new Error("Could not find City field in shipping form after multiple attempts");
-  }
-  
+  const cityField = shippingFrame
+    .getByRole("textbox", { name: /city/i })
+    .or(shippingFrame.locator('[autocomplete*="address-level2"], input[name*="city"], [aria-label*="city" i]'))
+    .first();
   await cityField.waitFor({ state: "visible", timeout: 10000 });
-  await cityField.click();
   await cityField.fill(city);
-  await page.waitForTimeout(150); // Reduced from 200ms
 
-  // Select State (COMBOBOX - must select from dropdown, not fill as textbox)
-  // Convert state code to full name if needed
   const stateName = STATE_CODE_TO_NAME[state.toUpperCase()] || state;
-  
-  // Use flexible regex to match "State" - find the combobox
-  const stateCombobox = shippingFrame.getByRole("combobox", { name: /state/i });
+  const stateCombobox = shippingFrame
+    .getByRole("combobox", { name: /state|province|region/i })
+    .or(shippingFrame.getByRole("textbox", { name: /state|province|region/i }))
+    .or(shippingFrame.locator('[autocomplete*="address-level1"], input[name*="state"], [aria-label*="state" i]'))
+    .first();
   await stateCombobox.waitFor({ state: "visible", timeout: 10000 });
-  
-  // Click to open dropdown and wait for options to appear
-  await stateCombobox.click();
-  await page.waitForTimeout(300); // Reduced from 500ms
-  
-  // Wait for dropdown options to be available
-  // Check for option with state name in the frame
-  const maxStateAttempts = 5;
-  let stateSelected = false;
-  
-  for (let attempt = 0; attempt < maxStateAttempts && !stateSelected; attempt++) {
-    try {
-      // Strategy 1: Use keyboard navigation (most reliable for Stripe)
-      // Clear any existing text first
-      await stateCombobox.fill("");
-      await page.waitForTimeout(200);
-      
-      // Type state name to filter
-      await stateCombobox.fill(stateName);
-      await page.waitForTimeout(600); // Reduced from 800ms - Wait for filtering
-      
-      // Wait for filtered option to appear
-      const stateOption = shippingFrame.getByRole("option", { name: new RegExp(stateName, "i") });
-      const optionVisible = await stateOption.isVisible({ timeout: 1500 }).catch(() => false);
-      
-      if (optionVisible) {
-        // Use keyboard navigation: ArrowDown to select, then Enter
-        await page.keyboard.press("ArrowDown");
-        await page.waitForTimeout(200); // Reduced from 300ms
-        await page.keyboard.press("Enter");
-        await page.waitForTimeout(300); // Reduced from 500ms
-        stateSelected = true;
-      } else {
-        // Strategy 2: Try selectOption if keyboard fails
-        try {
-          await stateCombobox.selectOption({ label: stateName });
-          await page.waitForTimeout(300); // Reduced from 500ms
-          stateSelected = true;
-        } catch {
-          // Strategy 3: Try by value
-          try {
-            await stateCombobox.selectOption({ value: stateName });
-            await page.waitForTimeout(300); // Reduced from 500ms
-            stateSelected = true;
-          } catch {
-            // If all fail, try typing and pressing Enter directly
-            await stateCombobox.fill(stateName);
-            await page.waitForTimeout(300); // Reduced from 500ms
-            await page.keyboard.press("Enter");
-            await page.waitForTimeout(300); // Reduced from 500ms
-            stateSelected = true; // Assume success
-          }
-        }
-      }
-    } catch (error) {
-      if (attempt < maxStateAttempts - 1) {
-        await page.waitForTimeout(300); // Reduced from 500ms
-        // Retry by clicking again
-        await stateCombobox.click();
-        await page.waitForTimeout(300); // Reduced from 500ms
-      } else {
-        throw new Error(`Failed to select state "${stateName}" after ${maxStateAttempts} attempts: ${error}`);
-      }
-    }
-  }
-  
-  // Verify state was selected by checking the combobox value
-  await page.waitForTimeout(200); // Reduced from 400ms
+  await stateCombobox.fill(stateName);
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
 
-  // Fill ZIP code (textbox) - explicitly target by accessible name
-  // Use flexible regex to match "ZIP code" or "ZIP" with possible variations
-  const zipField = shippingFrame.getByRole("textbox", { name: /zip/i });
+  const zipField = shippingFrame
+    .getByRole("textbox", { name: /zip|postal/i })
+    .or(shippingFrame.locator('[autocomplete*="postal-code"], input[name*="zip"], input[name*="postal"], [aria-label*="zip" i], [aria-label*="postal" i]'))
+    .first();
   await zipField.waitFor({ state: "visible", timeout: 10000 });
-  await zipField.click();
   await zipField.fill(zipCode);
-  await page.waitForTimeout(300); // Reduced from 500ms
-
-  // Wait for Stripe to validate the address and calculate shipping
-  // This is critical - the submit button won't enable until validation completes
-  // Check for validation errors in the shipping frame
-  const maxValidationAttempts = 8; // Reduced from 10
-  let validationComplete = false;
-  
-  for (let attempt = 0; attempt < maxValidationAttempts && !validationComplete; attempt++) {
-    await page.waitForTimeout(800); // Reduced from 1000ms
-    
-    // Check for validation errors
-    const errorMessages = shippingFrame.locator('text=/error|invalid|required/i');
-    const hasErrors = await errorMessages.first().isVisible({ timeout: 300 }).catch(() => false);
-    
-    if (hasErrors) {
-      // Wait a bit more for errors to clear (might be transient)
-      await page.waitForTimeout(800); // Reduced from 1000ms
-      const stillHasErrors = await errorMessages.first().isVisible({ timeout: 300 }).catch(() => false);
-      if (!stillHasErrors) {
-        validationComplete = true;
-      }
-    } else {
-      // Check if shipping cost is being calculated (indicates validation in progress)
-      // Look for "Validating..." or "Calculating..." text in the main page (not iframe)
-      const validatingOrCalculatingText = page.locator('text=/validating|calculating/i');
-      const isVisible = await validatingOrCalculatingText.isVisible({ timeout: 300 }).catch(() => false);
-      
-      if (!isVisible) {
-        // Shipping cost should be calculated or shown - validation likely complete
-        validationComplete = true;
-      }
-    }
-  }
-  
-  // Additional wait to ensure form is fully ready (reduced)
-  await page.waitForTimeout(1000); // Reduced from 1500ms
+  await waitForCheckoutReady(page, 15000);
 }
 
 /**
@@ -528,50 +253,80 @@ export async function fillStripePaymentForm(
   expiryDate: string = "12/34",
   cvc: string = "123"
 ): Promise<void> {
-  // Wait for Stripe elements to load
   await waitForStripe(page);
 
-  // Find the payment frame using page.frames()
-  // The payment frame contains a "Card number" textbox
-  const frames = page.frames();
-  let paymentFrame = null;
-  
-  for (const frame of frames) {
-    try {
-      const cardField = frame.getByRole("textbox", { name: /card number/i });
-      if (await cardField.isVisible({ timeout: 500 }).catch(() => false)) {
-        paymentFrame = frame;
-        break;
+  const paymentFrame = await expect
+    .poll(async () => {
+      for (const frame of page.frames()) {
+        const visible = await frame
+          .locator('input[autocomplete*="cc-"], input[name*="card"], [aria-label*="card" i], [placeholder*="card" i], [placeholder*="MM / YY" i], [name*="exp" i]')
+          .isVisible({ timeout: 500 })
+          .catch(() => false);
+        if (visible) return frame.name() || frame.url();
       }
-    } catch {
-      continue;
-    }
-  }
-
+      return null;
+    }, { timeout: 10000 })
+    .not.toBeNull()
+    .then(async () => {
+      for (const frame of page.frames()) {
+        const visible = await frame
+          .locator('input[autocomplete*="cc-"], input[name*="card"], [aria-label*="card" i], [placeholder*="card" i], [placeholder*="MM / YY" i], [name*="exp" i]')
+          .isVisible({ timeout: 500 })
+          .catch(() => false);
+        if (visible) return frame;
+      }
+      return null;
+    });
   if (!paymentFrame) {
     throw new Error("Could not find payment iframe");
   }
 
-  // Fill card number - uses accessible name "Card number"
-  const cardNumberField = paymentFrame.getByRole("textbox", { name: /card number/i });
+  const cardNumberField = paymentFrame
+    .getByRole("textbox", { name: /card number|card/i })
+    .or(paymentFrame.locator('input[autocomplete="cc-number"], input[name*="card"], [aria-label*="card number" i], [placeholder*="card number" i]'))
+    .first();
   await cardNumberField.waitFor({ state: "visible", timeout: 10000 });
-  await cardNumberField.click();
   await cardNumberField.fill(cardNumber);
-  await page.waitForTimeout(300); // Reduced from 500ms
 
-  // Fill expiry date - uses accessible name "Expiration date MM / YY"
-  const expiryField = paymentFrame.getByRole("textbox", { name: /expiration date/i });
+  const expiryField = paymentFrame
+    .getByRole("textbox", { name: /expiration date|expiry|exp/i })
+    .or(paymentFrame.locator('input[autocomplete="cc-exp"], input[name*="exp"], [placeholder*="MM / YY" i]'))
+    .first();
   await expiryField.waitFor({ state: "visible", timeout: 5000 });
-  await expiryField.click();
   await expiryField.fill(expiryDate);
-  await page.waitForTimeout(300); // Reduced from 500ms
 
-  // Fill CVC - uses accessible name "Security code"
-  const cvcField = paymentFrame.getByRole("textbox", { name: /security code/i });
+  const cvcField = paymentFrame
+    .getByRole("textbox", { name: /security code|cvc|cvv/i })
+    .or(paymentFrame.locator('input[autocomplete="cc-csc"], input[name*="cvc"], input[name*="cvv"], [aria-label*="security" i], [placeholder*="CVC" i]'))
+    .first();
   await cvcField.waitFor({ state: "visible", timeout: 5000 });
-  await cvcField.click();
   await cvcField.fill(cvc);
-  await page.waitForTimeout(800); // Reduced from 1000ms - Wait for card validation
+  await waitForCheckoutReady(page, 15000);
+}
+
+/**
+ * Wait until checkout is no longer showing validating/calc states.
+ * This avoids fixed sleeps in checkout specs.
+ */
+export async function waitForCheckoutReady(page: Page, timeout = 15000): Promise<void> {
+  const statusText = page.locator("text=/validating|calculating/i");
+  const visible = await statusText.isVisible({ timeout: 1500 }).catch(() => false);
+  if (visible) {
+    await statusText.waitFor({ state: "hidden", timeout });
+  }
+}
+
+/**
+ * Wait for checkout to settle after submit attempts that should remain on checkout.
+ */
+export async function waitForCheckoutAfterSubmit(page: Page, timeout = 10000): Promise<void> {
+  await Promise.race([
+    page.waitForURL(/\/checkout/, { timeout }),
+    page.locator('[role="alert"], [data-testid="checkout-error"], [class*="destructive"]').first().waitFor({
+      state: "visible",
+      timeout,
+    }),
+  ]).catch(() => {});
 }
 
 /**

@@ -9,9 +9,13 @@ import {
   fillShippingAddressForm,
   fillStripePaymentForm,
   waitForCartHydration,
+  waitForCheckoutReady,
+  waitForCheckoutAfterSubmit,
 } from "../utils/test-helpers";
 
-test.describe("Checkout - Error scenarios", { tag: ["@checkout", "@stripe"] }, () => {
+test.describe("Checkout - Error scenarios", {
+  tag: ["@checkout", "@stripe", "@critical"],
+}, () => {
   test.beforeEach(async ({ page }) => {
     await setupTest(page);
   });
@@ -48,7 +52,6 @@ test.describe("Checkout - Error scenarios", { tag: ["@checkout", "@stripe"] }, (
 
     const checkoutPage = new CheckoutPage(page);
 
-    await page.waitForTimeout(5000);
     const errorMessage = checkoutPage.getErrorMessage();
     const emptyCartMessage = checkoutPage.getEmptyCartMessage();
     await Promise.race([
@@ -74,7 +77,6 @@ test.describe("Checkout - Error scenarios", { tag: ["@checkout", "@stripe"] }, (
 
     const checkoutPage = new CheckoutPage(page);
 
-    await page.waitForTimeout(5000);
     const errorMessage = checkoutPage.getErrorMessage();
     const emptyCartMessage = checkoutPage.getEmptyCartMessage();
     await Promise.race([
@@ -97,7 +99,7 @@ test.describe("Checkout - Error scenarios", { tag: ["@checkout", "@stripe"] }, (
     await checkoutPage.verifyPaymentElementLoaded();
 
     await fillShippingAddressForm(page);
-    await page.waitForTimeout(2000);
+    await waitForCheckoutReady(page);
 
     await fillStripePaymentForm(
       page,
@@ -109,7 +111,7 @@ test.describe("Checkout - Error scenarios", { tag: ["@checkout", "@stripe"] }, (
     const submitButton = await checkoutPage.waitForSubmitButtonReady(15000).catch(() => null);
     if (submitButton) {
       await submitButton.click();
-      await page.waitForTimeout(5000);
+      await waitForCheckoutAfterSubmit(page);
     }
     expect(page.url()).toContain("/checkout");
   });
@@ -133,7 +135,7 @@ test.describe("Checkout - Error scenarios", { tag: ["@checkout", "@stripe"] }, (
     } catch {
       // Loading text might not be present
     }
-    await page.waitForTimeout(2000);
+    await waitForCheckoutReady(page);
 
     await fillStripePaymentForm(
       page,
@@ -141,14 +143,12 @@ test.describe("Checkout - Error scenarios", { tag: ["@checkout", "@stripe"] }, (
       TEST_CARD_DETAILS.EXPIRY_DATE,
       TEST_CARD_DETAILS.CVC
     );
-    await page.waitForTimeout(2000);
-
     const submitButton = await checkoutPage.waitForSubmitButtonReady(20000, false).catch(() => null);
     if (submitButton) {
       const isEnabled = await submitButton.isEnabled().catch(() => false);
       if (isEnabled) {
         await submitButton.click();
-        await page.waitForTimeout(5000);
+        await waitForCheckoutAfterSubmit(page);
       }
     }
     expect(page.url()).toContain("/checkout");
@@ -164,7 +164,7 @@ test.describe("Checkout - Error scenarios", { tag: ["@checkout", "@stripe"] }, (
     await checkoutPage.verifyPaymentElementLoaded();
 
     await fillShippingAddressForm(page);
-    await page.waitForTimeout(2000);
+    await waitForCheckoutReady(page);
 
     await fillStripePaymentForm(
       page,
@@ -175,7 +175,7 @@ test.describe("Checkout - Error scenarios", { tag: ["@checkout", "@stripe"] }, (
 
     const submitButton = checkoutPage.getSubmitButton();
     if (await submitButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await page.waitForTimeout(3000);
+      await expect(submitButton).toBeDisabled({ timeout: 10000 });
     }
     expect(page.url()).toContain("/checkout");
   });
@@ -190,7 +190,7 @@ test.describe("Checkout - Error scenarios", { tag: ["@checkout", "@stripe"] }, (
     await checkoutPage.verifyPaymentElementLoaded();
 
     await fillShippingAddressForm(page);
-    await page.waitForTimeout(2000);
+    await waitForCheckoutReady(page);
 
     await fillStripePaymentForm(
       page,
@@ -202,7 +202,7 @@ test.describe("Checkout - Error scenarios", { tag: ["@checkout", "@stripe"] }, (
     const submitButton = checkoutPage.getSubmitButton();
     if (await submitButton.isVisible({ timeout: 5000 }).catch(() => false)) {
       await submitButton.click();
-      await page.waitForTimeout(5000);
+      await waitForCheckoutAfterSubmit(page);
     }
     expect(page.url()).toContain("/checkout");
   });

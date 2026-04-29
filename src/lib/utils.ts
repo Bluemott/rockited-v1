@@ -29,18 +29,51 @@ export function isValidEmail(value: string): boolean {
 }
 
 /**
- * Normalize image URLs by replacing IP addresses with the configured domain
- * This ensures images use the domain (api.rockited4d.com) instead of IP addresses
+ * Normalize image URLs using environment-driven host rewrites and base URL.
  */
 export function normalizeImageUrl(url: string): string {
   if (!url || typeof url !== "string") {
     return url;
   }
+  const trimmed = url.trim();
+  if (trimmed.length === 0) {
+    return trimmed;
+  }
 
-  // Replace IP address with domain (both HTTP and HTTPS)
-  const normalizedUrl = url
-    .replace(/http:\/\/52\.23\.226\.128/g, "https://api.rockited4d.com")
-    .replace(/https:\/\/52\.23\.226\.128/g, "https://api.rockited4d.com");
+  const mediaBaseUrl = process.env.NEXT_PUBLIC_MEDIA_BASE_URL?.trim();
+  const rewritePairs = (process.env.MEDIA_HOST_REWRITE_MAP || "")
+    .split(",")
+    .map((pair) => pair.trim())
+    .filter(Boolean)
+    .map((pair) => {
+      const [from, to] = pair.split("=");
+      return { from: (from || "").trim(), to: (to || "").trim() };
+    })
+    .filter((pair) => pair.from && pair.to);
 
-  return normalizedUrl;
+  if (trimmed.startsWith("/")) {
+    if (mediaBaseUrl) {
+      try {
+        return new URL(trimmed, mediaBaseUrl).toString();
+      } catch {
+        return trimmed;
+      }
+    }
+    return trimmed;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    const host = parsed.host.toLowerCase();
+    const matched = rewritePairs.find((pair) => pair.from.toLowerCase() === host);
+    if (!matched) {
+      return trimmed;
+    }
+
+    const targetBase = new URL(matched.to);
+    const rewritten = new URL(parsed.pathname + parsed.search + parsed.hash, targetBase);
+    return rewritten.toString();
+  } catch {
+    return trimmed;
+  }
 }

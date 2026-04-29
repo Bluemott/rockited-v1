@@ -92,7 +92,7 @@ export default function QuickViewDialog({ product, open, onOpenChange }: QuickVi
             {/* Main Image */}
             <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
               <Image
-                src={mainImage?.src || "/placeholder-product.jpg"}
+                src={normalizeImageUrl(mainImage?.src || "/placeholder-product.jpg")}
                 alt={mainImage?.alt || product.name}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"

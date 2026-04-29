@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useMounted } from "@/hooks/use-mounted";
 import { useCartStore } from "@/lib/store";
 
 
@@ -18,12 +19,7 @@ export default function Header() {
   const { itemCount } = useCartStore();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const { theme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  // Avoid hydration mismatch
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useMounted();
 
   // Determine which logo to use based on theme
   const isDarkMode = mounted && (theme === "dark" || resolvedTheme === "dark");

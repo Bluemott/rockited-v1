@@ -1,4 +1,5 @@
 import type { WooProduct } from "../types";
+import { wooProductSchema, wooProductsSchema } from "../schemas/external";
 
 import { wooApi } from "./client";
 
@@ -33,7 +34,7 @@ export const getProducts = async (params: ProductQueryParams = {}): Promise<WooP
       status: "publish",
       ...params,
     });
-    return response.data;
+    return wooProductsSchema.parse(response.data) as unknown as WooProduct[];
   } catch (error) {
     console.error("Error fetching products:", error);
     throw error;
@@ -43,7 +44,7 @@ export const getProducts = async (params: ProductQueryParams = {}): Promise<WooP
 export const getProduct = async (id: number): Promise<WooProduct> => {
   try {
     const response = await wooApi.get(`products/${id}`);
-    return response.data;
+    return wooProductSchema.parse(response.data) as unknown as WooProduct;
   } catch (error) {
     console.error(`Error fetching product ${id}:`, error);
     throw error;
@@ -56,7 +57,8 @@ export const getProductBySlug = async (slug: string): Promise<WooProduct | null>
       slug,
       status: "publish",
     });
-    return response.data[0] || null;
+    const products = wooProductsSchema.parse(response.data) as unknown as WooProduct[];
+    return products[0] || null;
   } catch (error) {
     console.error(`Error fetching product by slug ${slug}:`, error);
     throw error;
@@ -100,7 +102,7 @@ export const getFeaturedProducts = async (limit: number = 3): Promise<WooProduct
       orderby: "menu_order",
       order: "asc",
     });
-    return response.data;
+    return wooProductsSchema.parse(response.data) as unknown as WooProduct[];
   } catch (error) {
     console.error("Error fetching featured products:", error);
     throw error;
@@ -116,7 +118,7 @@ export const getProductsByIds = async (ids: number[]): Promise<WooProduct[]> => 
       per_page: ids.length,
       status: "publish",
     });
-    const data = response.data as WooProduct[];
+    const data = wooProductsSchema.parse(response.data) as unknown as WooProduct[];
     // Preserve requested order (API may return in different order)
     const byId = new Map(data.map((p) => [p.id, p]));
     return ids.map((id) => byId.get(id)).filter((p): p is WooProduct => p != null);
@@ -136,7 +138,7 @@ export const getBestsellers = async (limit: number = 8): Promise<WooProduct[]> =
       orderby: "popularity",
       order: "desc",
     });
-    return response.data;
+    return wooProductsSchema.parse(response.data) as unknown as WooProduct[];
   } catch (error) {
     console.error("Error fetching bestsellers:", error);
     throw error;

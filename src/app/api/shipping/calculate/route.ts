@@ -11,6 +11,7 @@ import {
   SHIPPO_NOT_CONFIGURED_MESSAGE,
   SHIPPO_RATES_UNAVAILABLE_MESSAGE,
 } from "@/lib/shipping";
+import { getRequestId, logger } from "@/lib/logging/logger";
 import type { ShippingCalculationApiResponse, ErrorApiResponse } from "@/lib/types";
 
 /** Domestic US only: reject non-US with clear message. */
@@ -19,6 +20,7 @@ const DOMESTIC_US_ONLY_MESSAGE = "We only ship domestically within the United St
 const MAX_BODY_SIZE = 1024 * 1024; // 1MB
 
 export async function POST(request: NextRequest) {
+  const requestId = getRequestId(request);
   try {
     // Validate body size
     const bodyText = await request.text();
@@ -108,7 +110,11 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
-    console.error("Shipping calculation API error:", errorMessage);
+    logger.error("shipping_calculate_failed", {
+      requestId,
+      route: "/api/shipping/calculate",
+      message: errorMessage,
+    });
 
     // Policy / user-facing errors: return 400 so client shows message
     if (

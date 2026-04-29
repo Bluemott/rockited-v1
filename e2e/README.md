@@ -1,21 +1,19 @@
 # E2E Testing with Playwright
 
-End-to-end tests for the storefront: smoke, cart, and checkout (including Stripe Embedded Checkout).
+Playwright is the primary E2E framework for pre-launch hardening.
 
-## Overview
+## Suite strategy
 
-Tests are layered by user journey:
+- **Deterministic suites** (`@smoke`, `@cart`, `@critical`) run in PR CI and should fail loud on missing product/test state.
+- **Integration suite** (`@integration`, `@stripe`) validates real checkout/payment behavior and is meant for preview/nightly verification.
+- **Preview support** uses `PLAYWRIGHT_BASE_URL` so tests can run against deployed URLs without launching local `npm run dev`.
 
-- **Smoke** (`e2e/smoke/`) – Home and products load; cart empty state. No Stripe.
-- **Cart** (`e2e/cart/`) – Add/update/remove items, badge, persist, proceed to checkout.
-- **Checkout** (`e2e/checkout/`) – Happy path (product → cart → checkout → payment → success) and error scenarios (empty cart, API failure, declined/expired/invalid card).
-
-**Note**: Checkout uses Stripe Embedded Checkout (`ui_mode: "custom"`) with separate iframes for shipping and payment. Tests fill the shipping address before the payment form.
+Checkout uses Stripe Embedded Checkout (`ui_mode: "custom"`) with separate shipping and payment iframes.
 
 ## Prerequisites
 
 1. **Node.js** (v18+)
-2. **Dev server** at `http://localhost:3000` (or let Playwright start it).
+2. **Dev server** at `http://localhost:3000` (or let Playwright start it automatically when `PLAYWRIGHT_BASE_URL` is not set).
 3. **Stripe test keys** in `.env.local` for checkout tests.
 4. **Products** – WooCommerce (or product API) must return products. "Failed to load products" or "Failed to initialize checkout" usually means env/API (keys, WooCommerce), not a test bug.
 
@@ -28,15 +26,17 @@ npx playwright install
 
 With system deps: `npx playwright install --with-deps`
 
-## Running Tests
+## Running tests
 
-| Command | Description |
-|--------|-------------|
-| `npm run test:e2e` | Run all E2E tests |
-| `npm run test:e2e:ui` | Interactive UI mode |
-| `npm run test:e2e:headed` | Run with browser visible |
-| `npm run test:e2e:debug` | Debug mode |
-| `npm run test:e2e:report` | Open last HTML report |
+- `npm run test:e2e` - all suite projects (`smoke`, `critical`, `integration`)
+- `npm run test:e2e:smoke` - deterministic smoke/cart suite
+- `npm run test:e2e:critical` - deterministic checkout-critical suite
+- `npm run test:e2e:integration` - real Stripe integration coverage
+- `npm run test:e2e:ui` - interactive mode
+- `npm run test:e2e:headed` - headed browser mode
+- `npm run test:e2e:debug` - debug runner
+- `npm run test:e2e:report` - open last HTML report
+- `PLAYWRIGHT_BASE_URL=https://preview.example.com npm run test:e2e:preview` - run critical suite against preview URL
 
 ### By tag
 
@@ -44,8 +44,10 @@ With system deps: `npx playwright install --with-deps`
   `npx playwright test --grep @smoke`
 - **Cart only** (no Stripe):  
   `npx playwright test --grep @cart`
-- **Checkout** (includes Stripe):  
-  `npx playwright test --grep @checkout`
+- **Critical checkout (deterministic):**  
+  `npx playwright test --grep @critical --grep-invert @integration`
+- **Live integration (Stripe):**  
+  `npx playwright test --grep @integration`
 
 ### By file or browser
 
@@ -98,7 +100,27 @@ Optional fixture: `e2e/fixtures/checkout.ts` exports a `test` with `cartWithOneP
 
 ## Configuration
 
-`playwright.config.ts`: baseURL `http://localhost:3000`, timeout 120s, trace/screenshot/video on failure, retries 2 (CI) / 1 (local). Browsers: Chromium, Firefox, WebKit.
+`playwright.config.ts` supports:
+
+- `PLAYWRIGHT_BASE_URL` for preview/deployed targets.
+- Conditional `webServer` startup only for local runs.
+- Project split: `smoke`, `critical`, `integration` plus browser projects.
+- Artifacts: traces/screenshots/videos on failures with HTML reporting.
+
+## CI contract
+
+- CI deterministic command: `npm run test:e2e:critical`
+- CI preview command: `npm run test:e2e:preview` with `PLAYWRIGHT_BASE_URL` set.
+- GitHub secret used for preview runs: `PREVIEW_E2E_BASE_URL`
+- Required checkout env for integration flows: Stripe/Woo keys from `.env.local.example`
+
+## Failure triage
+
+1. Open uploaded `playwright-report` artifact first.
+2. Inspect trace for first failing step (selectors/iframe readiness/network).
+3. Check `test-results` screenshots/video for visual state mismatch.
+4. Confirm env and API availability if failure mentions checkout init/products.
+5. Re-run narrowed command locally (`-g "<test name>" --project=critical`).
 
 ## Troubleshooting
 

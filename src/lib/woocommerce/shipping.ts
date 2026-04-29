@@ -1,4 +1,5 @@
 import type { WooShippingZone, WooShippingMethod, WooShippingRate } from "../types";
+import { wooShippingMethodsSchema, wooShippingZonesSchema } from "../schemas/external";
 
 import { wooApi } from "./client";
 import { getProduct } from "./products";
@@ -7,7 +8,7 @@ import { getProduct } from "./products";
 export const getShippingZones = async (): Promise<WooShippingZone[]> => {
   try {
     const response = await wooApi.get("shipping/zones");
-    return response.data;
+    return wooShippingZonesSchema.parse(response.data) as WooShippingZone[];
   } catch (error) {
     console.error("Error fetching shipping zones:", error);
     throw error;
@@ -17,7 +18,7 @@ export const getShippingZones = async (): Promise<WooShippingZone[]> => {
 export const getShippingZoneMethods = async (zoneId: number): Promise<WooShippingMethod[]> => {
   try {
     const response = await wooApi.get(`shipping/zones/${zoneId}/methods`);
-    return response.data;
+    return wooShippingMethodsSchema.parse(response.data) as WooShippingMethod[];
   } catch (error) {
     console.error(`Error fetching shipping methods for zone ${zoneId}:`, error);
     throw error;

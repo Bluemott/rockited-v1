@@ -23,7 +23,7 @@ test.describe("Smoke - App and products load", { tag: "@smoke" }, () => {
     await productPage.waitForProducts();
     const cards = page.locator('[role="article"], [data-testid="product-card"]');
     const count = await cards.count();
-    expect(count).toBeGreaterThanOrEqual(0);
+    expect(count).toBeGreaterThan(0);
     const errorMessage = page.getByText(/failed to load products|error loading products/i);
     await expect(errorMessage).not.toBeVisible();
   });
